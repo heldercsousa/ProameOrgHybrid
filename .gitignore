@@ -1,0 +1,31 @@
+# Secrets / local env
+.env
+.env.local
+.env.*.local
+
+# Local Claude Code state
+.claude/settings.local.json
+.claude/changed-files.txt
+.claude/worktrees/
+.claude/leases/
+.playwright-mcp/
+
+# Node / web
+node_modules/
+dist/
+.expo/
+.next/
+
+# Flutter / Dart
+.dart_tool/
+build/
+
+# .NET
+[Bb]in/
+[Oo]bj/
+.vs/
+*.user
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,155 @@
+# ============================================
+# .claudeignore - PROAME
+# Updated: January 27, 2026
+# ============================================
+
+# Standard .NET build artifacts
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider files
+.idea/
+
+# VS Code files
+.vscode/
+
+# Package files
+*.nupkg
+*.snupkg
+[Pp]ackages/
+
+# Temporary files and logs
+temp/
+*[Tt]emp/
+*.log
+*.tlog
+*.cache
+
+# Build outputs
+[Dd]ebug/
+[Rr]elease/
+publish/
+build/
+artifacts/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Secret and credential files
+*.env
+*.pem
+*.key
+**/secrets/
+**/credentials/
+
+# MAUI build outputs
+*.apk
+*.aab
+*.ipa
+*.app
+*.exe
+*.dll
+*.pdb
+*.xaml.g.cs
+*.designer.cs
+
+# Native code outputs
+*.so
+*.dylib
+
+# SQLite database files
+*.db
+*.db3
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Test outputs
+**/TestResults/
+**/*.trx
+**/TestData/**/*.json
+**/TestData/**/*.xml
+**/TestData/**/*.csv
+
+# Migrations (don't modify old migrations)
+**/Migrations/
+
+# Console tools (not needed for main app development)
+Console/**
+
+# Large binary files in Docs
+**/[Dd]ocs/**/*.pdf
+**/[Dd]ocs/**/*.docx
+**/[Dd]ocs/**/*.png
+**/[Dd]ocs/**/*.jpg
+**/[Dd]ocs/**/*.jpeg
+**/[Dd]ocs/**/*.gif
+**/[Dd]ocs/**/*.svg
+
+
+# AI learning documentation (personal learning, not for Claude Code)
+**/[Dd]ocs/[Gg]uides/[Aa][Ii]/**
+
+# Guides folder (exclude by default)
+**/[Dd]ocs/[Gg]uides/**
+
+# Resources (binary files)
+**/[Rr]esources/AppIcon/**
+**/[Rr]esources/**/*.png
+**/[Rr]esources/**/*.jpg
+**/[Rr]esources/**/*.jpeg
+**/[Rr]esources/**/*.gif
+**/[Rr]esources/[Ff]onts/**/*.ttf
+**/[Rr]esources/[Ss]trings/**/*.resx
+
+# Batch files
+*.bat
+
+# DEV Environment setup documentation - enabled only setting up the development environment - must be ignored after setup to avoid token usage
+# Docs/DevEnv/devenv-setup.md - DON�T REMOVE IGNORE. here only for new developers be able to create the claude rule ONLY
+.claude/rules/devenv-setup.md #IGNORE as soon as setup is done
+Docs/DevEnv/DevEnv_Setup_Guide.docx #IGNORE as soon as setup is done
+Docs/DevEnv/**
+
+# Docs/ — selective context scope gates (prevents glob scans of high-volume, low-relevance subtrees)
+# Files can still be Read() by explicit absolute path — only open-ended glob scans are blocked.
+# SDD theory files: reference material, never needed during coding sessions
+Docs/Management/DevCycleCraft/sdd/**
+# Completed session plans and task-logs: injected into briefings by explicit path when needed
+Docs/superpowers/plans/**
+# Old Plans folder: superseded by superpowers/plans/
+Docs/Plans/**
+
+# Design old files
+Docs/Design/**
+
+# Temporary files in Docs
+Docs/claude-rules/**
+
+# Specs/Plans/Logs from completed sessions: historical record, not needed during feature work
+Docs/ManagementBypass/
+
+# Debug and device log captures in Docs/Management (diagnostic artifacts, not specs)
+# Explicit reads still work; this prevents accidental glob-sweep of large debug logs
+Docs/Management/**/*debug*.txt
+Docs/Management/**/*logcat*.txt
+Docs/Management/**/*Release test*.txt
+Docs/Management/**/*VS Debug*.txt
+
+
+# PROAME — web/mobile stacks
+node_modules/
+dist/
+.dart_tool/
+.expo/
+.next/

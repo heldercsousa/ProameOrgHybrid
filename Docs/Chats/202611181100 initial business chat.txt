@@ -1,30 +1,56 @@
+www.proame.org
+
+Home 
+	inspirar-se no site
+
 QUEM SOMOS NÓS
+	Inspirar-se no site
+	Entre em contato
 
 O QUE REALIZAMOS
+	Inspirar-se no site, menu serviços
 
 O QUE TEMOS
+	Inspirar-se no site, menu projetos
+	Há diversos tipos de projetos, e eles são agendados para o futuro, com fotos anexadas,
+	formulário de inscrição pelo app mobile ou site. Portanto aqui temos um formulário, que gostaria que fosse
+	dinâmico, com campos dinâmicos, que o proprio admin atribui um label, o tipo (data/hora início, fim, etc). 
+	Quem se inscreve nos projetos são chamados "beneficiários". Quem colabora são empress
+	
+	
+	Tipos de projeto (imaginar possibilidade de cadastrar qualquer tipo de projeto, de modo simples, inspirado em Cursos e eventos esportivos):
+	
+	a) Curso 
+	b) Esporte / dança esportiva
 
+	Beneficiários: são alunos que se inscrevem por um formulário dentro da página de visualização publica do projeto;
+
+	Cadastro de beneficiário, a principio, necessita somente destes campos:
 	Nome
 	Endereço
 	Telefone
-	Cad. ùnico (governo)
-	
-	
-	Cesta básica
-	
-Como posso colaborar
-	Financeiramente ?
-	Cesta básica
-	Mão de obra / Serviço
-	Formação 
+	Cad. Único (governo)
 
-	Entre em contato
+
+COMO POSSO COLABORAR
+
+	Tipos Colaboradores : empresas (lanche etc), professores/monitores/segurança.
+
+	Form com dropdown com as opcões abaixo:
+		Financeiramente ?
+		Cesta básica
+		Mão de obra / Serviço
+		Formação 
+
+	Campo texto para observação qualquer
+	Enviar 
 
 TRANSPARÊNCIA
-	EDITAIS - proame é que promove. 
+	EDITAIS - proame é que promove. PDFs
+
+
+Haverá API para armazenar e recuperar dados privados/publicos
+
 	
-	Curso -> beneficiário (alunos), empresas (lanche etc), professores/monitores/segurança.
-	Esporte / dança esportiva -> beneficiário (sempre tem), 
-	
-	GoDaddy
+	GoDaddy está congitado como provedor de hospedagem
 	

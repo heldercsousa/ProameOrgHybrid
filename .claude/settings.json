@@ -1,0 +1,309 @@
+{
+  "model": "sonnet",
+  "env": {
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(git *)",
+      "Bash(dotnet *)",
+      "Bash(python *)",
+      "Bash(pwsh *)",
+      "Bash(python3 *)"
+    ],
+    "deny": [
+      "Bash(git push --force*)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard*)",
+      "PowerShell(git push --force*)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git reset --hard*)",
+      "Artifact"
+    ]
+  },
+  "disabledMcpjsonServers": [
+    "mudblazor"
+  ],
+  "skillOverrides": {
+    "maui-unit-testing": "on",
+    "maui-geolocation": "off",
+    "maui-authentication": "off",
+    "maui-animations": "off",
+    "maui-hot-reload-diagnostics": "off",
+    "maui-local-notifications": "off",
+    "maui-localization": "off",
+    "maui-permissions": "off",
+    "maui-platform-invoke": "off",
+    "maui-rest-api": "off",
+    "maui-secure-storage": "off",
+    "maui-accessibility": "off",
+    "maui-ai-debugging": "off",
+    "maui-app-icons-splash": "off",
+    "maui-app-lifecycle": "off",
+    "maui-data-binding": "off",
+    "maui-dependency-injection": "off",
+    "maui-performance": "off",
+    "maui-safe-area": "off",
+    "maui-shell-navigation": "off",
+    "test-driven-development": "off",
+    "requesting-code-review": "off",
+    "receiving-code-review": "off",
+    "subagent-driven-development": "user-invocable-only",
+    "dataviz": "off",
+    "anthropic-skills:morning": "off",
+    "claude-api": "off",
+    "plugin-authoring": "off",
+    "anthropic-skills:computer-use": "off",
+    "anthropic-skills:built-in-browser": "off",
+    "anthropic-skills:chrome-browser": "off",
+    "anthropic-skills:deep-research": "off",
+    "anthropic-skills:docs": "off",
+    "anthropic-skills:docx": "off",
+    "anthropic-skills:google-workspace": "off",
+    "anthropic-skills:pptx": "off",
+    "anthropic-skills:xlsx": "off",
+    "anthropic-skills:pdf": "off",
+    "anthropic-skills:skill-creator": "off",
+    "anthropic-skills:import-memory": "off",
+    "code-review": "user-invocable-only",
+    "security-review": "user-invocable-only",
+    "simplify": "user-invocable-only",
+    "loop": "user-invocable-only",
+    "schedule": "user-invocable-only",
+    "init": "user-invocable-only",
+    "keybindings-help": "user-invocable-only",
+    "fewer-permission-prompts": "user-invocable-only",
+    "artifact-design": "off",
+    "artifact-diagramming": "off",
+    "artifact-capabilities": "off"
+  },
+  "hooks": {
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/worktree-base-check.py\" 2>/dev/null || true",
+            "statusMessage": "Verifying worktree is based on develop..."
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/constitutional-guard.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/protect-generated.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/delegate-reminder.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/read-slice-guard.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/bash-guard.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/worktree-base-check.py\" 2>/dev/null || true",
+            "statusMessage": "Verifying worktree is based on develop..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/hook-bash-filter.py\" \"\\bgit\\s+worktree\\s+add\\b\" -- python \"$CLAUDE_PROJECT_DIR/.claude/scripts/worktree-base-check.py\" 2>/dev/null || true",
+            "statusMessage": "Verifying worktree is based on develop..."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/hook-bash-filter.py\" \"\\bdotnet\\s+ef\\s+database\\s+update\\b\" -- pwsh -NoProfile -NonInteractive -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/sync-mcp-db.ps1\" 2>/dev/null || true",
+            "statusMessage": "Syncing SQLite MCP database schema..."
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json,sys,os; d=json.load(sys.stdin); fp=d.get('tool_input',{}).get('file_path',''); proj=os.environ.get('CLAUDE_PROJECT_DIR','.'); rel=os.path.relpath(fp,proj).replace(os.sep,'/') if fp else ''; open(os.path.join(proj,'.claude','changed-files.txt'),'a',encoding='utf-8').write(rel+'\\n') if fp else None\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/uncommitted-warning.py\" --after-agent 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/sln-register-doc.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/library-size-guard.py\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/ledger-row-guard.py\" 2>/dev/null || true"
+          },
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/tasklog-size-guard.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/lease/heartbeat.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import os,json; proj=os.environ.get('CLAUDE_PROJECT_DIR','.'); settings=os.path.join(proj,'.claude','settings.json'); data=json.load(open(settings,encoding='utf-8')); hooks=data.get('hooks',{}); expected=['TaskCreated','PreToolUse','PostToolUse','Stop','SessionStart','UserPromptSubmit']; missing=[h for h in expected if h not in hooks]; print('HOOK HEALTH OK — all expected hooks present.') if not missing else print('HOOK HEALTH WARNING — missing hooks: '+', '.join(missing)+'. Review .claude/settings.json before proceeding.')\" 2>/dev/null || echo 'HOOK HEALTH CHECK — could not verify hooks (settings.json unreadable or Python unavailable).'"
+          },
+          {
+            "type": "command",
+            "command": "python -c \"import subprocess as s,os; p=os.environ.get('CLAUDE_PROJECT_DIR','.'); want='.claude/githooks'; cur=s.run(['git','config','--get','core.hooksPath'],cwd=p,capture_output=True,text=True).stdout.strip(); (s.run(['git','config','core.hooksPath',want],cwd=p), print('SETUP — registered git core.hooksPath -> '+want+' (pre-commit build/test gate now active on this clone).')) if cur!=want else None\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/backlog/session_marker.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'AFTER COMPACTION: before continuing, re-read the active item task-log Checkpoint block and only its manifest files; re-read its design.md and requirements.md before any code or dispatch.'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/uncommitted-warning.py\" --stop 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/lease/heartbeat.py\" 2>/dev/null || true"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/backlog/orphan_check.py\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python -c \"import json,sys,re; d=json.load(sys.stdin); p=d.get('prompt',''); matched=re.search(r'\\\\b(implement|dispatch|resume)\\\\b|\\\\bstart (the |a )?(next )?(task|feature|wave|coding)\\\\b', p, re.I); matched and print('{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"UserPromptSubmit\\\",\\\"additionalContext\\\":\\\"WORKFLOW GATE: read the feature design.md + requirements.md before code; feature work is subagent-driven in a worktree (CLAUDE.md Roles, workflow.md Rule 2); /sln-commit after each task.\\\"}}')\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "dotnet-skills@dotnet-skills": false,
+    "ddd-dotnet@dotnet-claude-code-skills": false,
+    "data-dotnet@dotnet-claude-code-skills": false,
+    "bdd-dotnet@dotnet-claude-code-skills": false,
+    "ux@teslasoft-skills": false,
+    "frontend-design@claude-plugins-official": false,
+    "claude-code-setup@claude-plugins-official": false,
+    "superpowers@claude-plugins-official": true,
+    "claude-md-management@claude-plugins-official": false
+  },
+  "plansDirectory": "Docs/Management",
+  "worktree": {
+    "baseRef": "head"
+  }
+}

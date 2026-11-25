@@ -1,0 +1,207 @@
+> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
+
+# Development Workflow — Reference — Rule 2 — Subagent Delegation (full detail)
+
+> Section file split from `workflow-reference.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `workflow-reference.md`.
+
+## Rule 2 — Subagent Delegation
+
+**All coding is done by subagents. The main agent handles shell-only steps.**
+
+> **Orchestrator read-scope `[HARD RULE — amended 2026-11-03]`:** no source exploration by the orchestrator (plan-mode exploration included) — delegate to Explore/Plan. The **read lane** (grep + at most 2 source files per written question, to confirm a diagnosis/signature/member) is the only inline source reading. Bounds, plan-mode reconciliation, and session-start self-check: `.claude/agents/orchestrator.md § Orchestrator Read-Scope`.
+
+| Main agent does | Subagent does |
+|----------------|---------------|
+| `dotnet build` | Any file creation or edit outside the ITF lane |
+| `dotnet test` | ViewModels, pages, services, repositories |
+| `dotnet ef migrations add` | XAML, code-behind, multi-line DI registration |
+| `git status`, `git add`, `git commit` | Route additions, AppShell registration |
+| Reading spec before briefing subagent | Everything in `crud-pages.md` |
+| Read lane — grep + ≤ 2 source files to confirm a diagnosis | Exploration — flows, surveys, consumer maps |
+| ITF lane — a diagnosed 1-file / ≤ 5-line fix (`/pro-itf`) | — |
+
+> **Orchestrator-side protocols** (pre-dispatch checklist, pre-wave dependency check, briefing protocol, role scope declaration, adversarial critic, wave handoff, discovery briefs, multi-wave checkpoint, merge sequencing, worktrees, kill criteria, approval authority matrix, review lanes, DGI classification): see `.claude/agents/orchestrator.md`.
+
+> **Implementor-side protocols** (pre-task context gate, intent verification, E2E emulator gate, bounded autonomy rule, spec gap escalation format, subagent return protocol, scope constraints, living spec protocol, post-edit re-read, MCP isolation): see `.claude/agents/implementor.md`.
+
+### Task sizing limits — context window budget
+
+| Task type | Max files touched | Max estimated effort |
+|-----------|-------------------|----------------------|
+| New service method + tests | 4 files | 90 min |
+| New ViewModel + page + tests | 5 files | 2 hours |
+| Migration + repository + tests | 4 files | 90 min |
+| UI page only (XAML + code-behind) | 3 files | 60 min |
+| Full CRUD feature (all layers) | Split into 2+ tasks | — |
+
+**Rule:** If a proposed task exceeds these limits, split it before dispatching.
+
+**Warning sign:** A subagent briefing that lists > 5 files or > 2 hours of estimated work is a sizing violation.
+
+### Wave-based parallelism — hard cap
+
+- **Maximum 4 subagents may run in parallel at any one time.**
+- Work is dispatched in waves: spawn up to 4 subagents, wait for all to complete, then start the next wave.
+- Never spawn a 5th concurrent subagent — stagger instead.
+- After a subagent completes, its context is discarded. Do not reuse the same subagent instance for a second task.
+- **Git worktrees are mandatory for every parallel wave (2+ concurrent subagents).** See `orchestrator.md § Git Worktrees as Isolation Primitive`. Check for the native `EnterWorktree` tool first; fall back to `git worktree add .claude/worktrees/<name>` only if unavailable.
+
+### Single-writer rule for hotspot files
+
+**At any given moment, each file in the repository must have at most one active writer.**
+
+Before dispatching any wave, the main agent performs the file overlap check. If two tasks in the wave list the same file in `Files owned`, they cannot run in parallel — serialize them.
+
+### Sequential-only file registry
+
+Some files must never be edited by more than one agent at a time:
+
+| File | Reason |
+|------|--------|
+| `MauiProgram.cs` | DI registration — ordering matters; parallel edits produce conflicts |
+| `AppShell.xaml` / `AppShell.xaml.cs` | Route registration — one canonical route table |
+| `AppDbContext.cs` | EF Core model config — entity set definitions must be coherent |
+| Any file under a `Migrations/` folder | EF migrations are sequential by design. Match on the folder, not on a `*Migration.cs` name pattern — EF generates `20260407190608_PersonConfigFixes.cs`, which no name-suffix rule catches (corrected 2026-07-21) |
+| `GlobalUsings.cs` (any project) | Global using declarations — merge conflicts produce duplicate errors |
+| `Directory.Build.props` | Shared MSBuild properties — parallel edits produce conflicts |
+| `tasks.md` (any spec) | Task status tracking — parallel checkbox edits produce divergent state |
+
+**ITF soft / hard split `[added 2026-11-03]`:** for the ITF lane only (condition C5), `MauiProgram.cs`, `GlobalUsings.cs` and `Directory.Build.props` are the **soft** set — eligible when the declaration carries `"sole_writer": true` after the sole-writer check (`/pro-itf` step 2). `AppShell.xaml(.cs)`, `AppDbContext.cs`, `tasks.md` and anything under `Migrations/` are the **hard** set — never ITF-eligible. The split does not relax wave planning: two tasks owning the same registry file are still serialized. Guard 3 mirrors this split in `_ITF_SEQUENTIAL_SOFT` / `_ITF_SEQUENTIAL_HARD`.
+
+**How to add entries:** If a session discovers a new hotspot file, add it to this registry before ending the session — and to the hard set in `constitutional-guard.py` unless Helder places it in the soft set.
+
+### Subagent exit checklist (mandatory before returning)
+
+Every subagent must complete ALL of these steps in order before stopping:
+
+1. **Invoke `superpowers:verification-before-completion`** — catches non-negotiable violations (DevExpress-first, SafeAreaEdges, English-only, no DisplayAlert, etc.)
+2. **Build:** Run `dotnet build` and confirm 0 errors. If build fails, apply the build retry cap (max 3 attempts). Document result in Verification evidence.
+3. **Test:** If any `.cs` implementation file was changed, run `dotnet test` and confirm 0 failures. Document result. Skip only if no code files were modified.
+4. **Post-edit re-read:** Re-read the affected section of every edited file and confirm correctness.
+5. **.sln registration — BLOCKING:** For every file created, moved, or deleted in `Docs/` or `.claude/`: update `PROAME.sln` now (same commit). See `constraints-registry.md § Visual Studio Solution (.sln)` for exact pattern. Do NOT skip even if only docs changed.
+6. **Living spec check:** Review decisions made during implementation — write back any undocumented decisions to the spec.
+7. **Task-log:** Complete the task-log entry including Changed files, Verification evidence, and AC traceability matrix (if applicable).
+8. **Commit:** Commit all changed files including any spec updates.
+9. **Push:** `git push origin HEAD`
+
+**The `Stop` hook warns if uncommitted changes remain. Treat it as a hard gate.**
+
+A subagent that stops without completing all 8 steps has not finished the task.
+
+### Post-wave verification — main agent runs build independently
+
+After every wave completes, the main agent must run the build and tests independently:
+
+1. Run `dotnet build` — confirm 0 errors. Do not proceed to the next wave if there are errors.
+2. Run `dotnet test` — confirm 0 failures. Investigate any new failures before proceeding.
+3. Review the task-log entries from the wave — confirm all entries have Verification evidence and Changed files.
+4. If a subagent reported `Build failure` or `blocked: spec gap`, resolve before dispatching the next wave.
+
+---
+
+## Generated artifacts — write-ownership protocol
+
+**1. Which artifacts are generated.**
+
+| Artifact | Class | Rule |
+|----------|-------|------|
+| `Docs/Management/BACKLOG.md` (inside `BACKLOG:GENERATED` fences) | generated | regenerate, never hand-edit |
+| `Docs/Management/backlog-archive/*.md` (inside fences) | generated | regenerate, never hand-edit |
+| `Docs/Management/**/README.md` frontmatter block | **source** | edit the value, then `regen` |
+| `README.md` body, `task-log.md`, `tasks.md`, `plan.md`, spec files, `LEDGER.md`, changelog | hand-written | ordinary merge; land on develop |
+
+Everything **outside** a fence in a generated file (headers, Row rules, prose) is hand-written and
+byte-preserved by the generator — editing there is always safe.
+
+**2. When the pre-commit gate rejects a stale BACKLOG: regenerate, then re-inspect — never
+`--no-verify`.** Run `backlog_gen.py regen`, then `git diff` the regenerated files **before**
+committing. If the diff touches only rows whose frontmatter this session changed → commit. If it
+touches rows this session never touched, another session's frontmatter change is unregenerated:
+**stop and escalate** — do not commit, and do not revert their rows. Blind regeneration is safe
+for the *rendered* file (it is a total function of frontmatter) but the diff is the only signal
+that a second writer is active, so it must be read, not skipped.
+
+**3. How a second session learns a region is owned — LEDGER names the owner, the lease proves it is
+alive.** A session doing a **bulk** operation over generated artifacts (a migration, a mass status
+sweep, anything that rewrites rows it did not author) declares it in its `LEDGER.md` row before its
+first write: **owner session id · branch · since-date**, retired when the branch merges.
+
+A second session that wants to regenerate resolves that declaration as follows:
+
+| LEDGER declaration | Check | Action |
+|--------------------|-------|--------|
+| none | — | no owner; proceed normally |
+| present, names a session id | `classify()` that session's `.claude/leases/<id>.json` | **fresh** → owner is live: edit your own item's frontmatter only, let the owner regenerate, do not run bare `regen`. **stale** → the owner session is dead: take over, note the takeover in the LEDGER row, proceed |
+| present, no session id (legacy row) | — | treat as owned until the row's branch merges, or ask Helder |
+
+**The lease is session-keyed, not unit-keyed** — `.claude/leases/<session_id>.json`, written by the
+heartbeat hook, carrying `branch`/`worktree`/`task_id`. There is **no API to claim a named unit**,
+so "claim the generated region" is not something the lease can express; what it can do, and all
+this protocol asks of it, is answer *"is the session named in that LEDGER row still alive?"* Use
+`lease_lib.classify` (read-only) for that. **Do not use `reclaim.py` here** — it *overwrites* the
+target's claim on a stale result, which is correct for taking over a `[~]` task and wrong for
+asking a liveness question about a region.
+
+**Ordinary single-item work (`register` / `status` on one item) takes no claim.** It writes one
+frontmatter block plus a deterministic re-render, and the pre-commit gate already fails it loud if
+another session left the rendered files stale — detection is mechanical, so the coordination cost
+buys nothing. Requiring a claim per write would make `register` unusable and push agents toward
+`--no-verify`, which is strictly worse than the race it would be guarding against. The rule is
+proportional to blast radius.
+
+*Rationale for the split, recorded because it is a policy choice and not a derivation:* the
+failure this protocol exists to prevent is **one session's rows being rewritten from another
+session's stale view of the tree**. Only a bulk rewrite can do that; a single-item write cannot,
+because regeneration is a total function of frontmatter and touches no row whose source it did not
+read.
+
+**4. Concurrent `register` / `status` are safe within one repo; the hazard is cross-worktree ID
+allocation.** Both verbs are atomic (folder + `README.md` + `.sln` + re-render written in one pass,
+rolled back on failure), so a half-registration cannot trip the `.sln` HARD GATE. What they cannot
+see is a `BUG-NNN` allocated in a *different worktree* that has not merged yet — two worktrees can
+allocate the same ID. That is detected at merge (duplicate `id` is a validation error, so the
+merge commit cannot pass the gate) and fixed with `backlog_gen.py renumber BUG-NNN`, which rewrites
+the folder name and the `id:` key. Renumbering is safe because the ID lives in exactly two places;
+every other reference is a path.
+
+---
+
+## Inline Trivial Fix (ITF) lane `[amended 2026-11-03]`
+
+> Routed out of `workflow.md` 2026-08-24 (doctor pass). The never-miss summary — the lane exists,
+> it is opt-in, all nine conditions must hold, and C1/C3/C4/C5 are hook-enforced — stays inline in
+> `workflow.md § Rule 2`. Everything below is the procedure detail.
+
+**Narrow, opt-in exception to "all coding is done by subagents".** The orchestrator MAY apply a fix
+directly — no subagent — only when ALL of the following hold. Any single miss = dispatch an
+implementor; there is no partial qualification.
+
+| # | Condition |
+|---|-----------|
+| C0 | A **declaration** exists in the worktree where the edit occurs, naming this file |
+| C1 | Exactly **1 file**, **≤ 5 changed lines** (guard's upper-bound count) |
+| C2 | Fix **fully diagnosed** — root cause, exact file and exact line recorded before the edit. The diagnosis may come from a stack trace, a subagent report, or the **read lane** (grep + ≤ 2 source files, `orchestrator.md § Orchestrator Read-Scope`); if it needs more than that, it is not fully diagnosed *(amended 2026-11-03)* |
+| C3 | Target is **not** `.xaml` / `.xaml.cs` |
+| C4 | Target is **not** a governed component (`component-change-governance.md`) |
+| C5 | Target is **not** in the hard sequential-only set; a **soft-set** file (`MauiProgram.cs`, `GlobalUsings.cs`, `Directory.Build.props`) qualifies only with `"sole_writer": true` in the declaration after the sole-writer check (`§ Sequential-only file registry`, `/pro-itf` step 2) *(amended 2026-11-03)* |
+| C6 | Severity ≤ Major **and** no regression test is mandatory per `bug-tracking.md`. In practice: Critical always dispatches; Major dispatches wherever testable. The lane's population is Minor bugs, UI-only Major bugs verified by manual E2E, and non-bug trivia |
+| C7 | Edit is in a **worktree on a task branch** (a throwaway spike branch qualifies) — ITF grants NO worktree exemption |
+| C8 | Build (0 errors) + affected tests green before commit |
+
+**Opt-in is explicit.** Before editing, the orchestrator (a) writes `<worktree>/.itf-active` —
+worktree root, never repo root — and (b) logs one line in the feature's `task-log.md`:
+`ITF: BUG-050 — SongFormViewModel.cs — root cause: SelectArtist omits IsArtistLocked = true — expected 1 line.`
+The orchestrator **deletes the marker as the final step of the ITF commit**; a 30-minute expiry is
+the safety net for a dead session.
+
+**Enforcement is opt-in, and bounded once entered.** Without a declaration the lane is inert and
+ordinary Rule 2 applies — prose-enforced, as before. Once declared, C1/C3/C4/C5 are hook-enforced
+(`constitutional-guard.py` Guard 3) and cannot be exceeded. C2/C6, and multi-declaration chaining,
+are prose rules auditable after the fact via the task-log lines and the commit trailer.
+
+**Commit trailer (required):** append `Lane: ITF (N files, N lines)` to the Bug Fix Pattern message
+(`workflow.md § Rule 3`). Audit with `git log --grep "Lane: ITF"`.
+
+**Applies to the orchestrator only.** Implementor subagents are never constrained by ITF bounds.
+
+Full rationale, decisions, and Guard 3 design: `DevCycleCraft/inline-trivial-fix/`.

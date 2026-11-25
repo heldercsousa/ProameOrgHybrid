@@ -1,0 +1,251 @@
+# .claude/scripts/backlog/render.py
+"""Pure rendering of BACKLOG rows, tables and fenced regions.
+
+Everything outside a BACKLOG:GENERATED fence is preserved byte-for-byte
+(REQ-SEV-14/20); everything inside is a total function of the items, which is
+what makes regeneration idempotent (REQ-SEV-13).
+"""
+from model import TERMINAL, SUPERSEDED, DUPLICATE, is_post_mvp, order_items
+
+# Statuses whose archive Status cell carries a `(closed <month>)` suffix
+# reconstructed from the item's `closed:` key -- the single source of truth for
+# the closed date (REQ-SEV-08, F-3). The stored `status:` value stays the bare
+# enum; only the archive render path appends the suffix.
+_CLOSED_SUFFIX_STATUSES = (SUPERSEDED, DUPLICATE)
+
+FENCE_BEGIN = "<!-- BACKLOG:GENERATED:BEGIN {0} -->"
+FENCE_END = "<!-- BACKLOG:GENERATED:END {0} -->"
+
+ARROW = "↳"
+
+# One generated region per hand-written table in an archive file. Order matters:
+# it is the order the regions are spliced and the order they appear in the file.
+ARCHIVE_REGIONS = (
+    ("BusinessFeatures", "archive-business"),
+    ("DevCycleCraft", "archive-craft"),
+)
+ARCHIVE_SECTIONS = tuple(section for section, _region in ARCHIVE_REGIONS)
+
+TABLE_HEAD_BUSINESS = "| Target | Feature | Status | Notes |\n|--------|---------|--------|-------|"
+TABLE_HEAD_CRAFT = "| Target | Activity | Status | Notes |\n|--------|----------|--------|-------|"
+# Live BACKLOG tables are slim (2026-11-15): Target | Label | Status. Goal, gate and the folder
+# pointer stay in each item's README frontmatter; `backlog_gen.py query` prints the pointer.
+# Archive tables keep the Notes column: they are the grep target for past BUG-NNN lookups.
+TABLE_HEAD_BUSINESS_SLIM = "| Target | Feature | Status |\n|--------|---------|--------|"
+TABLE_HEAD_CRAFT_SLIM = "| Target | Activity | Status |\n|--------|----------|--------|"
+TABLE_HEAD_ARCHIVE = "| Target | Feature/Item | Status | Notes |\n|--------|--------------|--------|-------|"
+
+
+class RenderError(Exception):
+    """Raised when a required generated fence is missing."""
+
+
+def render_row(item, archived=False, parent_title=None, slim=False):
+    """One markdown table row. Archived rows drop depth arrows (design section 3).
+
+    `slim` (live BACKLOG only) drops the Notes cell: Target | Label | Status.
+    """
+    # Separator artifacts (REQ-SEV-17). Column order is Target | Label | Status
+    # | Notes -- the milestone's marker belongs in the Status cell, matching
+    # the frozen fixture's `| 2026-06 | | 🏁 **MVP release** | |`.
+    if item.kind == "milestone":
+        if slim:
+            return "| {0} | | {1} |".format(item.target, item.status_label())
+        return "| {0} | | {1} | |".format(item.target, item.status_label())
+    if item.kind == "group":
+        if slim:
+            return "| {0} | **{1}** | — |".format(item.target, item.title)
+        return "| {0} | **{1}** | — | {2} |".format(item.target, item.title, item.goal or "")
+
+    if archived:
+        # Archived rows drop depth arrows: the parent row is not in the file,
+        # so the arrows are meaningless and would break the byte-identical
+        # round-trip (REQ-SEV-13).
+        label = item.title
+        if parent_title:
+            label = "{0} (under: {1})".format(label, parent_title)
+    elif item.depth:
+        label = "{0} {1}".format(ARROW * item.depth, item.title)
+    else:
+        label = item.title
+
+    if slim and not archived:
+        return "| {0} | {1} | {2} |".format(item.target, label, item.status)
+
+    notes = "Goal: {0}".format(item.goal)
+    if item.gate:
+        notes = "{0} Gate: {1}".format(notes, item.gate)
+    notes = "{0} Pointer: `{1}`.".format(notes, item.pointer)
+
+    status_cell = item.status
+    if archived and item.status in _CLOSED_SUFFIX_STATUSES and item.closed:
+        # Reconstruct the committed cell's `(closed <month>)` suffix from the
+        # `closed:` key -- ONLY in the archive path, so the live BACKLOG never
+        # shows it and the stored `status:` enum and the suffix cannot drift.
+        status_cell = "{0} (closed {1})".format(item.status, item.closed)
+
+    return "| {0} | {1} | {2} | {3} |".format(item.target, label, status_cell, notes)
+
+
+def render_table(items, head=TABLE_HEAD_BUSINESS, archived=False, titles_by_id=None, slim=False):
+    """Ordered rows under a table header."""
+    titles_by_id = titles_by_id or {}
+    rows = [head]
+    for it in order_items(items):
+        parent_title = titles_by_id.get(it.parent) if archived else None
+        rows.append(render_row(it, archived=archived, parent_title=parent_title, slim=slim))
+    return "\n".join(rows)
+
+
+def splice(text, region_name, new_body):
+    """Replace a fenced region's body, preserving everything outside it."""
+    begin = FENCE_BEGIN.format(region_name)
+    end = FENCE_END.format(region_name)
+    start = text.find(begin)
+    stop = text.find(end)
+    if start == -1 or stop == -1 or stop < start:
+        raise RenderError("missing generated fence for region '{0}'".format(region_name))
+    head = text[:start + len(begin)]
+    tail = text[stop:]
+    return "{0}\n{1}\n{2}".format(head, new_body, tail)
+
+
+POST_MVP_TEMPLATE = """# MyVocaList — Post-MVP Backlog
+
+> Generated view of the active items marked `horizon: post-mvp` in their `README.md` frontmatter. Read it only when planning beyond the MVP. Same rules as `BACKLOG.md`: never hand-edit a row. Agents: `python .claude/scripts/backlog/backlog_gen.py query --horizon post-mvp`.
+
+## Business Features
+
+<!-- BACKLOG:GENERATED:BEGIN business-features -->
+<!-- BACKLOG:GENERATED:END business-features -->
+
+## Dev Cycle Craft
+
+<!-- BACKLOG:GENERATED:BEGIN dev-cycle-craft -->
+<!-- BACKLOG:GENERATED:END dev-cycle-craft -->
+"""
+
+
+def render_backlog(existing_text, items):
+    """Splice both live tables. Terminal items are excluded (REQ-SEV-16), and so
+    are post-MVP items: they render into BACKLOG-POST-MVP.md (`render_post_mvp`)."""
+    return _render_live(existing_text, items, post_mvp=False)
+
+
+def render_post_mvp(existing_text, items):
+    """Splice both live tables of BACKLOG-POST-MVP.md with the active post-MVP items."""
+    return _render_live(existing_text, items, post_mvp=True)
+
+
+def _render_live(existing_text, items, post_mvp):
+    active = [i for i in items
+              if i.status not in TERMINAL and is_post_mvp(i, items) == post_mvp]
+    business = [i for i in active if _section_of(i, items) == "BusinessFeatures"]
+    craft = [i for i in active if _section_of(i, items) == "DevCycleCraft"]
+
+    out = splice(existing_text, "business-features",
+                 render_table(business, TABLE_HEAD_BUSINESS_SLIM, slim=True))
+    out = splice(out, "dev-cycle-craft",
+                 render_table(craft, TABLE_HEAD_CRAFT_SLIM, slim=True))
+    return out
+
+
+ARCHIVE_TEMPLATE = """# BACKLOG Archive — {month}
+
+> Closed backlog rows completed in {month}, moved out of `Docs/Management/BACKLOG.md`. Rows use the slim PO template: Goal + one-sentence outcome + pointer. **Past BUG-NNN / feature lookups must grep all `backlog-archive/` files.**
+
+## Business Features
+
+<!-- BACKLOG:GENERATED:BEGIN archive-business -->
+<!-- BACKLOG:GENERATED:END archive-business -->
+
+## Dev Cycle Craft
+
+<!-- BACKLOG:GENERATED:BEGIN archive-craft -->
+<!-- BACKLOG:GENERATED:END archive-craft -->
+"""
+
+
+def bucket_by_month(items):
+    """Group terminal items by their `closed` month (REQ-SEV-18).
+
+    Bucketing is per item, never per subtree -- that is what lets a Done
+    sub-row archive while its still-active parent stays in the live file.
+    """
+    buckets = {}
+    for it in items or []:
+        if it.status in TERMINAL and it.closed:
+            buckets.setdefault(it.closed, []).append(it)
+    return buckets
+
+
+def render_archive(existing_text, items, month=None, titles_by_id=None, all_items=None):
+    """Splice one month's archive tables into its file -- one per section.
+
+    Each archive file is hand-written with TWO tables (`## Business Features`
+    and `## Dev Cycle Craft`), so it carries TWO generated regions. Splitting
+    them is what keeps the `## Dev Cycle Craft` heading -- hand-written prose --
+    OUTSIDE every fence, where regeneration preserves it byte-for-byte
+    (REQ-SEV-14/20). A single flat region would have swallowed it.
+
+    `month` is accepted for call-site clarity and future header rendering; each
+    table body is a pure function of the items routed to it.
+
+    `all_items` is the pool used to resolve an item's section through its parent
+    chain; it defaults to `items`, and the item's own folder prefix is the
+    fallback, so the common case needs no extra argument from the caller.
+    """
+    items = list(items or [])
+    pool = list(all_items) if all_items else items
+    titles_by_id = titles_by_id or {}
+
+    by_region = dict((region, []) for _section, region in ARCHIVE_REGIONS)
+    for it in items:
+        by_region[_archive_region_of(it, pool)].append(it)
+
+    out = existing_text
+    for _section, region in ARCHIVE_REGIONS:
+        body = render_table(
+            by_region[region], head=TABLE_HEAD_ARCHIVE, archived=True,
+            titles_by_id=titles_by_id,
+        )
+        out = splice(out, region, body)
+    return out
+
+
+def _archive_region_of(item, all_items):
+    """Which archive region an item belongs in. Never guesses -- raises instead.
+
+    A row that cannot be placed must fail loudly: silently dropping it would
+    lose an archived BUG-NNN from the only file `grep` can still find it in
+    (REQ-SEV-18).
+    """
+    section = _section_of(item, all_items) or _section_from_path(item.rel_path)
+    for candidate, region in ARCHIVE_REGIONS:
+        if section == candidate:
+            return region
+    raise RenderError(
+        "cannot resolve archive section for '{0}' ({1}) -- give it a `section:` "
+        "or a parent that has one".format(item.id or "<no id>", item.rel_path)
+    )
+
+
+def _section_from_path(rel_path):
+    """Fallback section: the folder an item lives in already names its section."""
+    parts = [p for p in (rel_path or "").split("/") if p]
+    if parts and parts[0] in ARCHIVE_SECTIONS:
+        return parts[0]
+    return None
+
+
+def _section_of(item, all_items):
+    """Resolve an item's section by walking up its parent chain."""
+    by_id = dict((i.id, i) for i in all_items if i.id)
+    node = item
+    guard = 0
+    while node is not None and guard < 50:
+        if node.section:
+            return node.section
+        node = by_id.get(node.parent) if node.parent else None
+        guard += 1
+    return None
