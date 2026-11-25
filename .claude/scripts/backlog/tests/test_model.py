@@ -19,11 +19,11 @@ def item(**over):
         "title": "A title",
         "status": PENDING,
         "target": "2026-07-21",
-        "section": "DevCycleCraft",
+        "section": "cross-cutting",
         "goal": "Do the thing.",
     }
     keys.update(over)
-    path = keys.pop("_path", "DevCycleCraft/feat/")
+    path = keys.pop("_path", "cross-cutting/feat/")
     return Item.from_frontmatter(keys, path)
 
 
@@ -80,7 +80,7 @@ class ValidateTests(unittest.TestCase):
         self.assertTrue(any("Minor" in e for e in errors))
 
     def test_duplicate_id_is_an_error(self):
-        errors = validate([item(id="BUG-050"), item(id="BUG-050", _path="DevCycleCraft/other/")])
+        errors = validate([item(id="BUG-050"), item(id="BUG-050", _path="cross-cutting/other/")])
         self.assertTrue(any("duplicate" in e.lower() for e in errors))
 
     def test_parent_naming_no_item_is_an_error(self):
@@ -88,16 +88,16 @@ class ValidateTests(unittest.TestCase):
         self.assertTrue(any("parent" in e for e in errors))
 
     def test_missing_required_key_is_an_error(self):
-        keys = {"id": "X", "status": PENDING, "target": "2026-07-21", "section": "DevCycleCraft"}
-        errors = validate([Item.from_frontmatter(keys, "DevCycleCraft/f/")])
+        keys = {"id": "X", "status": PENDING, "target": "2026-07-21", "section": "cross-cutting"}
+        errors = validate([Item.from_frontmatter(keys, "cross-cutting/f/")])
         self.assertTrue(any("title" in e for e in errors))
 
     def test_bad_target_is_an_error(self):
         self.assertTrue(any("target" in e for e in validate([item(target="July")])))
 
     def test_error_message_names_the_path(self):
-        errors = validate([item(status="banana", _path="DevCycleCraft/thing/")])
-        self.assertIn("DevCycleCraft/thing/", errors[0])
+        errors = validate([item(status="banana", _path="cross-cutting/thing/")])
+        self.assertIn("cross-cutting/thing/", errors[0])
 
     def test_separator_needs_no_goal_or_status(self):
         keys = {"id": "mvp", "title": "🏁 **MVP release**", "target": "2026-06",
@@ -149,12 +149,12 @@ class OrderTests(unittest.TestCase):
 
     def test_children_follow_their_parent(self):
         p = item(id="p", target="2026-07-01")
-        c = item(id="c", target="2026-01-01", parent="p", _path="DevCycleCraft/feat/bugs/x/")
+        c = item(id="c", target="2026-01-01", parent="p", _path="cross-cutting/feat/bugs/x/")
         other = item(id="z", target="2026-08-01")
         self.assertEqual([i.id for i in order_items([other, c, p])], ["p", "c", "z"])
 
     def test_depth_comes_from_path(self):
-        c = item(id="c", parent="p", _path="DevCycleCraft/feat/bugs/2026-07-21-BUG-1-x/")
+        c = item(id="c", parent="p", _path="cross-cutting/feat/bugs/2026-07-21-BUG-1-x/")
         self.assertEqual(c.depth, 1)
 
 

@@ -216,7 +216,7 @@ SCOPE_CENSUS = [
     ("PersonService", "SearchPersonsStartsWithAsync"),
     ("SongService", "GetSongByIdAsync"),
     ("BackupService", "GetHistoryAsync"),
-    ("VenueService", "GetPagedVenuesForListAsync"),
+    ("ProjectService", "GetPagedProjectsForListAsync"),
     ("PersonService", "GetPagedPersonsForListAsync"),
     ("SongService", "GetPagedSongsForListAsync"),
     ("SongService", "ExistsByTitleForArtistAsync"),

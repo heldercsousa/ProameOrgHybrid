@@ -190,7 +190,7 @@ A ping is a 30-second edit — never batch pings "for later"; later may not come
 **Branch / worktree:** <branch> / <.claude/worktrees/name or main tree>
 **Step:** <N of M> — last completed: <one line> — now attempting: <one line>
 **Build/test state:** <last known: build 0 errors | test failure X | not yet run>
-**Next command:** <the literal next command or edit, e.g. "dotnet test after fixing VenueServiceTests.Save_...">
+**Next command:** <the literal next command or edit, e.g. "dotnet test after fixing ProjectServiceTests.Save_...">
 
 **Context manifest (read ONLY these to resume — no Glob):**
 - `path/to/file` — <why: e.g. "the file being edited; method Foo half-done">

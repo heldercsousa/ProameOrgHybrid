@@ -537,7 +537,7 @@ class ArchiveSectionResolutionTests(unittest.TestCase):
         # so the parent chain could not be walked and resolution silently fell
         # through to the folder prefix -- which here says the WRONG section.
         write(os.path.join(self.mgmt, "BusinessFeatures", "host", "README.md"),
-              readme(id="F-9", title="Craft Feature", section="DevCycleCraft"))
+              readme(id="F-9", title="Craft Feature", section="cross-cutting"))
         write(os.path.join(self.mgmt, "BusinessFeatures", "host", "bugs",
                            "2026-07-21-BUG-001-x", "README.md"),
               readme(id="BUG-001", title="BUG-001: boom (Major)", severity="Major",
@@ -552,7 +552,7 @@ class ArchiveSectionResolutionTests(unittest.TestCase):
 
     def test_archived_child_inherits_a_parent_closed_in_a_different_month(self):
         write(os.path.join(self.mgmt, "BusinessFeatures", "host", "README.md"),
-              readme(id="F-9", title="Craft Feature", section="DevCycleCraft",
+              readme(id="F-9", title="Craft Feature", section="cross-cutting",
                      status="✅ Done", closed="2026-06"))
         write(os.path.join(self.mgmt, "BusinessFeatures", "host", "bugs",
                            "2026-07-21-BUG-001-x", "README.md"),
@@ -623,14 +623,14 @@ class ArchiveSectionResolutionTests(unittest.TestCase):
         # emit a repo-relative path, `_section_from_path` becomes dead code and
         # the third resolution step silently disappears -- this test fails first.
         import render
-        write(os.path.join(self.mgmt, "DevCycleCraft", "craft", "README.md"),
-              readme(id="F-8", title="Craft", section="DevCycleCraft"))
+        write(os.path.join(self.mgmt, "cross-cutting", "craft", "README.md"),
+              readme(id="F-8", title="Craft", section="cross-cutting"))
         items, errors = backlog_gen.walk(self.root)
         self.assertEqual(errors, [])
         paths = [i.rel_path for i in items]
-        self.assertIn("DevCycleCraft/craft/", paths)
+        self.assertIn("cross-cutting/craft/", paths)
         self.assertEqual(
-            render._section_from_path("DevCycleCraft/craft/"), "DevCycleCraft")
+            render._section_from_path("cross-cutting/craft/"), "cross-cutting")
 
 
 class SnapshotTests(unittest.TestCase):

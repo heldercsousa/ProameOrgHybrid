@@ -70,7 +70,7 @@ The spec is the authoritative description of intended behavior. When spec and co
 **Any work identified during a session that is not already registered must get an item folder before proceeding.**
 
 This applies to:
-- A new DevCycleCraft activity (tooling change, process rule, infrastructure work)
+- A new cross-cutting activity (tooling change, process rule, infrastructure work)
 - A business feature idea mentioned in conversation (even informally)
 - A significant constraint, investigation, or one-off fix that took material effort
 
@@ -81,7 +81,7 @@ This applies to:
 ```bash
 python .claude/scripts/backlog/backlog_gen.py register \
     --parent <parent-id> --kind <bug|change> [--severity <Critical|Major|Minor>] \
-    --title "…" --goal "…" [--gate "…"] [--section BusinessFeatures|DevCycleCraft]
+    --title "…" --goal "…" [--gate "…"] [--section BusinessFeatures|cross-cutting]
 ```
 
 `--parent`, `--kind`, `--title` and `--goal` are required. `--kind` accepts **only `bug` or
@@ -97,7 +97,7 @@ directly in the frontmatter — `register` has no `--status` flag; `backlog_gen.
 **Trigger questions** (ask at any point in a session):
 - "Does what I'm about to do have an item folder?" (`backlog_gen.py query` to check)
 - "Did Helder mention a feature or idea that has no BACKLOG row?"
-- "Did I discover a process gap that warrants a DevCycleCraft entry?"
+- "Did I discover a process gap that warrants a cross-cutting entry?"
 
 If the answer is "no" to the first, or "yes" to the others → add the entry, then proceed.
 

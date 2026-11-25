@@ -189,7 +189,7 @@ implementor; there is no partial qualification.
 
 **Opt-in is explicit.** Before editing, the orchestrator (a) writes `<worktree>/.itf-active` —
 worktree root, never repo root — and (b) logs one line in the feature's `task-log.md`:
-`ITF: BUG-050 — SongFormPage.razor.cs — root cause: SelectArtist omits IsArtistLocked = true — expected 1 line.`
+`ITF: BUG-050 — OfferFormPage.razor.cs — root cause: SelectArtist omits IsArtistLocked = true — expected 1 line.`
 The orchestrator **deletes the marker as the final step of the ITF commit**; a 30-minute expiry is
 the safety net for a dead session.
 
@@ -203,4 +203,4 @@ are prose rules auditable after the fact via the task-log lines and the commit t
 
 **Applies to the orchestrator only.** Implementor subagents are never constrained by ITF bounds.
 
-Full rationale, decisions, and Guard 3 design: `DevCycleCraft/inline-trivial-fix/`.
+Full rationale, decisions, and Guard 3 design: `cross-cutting/inline-trivial-fix/`.

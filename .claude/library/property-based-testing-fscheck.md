@@ -33,7 +33,7 @@ global using FsCheck.Xunit;
 
 ```csharp
 [Property]
-public Property CreateVenueAsync_NameWithinLimit_AlwaysSucceeds(string name)
+public Property CreateProjectAsync_NameWithinLimit_AlwaysSucceeds(string name)
 {
     // Generate names that are 1–30 chars (within valid range)
     return Prop.ForAll(
@@ -43,7 +43,7 @@ public Property CreateVenueAsync_NameWithinLimit_AlwaysSucceeds(string name)
             _repoMock.Setup(r => r.ExistsByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(false);
             var sut = CreateSut();
-            var (success, _, _) = await sut.CreateVenueAsync(name.Value);
+            var (success, _, _) = await sut.CreateProjectAsync(name.Value);
             return success;
         });
 }
@@ -71,4 +71,4 @@ public Property ValidateNameInput_NameExceedsLimit_AlwaysInvalid()
 
 ---
 
-> **Authorship note:** This file must be human-reviewed before it is relied upon (CLAUDE.md § Continuous Enhancement — Authorship).
+> **Authorship note:** This file must be human-reviewed before it is relied upon (see `library/authorship-log.md`).

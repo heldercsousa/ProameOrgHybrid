@@ -136,7 +136,7 @@ fi
 # --- Ledger row-length gate ---
 # LEDGER.md is read at every session start; a multi-thousand-character row
 # costs tokens on every read. Deterministic length check, so safe to block on.
-# Rule + limit: `.claude/commands/sln-ledger.md § Row-length rule`.
+# Rule + limit: `.claude/commands/pro-ledger.md § Row-length rule`.
 if printf '%s
 ' "$STAGED" | grep -Eq '^Docs/Management/LEDGER\.md$'; then
   echo "pre-commit: LEDGER.md staged — checking row lengths..."

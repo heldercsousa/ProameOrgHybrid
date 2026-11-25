@@ -11,21 +11,21 @@
 **Do NOT:** start EF Core, connect to PostgreSQL, or test repository implementation here.
 
 ```csharp
-public sealed class VenueServiceTests
+public sealed class ProjectServiceTests
 {
-    private readonly Mock<IVenueRepository> _repo = new();
-    private VenueService CreateSut() => new(_repo.Object);
+    private readonly Mock<IProjectRepository> _repo = new();
+    private ProjectService CreateSut() => new(_repo.Object);
 
     [Fact]
-    // [AC] REQ-VENUE-03: a duplicate name is rejected with a message
-    public async Task CreateVenueAsync_DuplicateName_ReturnsFailure()
+    // [AC] REQ-PROJ-01: a duplicate name is rejected with a message
+    public async Task CreateProjectAsync_DuplicateName_ReturnsFailure()
     {
         _repo.Setup(r => r.ExistsByNameAsync("Centro", It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-        var (success, message, venue) = await CreateSut().CreateVenueAsync("Centro", CancellationToken.None);
+        var (success, message, project) = await CreateSut().CreateProjectAsync("Centro", CancellationToken.None);
 
         Assert.False(success);
-        Assert.Null(venue);
+        Assert.Null(project);
         Assert.NotEmpty(message);
     }
 }
@@ -39,14 +39,14 @@ public sealed class VenueServiceTests
 
 ```csharp
 [Fact]
-// [AC] REQ-VENUE-07: the list shows a skeleton until the first page is loaded
-public void Venues_WhileLoading_ShowsSkeleton()
+// [AC] REQ-PROJ-07: the list shows a skeleton until the first page is loaded
+public void Projects_WhileLoading_ShowsSkeleton()
 {
     using var ctx = new TestContext();
     ctx.Services.AddMudServices();
-    ctx.Services.AddSingleton<IVenueClient>(new FakeVenueClient(delay: true));
+    ctx.Services.AddSingleton<IProjectClient>(new FakeProjectClient(delay: true));
 
-    var cut = ctx.Render<VenuesPage>();
+    var cut = ctx.Render<ProjectsPage>();
 
     Assert.NotEmpty(cut.FindComponents<MudSkeleton>());
 }
@@ -59,15 +59,15 @@ public void Venues_WhileLoading_ShowsSkeleton()
 **What:** real EF Core + Npgsql against a PostgreSQL container. Verifies queries, indexes, collation/`citext`/`unaccent` behaviour, unique constraints, and entity configuration.
 
 ```csharp
-public sealed class VenueRepositoryTests(PostgresFixture db) : IClassFixture<PostgresFixture>
+public sealed class ProjectRepositoryTests(PostgresFixture db) : IClassFixture<PostgresFixture>
 {
     [Fact]
-    // [AC] REQ-VENUE-12: search ignores case and accents
+    // [AC] REQ-PROJ-12: search ignores case and accents
     public async Task Search_IsCaseAndAccentInsensitive()
     {
         await using var context = db.CreateContext();
-        var repo = new VenueRepository(context);
-        context.Venues.Add(new Venue { Name = "Ação Social" });
+        var repo = new ProjectRepository(context);
+        context.Projects.Add(new Project { Name = "Ação Social" });
         await context.SaveChangesAsync();
 
         var results = await repo.SearchAsync("acao social", CancellationToken.None);
@@ -77,7 +77,7 @@ public sealed class VenueRepositoryTests(PostgresFixture db) : IClassFixture<Pos
 }
 ```
 
-**Why real PostgreSQL and not EF InMemory:** the in-memory provider does not replicate `ILIKE`, `citext`, `unaccent`, or transaction and constraint behaviour. Repository tests must run against PostgreSQL to catch those bugs.
+**Why real PostgreSQL and not EF InMemory:** the in-memory provider does not replicate `ILIKE`, `citext`, `unaccent`, or transaction and constraint behaviour. Repository tests must run against PostgreSQL to catch those bugs. An accent-insensitive search test must exercise the mapped `immutable_unaccent` DbFunction (or the nondeterministic ICU collation) and assert that `Ação` matches `acao`; `EF.Functions.ILike` alone is case-insensitive only and must not be asserted to match accents.
 
 ### Infrastructure: `PostgresFixture`
 

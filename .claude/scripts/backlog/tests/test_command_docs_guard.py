@@ -451,7 +451,7 @@ class CommandDocsGuardTests(unittest.TestCase):
             "```bash\n"
             "python .claude/scripts/backlog/backlog_gen.py register \\\n"
             "    --parent <parent-id> --kind <bug|change> [--severity <Critical|Major|Minor>] \\\n"
-            "    --title \"...\" --goal \"...\" [--gate \"...\"] [--section BusinessFeatures|DevCycleCraft]\n"
+            "    --title \"...\" --goal \"...\" [--gate \"...\"] [--section BusinessFeatures|cross-cutting]\n"
             "```\n"
         )
         results = scan_and_validate(fixture, self.parser_map)

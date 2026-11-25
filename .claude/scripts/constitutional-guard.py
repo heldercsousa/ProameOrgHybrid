@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 """PreToolUse blocking guard for constitutional + workflow HARD RULEs.
 
-Guard 1 (branch guard, added 2026-07-14): blocks a Write/Edit to a
-.cs / .xaml / .xaml.cs file while the file's checkout is on develop or main.
-Code work happens in git worktrees on task branches (workflow.md Rule 2);
-develop is the docs + integration branch. Worktree edits pass automatically
-(their checkout is on a task branch).
+Guard 1 (branch guard, added 2026-07-14): blocks a Write/Edit to a code file
+(.cs / .xaml / .xaml.cs / .razor / .razor.cs / .razor.css) while the file's
+checkout is on develop or main. Code work happens in git worktrees on task
+branches (workflow.md Rule 2); develop is the docs + integration branch.
+Worktree edits pass automatically (their checkout is on a task branch).
 
 Guard 2: blocks a Write/Edit that would INTRODUCE a native-dialog call into a
-.cs / .xaml / .xaml.cs file. Native dialogs (DisplayAlert / DisplayActionSheet
-/ DisplayPromptAsync) are forbidden by CLAUDE.md
-(Constitutional Constraints -> Native dialogs, [Unamendable]). Use dx:BottomSheet.
+code file. Native dialogs (MAUI DisplayAlert / DisplayActionSheet /
+DisplayPromptAsync, and JS alert / confirm / prompt reached through
+IJSRuntime.InvokeAsync / InvokeVoidAsync in .razor / .razor.cs / .razor.css) are
+forbidden by CLAUDE.md (Constitutional Constraints -> Native dialogs,
+[Unamendable]). Use MudDialog / MudMessageBox via IDialogService.
 
 Guard 3 (ITF bounds, added 2026-07-21): enforces the Inline Trivial Fix lane's
 mechanical conditions (C1 / C3 / C4 / C5 -- workflow.md Rule 2 "Inline Trivial
@@ -18,7 +20,7 @@ Fix (ITF) lane"). It is INERT unless a declaration marker `.itf-active` exists
 at the root of the worktree containing the edited file. Without a marker the
 lane is not entered and no ITF bound applies to anyone -- which is what keeps
 implementor subagents unconstrained (AC-ITF-10). Full spec:
-Docs/Management/DevCycleCraft/inline-trivial-fix/.
+Docs/Management/cross-cutting/inline-trivial-fix/.
 
 Design notes:
 - Only the NEW text is scanned (Write.content or Edit.new_string), so the guard
@@ -39,8 +41,18 @@ from datetime import datetime, timedelta, timezone
 
 # Call-form patterns: the API name followed by an opening paren.
 _FORBIDDEN = re.compile(r"\bDisplay(?:Alert|ActionSheet|PromptAsync)\s*\(")
-_CODE_SUFFIXES = (".cs", ".xaml", ".xaml.cs")
+_CODE_SUFFIXES = (".cs", ".xaml", ".xaml.cs", ".razor", ".razor.cs", ".razor.css")
+_RAZOR_SUFFIXES = (".razor", ".razor.cs", ".razor.css")
 _PROTECTED_BRANCHES = {"develop", "main"}
+
+# JS dialogs reached through IJSRuntime (Blazor). Matches the dialog name as the
+# first argument (`InvokeVoidAsync("alert", ...)`, `window.confirm`), or the
+# dialog call smuggled inside an eval string (`InvokeVoidAsync("eval", "alert(...")`).
+# Checked only in _RAZOR_SUFFIXES files.
+_JS_DIALOG = re.compile(
+    r"\bInvoke(?:Void)?Async\s*(?:<[^>]*>)?\s*\(\s*"
+    r"(?:\"(?:window\.)?(?:alert|confirm|prompt)\"|"
+    r"\"eval\"\s*,\s*\"(?:window\.)?(?:alert|confirm|prompt)\s*\()")
 
 # ---------------------------------------------------------------------------
 # Guard 3 (ITF) constants
@@ -68,12 +80,17 @@ _ITF_GOVERNED_COMPONENTS = {
 # `.claude/rules/workflow.md` Rule 2 § Sequential-only file registry.
 # Split 2026-11-03 (AC-ADR-03..05): the SOFT set is ITF-eligible when the
 # declaration asserts `"sole_writer": true` (no other live writer — checked by
-# the orchestrator, see `/sln-itf`); the HARD set (plus any `Migrations/` file)
+# the orchestrator, see `/pro-itf`); the HARD set (plus any `Migrations/` file)
 # never is. AppShell.xaml(.cs) stay listed here although C3 already blocks them.
+# MauiProgram.cs is the MAUI head's composition root; Program.cs (Web, Api) is
+# the equivalent for the other heads. The MudTheme definition file has no fixed
+# file name, so it cannot be matched by name here (open gap, reported to Helder).
 _ITF_SEQUENTIAL_SOFT = {
     "MauiProgram.cs",
+    "Program.cs",
     "GlobalUsings.cs",
     "Directory.Build.props",
+    "Directory.Packages.props",
 }
 _ITF_SEQUENTIAL_HARD = {
     "AppShell.xaml",
@@ -266,7 +283,7 @@ def _itf_guard(file_path: str, tool_input: dict) -> int:
                 f"`{name}` is sequential-only; it is ITF-eligible only when the "
                 f"declaration sets `\"sole_writer\": true` after the sole-writer "
                 f"check.",
-                "`.claude/commands/sln-itf.md` step 2")
+                "`.claude/commands/pro-itf.md` step 2")
 
         lines = _changed_lines(tool_input)
         if lines > _ITF_MAX_LINES:
@@ -305,6 +322,7 @@ def main() -> int:
         if isinstance(edit, dict) and isinstance(edit.get("new_string"), str):
             fragments.append(edit["new_string"])
 
+    is_razor = file_path.endswith(_RAZOR_SUFFIXES)
     for text in fragments:
         m = _FORBIDDEN.search(text)
         if m:
@@ -315,11 +333,28 @@ def main() -> int:
                 f"Native dialogs (DisplayAlert / DisplayActionSheet / DisplayPromptAsync) "
                 f"are forbidden — they bypass the app theme, violate MD3 interaction "
                 f"patterns, and are not back-gesture dismissible on Android.\n"
-                f"Use `dx:BottomSheet` instead — see the `myvocalist-coding` skill "
-                f"(dialogs-validation.md). This constraint requires architecture review "
-                f"to change; it cannot be relaxed at session level.\n"
+                f"Use MudDialog / MudMessageBox via injected IDialogService instead — see "
+                f"the `proame-coding` skill (dialogs-validation.md). This constraint "
+                f"requires architecture review to change; it cannot be relaxed at "
+                f"session level.\n"
             )
             return 2  # deny the tool call
+        if is_razor:
+            jm = _JS_DIALOG.search(text)
+            if jm:
+                sys.stderr.write(
+                    f"BLOCKED — constitutional constraint (CLAUDE.md, [Unamendable]).\n"
+                    f"This edit introduces a JS dialog through IJSRuntime "
+                    f"(`{jm.group(0)[:60]}...`) into {file_path}.\n"
+                    f"JS alert / confirm / prompt are native browser dialogs: they bypass "
+                    f"the app theme, break MD3 interaction patterns and cannot be "
+                    f"styled or tested.\n"
+                    f"Use MudDialog / MudMessageBox via injected IDialogService instead — see "
+                    f"the `proame-coding` skill (dialogs-validation.md). This constraint "
+                    f"requires architecture review to change; it cannot be relaxed at "
+                    f"session level.\n"
+                )
+                return 2  # deny the tool call
 
     # Guard 3 runs last: an ITF declaration must never smuggle a develop-branch
     # edit or a native dialog past Guards 1-2.

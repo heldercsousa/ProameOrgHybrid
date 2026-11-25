@@ -1,7 +1,7 @@
 
 # Project Governance — Reference
 
-> Extracted verbatim from `CLAUDE.md` (2026-07-07, rules-file-refactoring Task 16 / audit R5). CLAUDE.md keeps the constitutional constraints, authority hierarchies, and routing inline; this file holds the rationale/procedure narrative. Consult it when questioning why SDD applies, running the Continuous Enhancement loop or a Constitutional Audit, or re-evaluating tooling.
+> Extracted verbatim from `CLAUDE.md` (2026-07-07, rules-file-refactoring Task 16 / audit R5). CLAUDE.md keeps the constitutional constraints, authority hierarchies, and routing inline; this file holds the rationale/procedure narrative. Consult it when questioning why SDD applies, running the enhancement loop or a Constitutional Audit, or re-evaluating tooling.
 
 ---
 
@@ -19,7 +19,7 @@ This means:
 
 Exception: Bug fixes, cosmetic changes, and one-off scripts remain spec-exempt (see `workflow.md` bypass rule).
 
-## Continuous Enhancement — full procedure
+## Enhancement loop — full procedure
 
 CLAUDE.md, rules, hooks and commands are a living system — not a fixed set.
 After every task, always ask:
@@ -62,12 +62,11 @@ Before proposing anything that touches UI, styles, or components, inspect ALL of
 ## Docs/ layout — examples and detail
 
 **Example resolutions:**
-- New business feature `Queue Management` → `Docs/Management/BusinessFeatures/queue-management/`
-- New dev-cycle activity → `Docs/Management/DevCycleCraft/[name]/`
-- Sub-feature nested under Artists & Songs → `Docs/Management/BusinessFeatures/artists-songs/[sub-feature]/`
+- New business feature `Project Signups` → `Docs/Management/BusinessFeatures/project-signups/`
+- New dev-cycle activity → `Docs/Management/cross-cutting/[name]/`
+- Sub-feature nested under Projects → `Docs/Management/BusinessFeatures/projects/[sub-feature]/`
 
 **Excluded from glob scans (access by explicit path only; `.claudeignore`-enforced):**
-- `Docs/Management/DevCycleCraft/sdd/**` — SDD theory, 96 files (spec-, plan-, impl- prefixes), reference material only
 - `Docs/Plans/**` — legacy plans folder
 
 ## Tool Selection
@@ -81,7 +80,7 @@ Before proposing anything that touches UI, styles, or components, inspect ALL of
 
 ---
 
-> **Authorship note:** This file must be human-reviewed before it is relied upon (CLAUDE.md § Continuous Enhancement — Authorship).
+> **Authorship note:** This file must be human-reviewed before it is relied upon (see `library/authorship-log.md`).
 
 ## Constitutional constraints — rationale *(moved from CLAUDE.md 2026-11-03)*
 
@@ -117,7 +116,7 @@ resolve with Helder first.
   in `settings.json`. `csharp-nullable-reference-types` is deliberately excluded — its adoption waits for the open nullable decision
   (`code-style-reference.md § Nullable Reference Types`).
 
-**Per-layer lookup table** (the "Skill & MCP Lookup" step):
+**Per-layer lookup table** (the "MCP & Skills" step):
 
 | Work | Look up |
 |------|---------|
@@ -139,8 +138,7 @@ User-preference overrides apply to superpowers skill *defaults* (folder location
 - `brainstorming`'s HARD-GATE ("design approval before ANY code, including a config change") does not
   override `workflow.md`'s ceremony table — typo / cosmetic / single-file bug fix need no spec.
 - `test-driven-development`'s Iron Law is deliberately not enabled and does not override `testing.md`'s
-  risk-tiered TDD (Level C has no mandatory test). See `.claude/settings.json § skillOverrides`. Evidence:
-  `Docs/Management/DevCycleCraft/rules-file-refactoring/skill-overlap-findings.md § Conflicts #1–#2`.
+  risk-tiered TDD (Level C has no mandatory test). See `.claude/settings.json § skillOverrides`.
 
 **Rule layering.** Lower layers only strengthen upper ones: Global `~/.claude/CLAUDE.md` → Project
 `./CLAUDE.md` → Modular `.claude/rules/*.md` → Local `.claude/CLAUDE.local.md` (gitignored, testing only).
@@ -155,4 +153,4 @@ reviews GitHub PRs.
 Moved here from `CLAUDE.md § App` on 2026-11-15.
 
 - **Planned, not registered:** MediatR · FluentValidation.
-- **Post-MVP, under evaluation:** Blazor Hybrid + MudBlazor + shared RCL (`Docs/Management/DevCycleCraft/UI-2nd-refactor/`).
+- **Stack decision:** `Docs/Benchmark/benchmark.md` (MAUI Blazor Hybrid + Blazor Web App, shared RCL `Proame.UI`, MudBlazor, PostgreSQL).

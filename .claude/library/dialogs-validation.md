@@ -5,7 +5,7 @@
 ## Non-Negotiable: No Native Dialogs
 
 Use **only** MudBlazor for dialogs, confirmations and prompts:
-- `MudMessageBox` (static `Show`) for confirmations and destructive actions.
+- `MudMessageBox` via the injected `IDialogService` (instance call `DialogService.ShowMessageBox(...)`, not a static `Show`) for confirmations and destructive actions. Verify the signature against the MudBlazor MCP at the manifest version.
 - `MudDialog` (service `IDialogService`) for modal forms and pickers that return a result.
 - `MudSnackbar` for non-blocking feedback (saved, copied, failed-but-retryable).
 

@@ -101,7 +101,7 @@ If spec drift is found: update the spec files in the same commit as the code. Ne
 - [ ] 🔴 **Behavioral contracts:** every validation rule in the spec (name length, uniqueness, required fields) has a corresponding branch in the service + a unit test for the failure path
 - [ ] 🟡 **Permission/security rules:** access gates documented in `design.md` exist in the service
 - [ ] 🟡 **Suppression audit:** any `#pragma warning disable`, `// ReSharper disable`, or `[SuppressMessage]` added in this task has a comment explaining why and is logged in `.claude/exception-registry.md`
-- [ ] 🟡 **Scope conflict check:** if this task and another recent task both touch the same domain entity (e.g., Venue, Singer, Queue), verify the changes compose without silent incompatibility (interface change + caller change in sync)
+- [ ] 🟡 **Scope conflict check:** if this task and another recent task both touch the same domain entity (e.g., Project, Signup, Queue), verify the changes compose without silent incompatibility (interface change + caller change in sync)
 
 ### 12. Spec-Code Consistency
 - [ ] 🟡 Does the implementation match the feature's `design.md`? Check key interfaces, data flow, and validation rules. *(See §6 for interface signature check; see §6 Spec Consistency for the canonical spec-vs-code check)*

@@ -51,7 +51,7 @@ For tasks that implement user-facing behavior, include an **AC traceability matr
 ### AC traceability
 | AC ID | Criterion (short) | Implementation location | Test method |
 |-------|-------------------|------------------------|-------------|
-| AC-1 | Singer added appears in queue | VenueService.AddSingerAsync | AddSingerAsync_ValidInput_ReturnsSuccess |
+| AC-1 | Signup added appears in queue | ProjectService.AddSignupAsync | AddSignupAsync_ValidInput_ReturnsSuccess |
 ```
 
 Missing rows = missing tests = incomplete feature.

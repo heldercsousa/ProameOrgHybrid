@@ -43,12 +43,12 @@ All **new** CRUD list pages use the shared list component in `Proame.UI` (propos
 ### Page skeleton (reference, to be validated by the first feature)
 
 ```razor
-@page "/admin/venues"
+@page "/admin/projects"
 @attribute [Authorize]
 
 <PageTitle>Locais</PageTitle>
 
-<CrudList TItem="VenueListItemDto"
+<CrudList TItem="ProjectListItemDto"
           Query="LoadPageAsync"
           OnAdd="NavigateToAdd"
           OnEdit="NavigateToEdit"
@@ -63,9 +63,9 @@ All **new** CRUD list pages use the shared list component in `Proame.UI` (propos
 ```
 
 ```csharp
-// Venues.razor.cs — the page's only data code
-private Task<GridData<VenueListItemDto>> LoadPageAsync(GridState<VenueListItemDto> state, CancellationToken ct)
-    => Venues.ListAsync(state.Page, state.PageSize, state.SortDefinitions, ct);
+// Projects.razor.cs — the page's only data code
+private Task<GridData<ProjectListItemDto>> LoadPageAsync(GridState<ProjectListItemDto> state, CancellationToken ct)
+    => Projects.ListAsync(state.Page, state.PageSize, state.SortDefinitions, ct);
 ```
 
 - The API returns `(items, total)`; `Proame.Contracts` holds the page size constant (`code-style-reference.md § Pagination`).

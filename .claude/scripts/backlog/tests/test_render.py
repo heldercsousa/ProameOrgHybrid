@@ -223,7 +223,7 @@ class ArchiveTests(unittest.TestCase):
 
     def test_superseded_status_cell_reconstructs_closed_suffix(self):
         from render import render_archive
-        s = item(id="s", title="Old venues plan", status=SUPERSEDED,
+        s = item(id="s", title="Old projects plan", status=SUPERSEDED,
                  closed="2026-07", section="BusinessFeatures")
         out = render_archive(self.template, [s], "2026-07", {})
         self.assertIn(
@@ -234,7 +234,7 @@ class ArchiveTests(unittest.TestCase):
     def test_duplicate_status_cell_reconstructs_closed_suffix(self):
         from render import render_archive
         d = item(id="d", title="Dup bug", status=DUPLICATE, closed="2026-07",
-                 section="DevCycleCraft", _path="DevCycleCraft/f/")
+                 section="cross-cutting", _path="cross-cutting/f/")
         out = render_archive(self.template, [d], "2026-07", {})
         self.assertIn(
             "\U0001F535 Duplicate (closed 2026-07)",
@@ -261,7 +261,7 @@ class ArchiveTests(unittest.TestCase):
         from render import render_archive
         child = item(id="BUG-048", title="BUG-048: pagination reloads (Major)",
                      status="✅ Done", closed="2026-07", parent="p",
-                     _path="DevCycleCraft/f/bugs/2026-07-21-BUG-048-x/")
+                     _path="cross-cutting/f/bugs/2026-07-21-BUG-048-x/")
         out = render_archive(self.template, [child], "2026-07", {"p": "Parent Feature"})
         self.assertIn("BUG-048", out)
         self.assertIn("(under: Parent Feature)", out)
@@ -293,28 +293,28 @@ class ArchiveTests(unittest.TestCase):
 
     def test_business_item_renders_into_the_business_region(self):
         from render import render_archive
-        a = item(id="a", title="Venues CRUD", status="✅ Done", closed="2026-07",
+        a = item(id="a", title="Projects CRUD", status="✅ Done", closed="2026-07",
                  section="BusinessFeatures")
         out = render_archive(self.template, [a], "2026-07", {})
-        self.assertIn("Venues CRUD", _region_body(out, "archive-business"))
-        self.assertNotIn("Venues CRUD", _region_body(out, "archive-craft"))
+        self.assertIn("Projects CRUD", _region_body(out, "archive-business"))
+        self.assertNotIn("Projects CRUD", _region_body(out, "archive-craft"))
 
     def test_craft_item_renders_into_the_craft_region(self):
         from render import render_archive
         a = item(id="a", title="M3 Lists", status="✅ Done", closed="2026-07",
-                 section="DevCycleCraft", _path="DevCycleCraft/m3-lists/")
+                 section="cross-cutting", _path="cross-cutting/m3-lists/")
         out = render_archive(self.template, [a], "2026-07", {})
         self.assertIn("M3 Lists", _region_body(out, "archive-craft"))
         self.assertNotIn("M3 Lists", _region_body(out, "archive-business"))
 
     def test_both_regions_are_spliced_in_one_call(self):
         from render import render_archive
-        b = item(id="b", title="Venues CRUD", status="✅ Done", closed="2026-07",
+        b = item(id="b", title="Projects CRUD", status="✅ Done", closed="2026-07",
                  section="BusinessFeatures")
         c = item(id="c", title="M3 Lists", status="✅ Done", closed="2026-07",
-                 section="DevCycleCraft", _path="DevCycleCraft/m3-lists/")
+                 section="cross-cutting", _path="cross-cutting/m3-lists/")
         out = render_archive(self.template, [b, c], "2026-07", {})
-        self.assertIn("Venues CRUD", _region_body(out, "archive-business"))
+        self.assertIn("Projects CRUD", _region_body(out, "archive-business"))
         self.assertIn("M3 Lists", _region_body(out, "archive-craft"))
 
     def test_dev_cycle_craft_heading_survives_rendering_byte_for_byte(self):
@@ -328,12 +328,12 @@ class ArchiveTests(unittest.TestCase):
     def test_section_is_resolved_through_the_parent_chain(self):
         """A bug folder carries no `section:`; it inherits its parent feature's."""
         from render import render_archive
-        parent = item(id="p", title="Parent Feature", section="DevCycleCraft",
-                      _path="DevCycleCraft/f/")
+        parent = item(id="p", title="Parent Feature", section="cross-cutting",
+                      _path="cross-cutting/f/")
         child = Item.from_frontmatter(
             {"id": "BUG-1", "title": "BUG-1: a bug", "status": "✅ Fixed",
              "target": "2026-07-21", "goal": "Fix it.", "parent": "p", "closed": "2026-07"},
-            "DevCycleCraft/f/bugs/2026-07-21-BUG-1-x/")
+            "cross-cutting/f/bugs/2026-07-21-BUG-1-x/")
         out = render_archive(self.template, [child], "2026-07", {"p": "Parent Feature"},
                              all_items=[parent, child])
         self.assertIn("BUG-1", _region_body(out, "archive-craft"))
@@ -346,7 +346,7 @@ class ArchiveTests(unittest.TestCase):
         child = Item.from_frontmatter(
             {"id": "BUG-2", "title": "BUG-2: a bug", "status": "✅ Fixed",
              "target": "2026-07-21", "goal": "Fix it.", "parent": "p", "closed": "2026-07"},
-            "DevCycleCraft/f/bugs/2026-07-21-BUG-2-x/")
+            "cross-cutting/f/bugs/2026-07-21-BUG-2-x/")
         out = render_archive(self.template, [child], "2026-07", {})
         self.assertIn("BUG-2", _region_body(out, "archive-craft"))
 
@@ -356,7 +356,7 @@ class ArchiveTests(unittest.TestCase):
         orphan = Item.from_frontmatter(
             {"id": "BUG-3", "title": "BUG-3: a bug", "status": "✅ Fixed",
              "target": "2026-07-21", "goal": "Fix it.", "closed": "2026-07"},
-            "cross-cutting/f/bugs/2026-07-21-BUG-3-x/")
+            "NoSuchSection/f/bugs/2026-07-21-BUG-3-x/")
         with self.assertRaises(RenderError):
             render_archive(self.template, [orphan], "2026-07", {})
 
@@ -364,8 +364,8 @@ class ArchiveTests(unittest.TestCase):
         from render import render_archive
         child = item(id="BUG-048", title="BUG-048: pagination reloads (Major)",
                      status="✅ Done", closed="2026-07", parent="p",
-                     section="DevCycleCraft",
-                     _path="DevCycleCraft/f/bugs/2026-07-21-BUG-048-x/")
+                     section="cross-cutting",
+                     _path="cross-cutting/f/bugs/2026-07-21-BUG-048-x/")
         out = render_archive(self.template, [child], "2026-07", {"p": "Parent Feature"})
         body = _region_body(out, "archive-craft")
         self.assertIn("BUG-048", body)
@@ -376,7 +376,7 @@ class ArchiveTests(unittest.TestCase):
         from render import render_archive
         b = item(id="b", status="✅ Done", closed="2026-07", section="BusinessFeatures")
         c = item(id="c", title="Craft", status="✅ Done", closed="2026-07",
-                 section="DevCycleCraft", _path="DevCycleCraft/c/")
+                 section="cross-cutting", _path="cross-cutting/c/")
         once = render_archive(self.template, [b, c], "2026-07", {})
         self.assertEqual(once, render_archive(once, [b, c], "2026-07", {}))
 

@@ -1,7 +1,7 @@
 """Ledger row-length guard.
 
 Docs/Management/LEDGER.md is read at every session start, so each table row must stay
-one short status line (see `/sln-ledger § Row-length rule`). Detail belongs in the item's
+one short status line (see `/pro-ledger § Row-length rule`). Detail belongs in the item's
 task-log.md / README.md.
 
 Modes:

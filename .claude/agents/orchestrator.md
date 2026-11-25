@@ -168,7 +168,7 @@ Before dispatching any subagent (for any task), run through this checklist. A wa
 - [ ] Each subagent briefing includes a role scope block (Role, Scope, Files owned, Files off-limits, Spec source)
 - [ ] Each briefing references file paths only — no pasted rule file content
 - [ ] Contracts from the previous wave (if any) are included verbatim in briefings that depend on them
-- [ ] For UI/coding tasks: confirm subagent briefing includes instruction to invoke `proame-coding` skill per CLAUDE.md § Skill & MCP Lookup
+- [ ] For UI/coding tasks: confirm subagent briefing includes instruction to invoke `proame-coding` skill per CLAUDE.md § MCP & Skills
 
 **Failing any item:** Fix the blocker before dispatching. A "we'll sort it out" wave produces proportionally more rework than a well-prepared wave.
 
@@ -321,13 +321,13 @@ After a wave completes, extract the **exact signature** of each new artifact tha
 ```markdown
 ## Contracts from previous wave
 
-### IVenueRepository (new — committed in Wave 1)
-Task<(IEnumerable<VenueListItemDto> items, int totalCount)> GetPagedAsync(
+### IProjectRepository (new — committed in Wave 1)
+Task<(IEnumerable<ProjectListItemDto> items, int totalCount)> GetPagedAsync(
     int pageNumber, int pageSize, string? query, CancellationToken ct);
 Task<bool> ExistsByNameAsync(string name, CancellationToken ct);
 
-### VenueListItemDto (new — committed in Wave 1)
-public record VenueListItemDto(int Id, string Name, int SingerCount);
+### ProjectListItemDto (new — committed in Wave 1)
+public record ProjectListItemDto(int Id, string Name, int SignupCount);
 ```
 
 ---
@@ -602,7 +602,7 @@ When `Model:` is omitted, Sonnet is assumed. Never set `Model: haiku` without ch
 
 ### Gate: first use in each task type
 
-Before encoding Haiku for a new task type in this project, run the task once with Sonnet and once with Haiku and compare outputs. If Haiku output is correct and complete, the type is confirmed eligible. Record confirmed types in `.claude/library/haiku-confirmed-task-types.md` (create on first confirmation).
+Before encoding Haiku for a new task type in this project, run the task once with Sonnet and once with Haiku and compare outputs. If Haiku output is correct and complete, the type is confirmed eligible. Subagents default to haiku per CLAUDE.md § Roles.
 
 ---
 

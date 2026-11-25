@@ -9,7 +9,7 @@ Every acceptance criterion → at least one test. Do not write a test with no AC
 ## Acceptance Criteria Traceability (never-miss — project SDD core)
 
 Every test covering user-facing behavior traces to an AC in `requirements.md`.
-- **Format:** first line of the test's doc/inline comment: `// [AC] REQ-VENUE-03: <criterion>`.
+- **Format:** first line of the test's doc/inline comment: `// [AC] REQ-PROJ-01: <criterion>`.
 - **Rules:** every AC → ≥1 test; one test → one AC (split if more); AC IDs come from the spec (don't invent); infra tests (test database fixtures, builders) are exempt.
 - **Traceability matrix** (AC ID | Criterion | Implementation location | Test method) goes in the task-log at code review (template: `workflow.md` Rule 5). Missing rows = missing tests = incomplete feature.
 
@@ -38,7 +38,6 @@ During Green, the Builder edits **production code only**. Never edit a test to p
 - **Repository and integration tests use real PostgreSQL** via Testcontainers (a throwaway container per test run/fixture), never the EF Core InMemory provider — it does not replicate PostgreSQL behaviour (collation, `ILIKE`, `unaccent`, `pg_trgm`, transactions).
 - **Never mock the DbContext** in repository tests — EF query translation only runs against a real provider.
 - **Service tests use Moq** (no real DB, no HTTP); **Razor component tests use bUnit** with the MudBlazor services registered (`AddMudServices()` in the test context); **never call `NavigationManager` or JS interop directly in component tests** — wrap navigation and browser APIs behind an interface and fake it.
-- **Never test the heads**: `Proame.App` and `Proame.Web` contain no logic; their startup is covered by the UI and API tests.
 
 ## Routing
 

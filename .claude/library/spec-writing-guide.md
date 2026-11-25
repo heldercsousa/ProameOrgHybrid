@@ -68,7 +68,7 @@ Use Given/When/Then for user-facing flows. Use EARS for background rules, constr
 - **Interfaces** — new or modified service/repository interfaces with signatures
 - **Page structure** — screens, navigation flows
 - **Interaction flows** — sequence of user actions and system responses
-- **Invariants & Postconditions** — system invariants that must hold after every operation (e.g. "Queue always has at least one active singer", "Round number is monotonically increasing")
+- **Invariants & Postconditions** — system invariants that must hold after every operation (e.g. "Queue always has at least one active signup", "Round number is monotonically increasing")
 - **Key Decisions** — one entry per significant design choice, using this format:
 
   ```
@@ -98,7 +98,7 @@ title: "Song form — selecting an artist suggestion does not lock the field"
 status: "💡 Pending"              # one of the 8 BACKLOG statuses
 severity: Critical                # Critical | Major | Minor — bugs only; Minor must have NO folder
 target: 2026-07-21                # registration date; YYYY-MM-DD | YYYY-MM | "—"
-section: BusinessFeatures         # BusinessFeatures | DevCycleCraft — the only two legal values; independent of the item's physical folder path (Docs/Management/ has five top-level dirs — see CLAUDE.md § Docs/ Folder Layout)
+section: BusinessFeatures         # BusinessFeatures | cross-cutting — the only two legal values; independent of the item's physical folder path (Docs/Management/ has five top-level dirs — see CLAUDE.md § Docs/ Folder Layout)
 kind: bug                         # feature | bug | change | milestone | group
 parent: artists-songs             # id of the logical parent item; omitted at top level
 goal: "…"                         # required — the Goal sentence of the rendered row
@@ -132,7 +132,7 @@ Create `Docs/Management/[section-or-filing-dir]/[feature]/spec-changelog.md` the
 | Date | Changed file | What changed | Why |
 |------|-------------|--------------|-----|
 | 2026-05-18 | requirements.md | Added AC for empty queue edge case (AC-07) | Found during testing: app crashes on empty queue |
-| 2026-05-20 | design.md | Updated ISingerService.GetPagedAsync signature — added `includeAbsent` param | Discovered during Wave 3: absence filter needed at repo level |
+| 2026-05-20 | design.md | Updated ISignupService.GetPagedAsync signature — added `includeAbsent` param | Discovered during Wave 3: absence filter needed at repo level |
 ```
 
 ### Rules
@@ -224,9 +224,9 @@ Every task in `tasks.md` that touches user-facing behavior must include a **demo
 Format: `Demo: [actor] can [observable action] and sees [observable result].`
 
 Examples:
-- `Demo: Admin taps "Add Singer" and sees the new singer appear at the bottom of the queue list immediately.`
-- `Demo: The queue page loads within 500ms with all singers in their correct round-based order.`
-- `Demo: Tapping an absent singer shows a bottom sheet with "Mark as Returned" and "Remove" options.`
+- `Demo: Admin taps "Add Signup" and sees the new signup appear at the bottom of the queue list immediately.`
+- `Demo: The queue page loads within 500ms with all signups in their correct round-based order.`
+- `Demo: Tapping an absent signup shows a bottom sheet with "Mark as Returned" and "Remove" options.`
 
 **Purpose:** Demo statements prevent tasks from being marked "done" when the code compiles but the feature doesn't work as intended. A subagent that cannot write a demo statement does not understand the task.
 
@@ -279,8 +279,8 @@ A spec that is too long is as harmful as one that is too short. Over-specified s
 
 | Over-specified (avoid) | Thin (prefer) |
 |------------------------|---------------|
-| "The VenueRepository will use a LEFT JOIN with parameterized WHERE clause" | "Venues are searchable by name (case-insensitive)" |
-| "The list component will apply one state update after the page loads" | "The list updates immediately after a venue is added" |
+| "The ProjectRepository will use a LEFT JOIN with parameterized WHERE clause" | "Projects are searchable by name (case-insensitive)" |
+| "The list component will apply one state update after the page loads" | "The list updates immediately after a project is added" |
 | "The button will have a 48dp minimum touch target" | "All touch targets meet platform UX standards" |
 
 **Spec length guideline:** `requirements.md` should not exceed 2 pages. `design.md` should not exceed 3 pages. If you find yourself writing more, split the feature into sub-features.

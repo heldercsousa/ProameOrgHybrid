@@ -5,11 +5,11 @@
 ## Naming Conventions
 
 ### Test Class
-`<ClassUnderTest>Tests` — one test class per production class: `VenueServiceTests`, `VenueRepositoryTests`, `VenuesPageTests`.
+`<ClassUnderTest>Tests` — one test class per production class: `ProjectServiceTests`, `ProjectRepositoryTests`, `ProjectsPageTests`.
 
 ### Test Method
 `MethodName_Condition_ExpectedResult` or a plain sentence when the AC is clearer:
-- `CreateVenueAsync_DuplicateName_ReturnsFailureMessage`
+- `CreateProjectAsync_DuplicateName_ReturnsFailureMessage`
 - `Save_WhenFormInvalid_DoesNotCallApi`
 
 The first line of the test's comment carries the AC id (`// [AC] REQ-...`, `rules/testing.md`).

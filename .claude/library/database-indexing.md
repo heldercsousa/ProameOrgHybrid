@@ -53,7 +53,14 @@ Column order matters: put the most selective equality column first, and the sort
 
 ### Text search indexes
 
-- Case- and accent-insensitive equality: `citext` column or expression index on `unaccent(lower(...))` created in a migration with explicit SQL.
+- Case-insensitive equality: `citext` column, or an expression index on `lower(...)`.
+- Case- and accent-insensitive equality: PostgreSQL rejects `unaccent(...)` in an index expression because it is only `STABLE`. Wrap it once in an `IMMUTABLE` function and index that, created in a migration with explicit SQL:
+  ```sql
+  CREATE EXTENSION IF NOT EXISTS unaccent;
+  CREATE FUNCTION immutable_unaccent(text) RETURNS text LANGUAGE sql IMMUTABLE PARALLEL SAFE STRICT AS $$ SELECT public.unaccent('public.unaccent', $1) $$;
+  CREATE INDEX "IX_Projects_Name_Unaccent" ON "Projects" (lower(immutable_unaccent("Name")));
+  ```
+  The query must produce the same expression, so map `immutable_unaccent` as a `DbFunction` (`HasDbFunction`) and compare `lower(immutable_unaccent(col))` in the repository. `EF.Functions.ILike` alone is case-insensitive only and does not use this index.
 - Substring search (`ILIKE '%term%'`): trigram GIN index (`pg_trgm`) created with `migrationBuilder.Sql(...)`.
 - Full-text search, if needed later: a `tsvector` column with a GIN index, decided in the feature design.
 

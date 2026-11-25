@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Pre-commit process checks for rules that nothing enforced mechanically.
+"""PROAME pre-commit process checks for rules that nothing enforced mechanically.
 
-Three deterministic checks over the STAGED state (the git index), run from
+Deterministic checks over the STAGED state (the git index), run from
 `.claude/githooks/pre-commit` as `python .claude/scripts/process_checks.py --staged`:
 
 1. sln      -- every git-tracked `Docs/` file is registered in Proame.sln and every
@@ -12,6 +12,8 @@ Three deterministic checks over the STAGED state (the git index), run from
                `SafeAreaEdges="Container"`, or `"All"` (Container + SoftInput) on pages with
                text input (CLAUDE.md § Constitutional Constraints; Microsoft Learn "Safe area
                layout", .NET MAUI 10). `Container` on a page with a direct text-input element fails.
+               Runs on any staged .xaml file; PROAME uses XAML only in the MAUI head
+               (`src/Proame.App`), the Blazor heads never stage .xaml pages.
 3. tasklog  -- a task-log entry that this commit adds or edits and whose status is
                `To Review` must contain a `### Changed files` section
                (workflow.md Rule 5). Untouched legacy entries are never judged.

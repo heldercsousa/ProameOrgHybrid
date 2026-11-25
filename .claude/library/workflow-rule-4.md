@@ -14,9 +14,9 @@ Check off each task in `Docs/Management/[section-or-filing-dir]/[feature]/tasks.
 ### In-progress marker — [~] for claimed tasks
 
 ```markdown
-- [~] **Implement IVenueService** [SEQUENTIAL]  ← claimed — do not reassign
-- [ ] **Implement VenuesComponent state** [P]          ← available
-- [x] **Define VenueEntry entity**               ← done
+- [~] **Implement IProjectService** [SEQUENTIAL]  ← claimed — do not reassign
+- [ ] **Implement ProjectsComponent state** [P]          ← available
+- [x] **Define ProjectEntry entity**               ← done
 ```
 
 | Marker | Meaning |
@@ -91,41 +91,41 @@ Wave 4 (outermost):  Components + pages
 ```markdown
 ## Phase 1 — Domain (no dependencies)
 - [ ] **Define entity** [P]
-  - Produces: `src/Proame.Domain/Entities/VenueEntry.cs`
+  - Produces: `src/Proame.Domain/Entities/ProjectEntry.cs`
   - Consumes: nothing
-  - Files owned: `src/Proame.Domain/Entities/VenueEntry.cs`
+  - Files owned: `src/Proame.Domain/Entities/ProjectEntry.cs`
 
 - [ ] **Define repository interface** [P]
-  - Produces: `src/Proame.Domain/Interfaces/IVenueRepository.cs`
-  - Consumes: `VenueEntry.cs`
-  - Files owned: `src/Proame.Domain/Interfaces/IVenueRepository.cs`
+  - Produces: `src/Proame.Domain/Interfaces/IProjectRepository.cs`
+  - Consumes: `ProjectEntry.cs`
+  - Files owned: `src/Proame.Domain/Interfaces/IProjectRepository.cs`
 
 ## Phase 2 — Infrastructure [SEQUENTIAL — waits for Phase 1]
 - [ ] **Add EF Core migration** [SEQUENTIAL]
-  - Produces: `*_AddVenueEntry.cs` migration
-  - Consumes: `VenueEntry.cs`
+  - Produces: `*_AddProjectEntry.cs` migration
+  - Consumes: `ProjectEntry.cs`
   - Files owned: `src/Proame.Infrastructure/Migrations/*.cs`, `AppDbContext.cs`
 
 - [ ] **Implement repository** [SEQUENTIAL — waits for interface]
-  - Produces: `src/Proame.Infrastructure/Repositories/VenueRepository.cs`
-  - Consumes: `IVenueRepository.cs`
-  - Files owned: `VenueRepository.cs`
+  - Produces: `src/Proame.Infrastructure/Repositories/ProjectRepository.cs`
+  - Consumes: `IProjectRepository.cs`
+  - Files owned: `ProjectRepository.cs`
 
 ## Phase 3 — Services [SEQUENTIAL — waits for Phase 2]
-- [ ] **Implement IVenueService + VenueService** [SEQUENTIAL]
-  - Produces: `IVenueService.cs`, `VenueService.cs`
-  - Consumes: `IVenueRepository.cs`
+- [ ] **Implement IProjectService + ProjectService** [SEQUENTIAL]
+  - Produces: `IProjectService.cs`, `ProjectService.cs`
+  - Consumes: `IProjectRepository.cs`
   - Files owned: both service files
 
 ## Phase 4 — UI (components and pages) [SEQUENTIAL — waits for Phase 3]
 - [ ] **Component state** [P]
-  - Produces: `VenuesPage.razor.cs` (state holder)
-  - Consumes: `IVenueService.cs`
-  - Files owned: `VenuesPage.razor.cs`
+  - Produces: `ProjectsPage.razor.cs` (state holder)
+  - Consumes: `IProjectService.cs`
+  - Files owned: `ProjectsPage.razor.cs`
 
 - [ ] **Page + markup** [P]
-  - Produces: `VenuesPage.razor`, `VenuesPage.razor.cs`
-  - Consumes: `VenuesPage.razor.cs`
+  - Produces: `ProjectsPage.razor`, `ProjectsPage.razor.cs`
+  - Consumes: `ProjectsPage.razor.cs`
   - Files owned: both page files
 ```
 

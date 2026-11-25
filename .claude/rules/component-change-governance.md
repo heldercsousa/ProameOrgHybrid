@@ -2,7 +2,7 @@
 
 > Full detail (governed-component list, four-gate specifics, artifacts template, no-bundling rationale): `.claude/library/component-safety-gate.md`. The non-negotiables below stay inline (`[HARD RULE]`).
 
-A change to any **governed component** (a custom UI component in `Proame.UI` consumed by 2+ pages/components — e.g. `AppBarBase`-derived bars, `EmptyState`, `ListItemRow`, `AutocompleteField`, `CrudListBase`, `FloatingToolbar`) ripples across every consumer. Such a change is a deliberate, tracked, reviewed act — never a side effect of a feature task.
+A change to any **governed component** (a custom UI component in `Proame.UI` consumed by 2+ pages/components — e.g. shared components in `Proame.UI/Components/` (names defined in their spec)) ripples across every consumer. Such a change is a deliberate, tracked, reviewed act — never a side effect of a feature task.
 
 ## The Rule `[HARD RULE]` — all four gates required, in order, before any edit
 

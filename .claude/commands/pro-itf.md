@@ -2,7 +2,7 @@
 # Inline Trivial Fix Command (`/pro-itf`)
 
 Apply a fully diagnosed 1-file / ≤ 5-line fix **as the orchestrator, without dispatching a subagent**.
-Rules: `workflow.md § Rule 2 — ITF lane` (summary) · `library/workflow-rule-2.md § Inline Trivial Fix (ITF) lane` (C0–C8 table).
+Rules: `workflow.md § Inline Trivial Fix (ITF) lane` (summary) · `library/workflow-rule-2.md § Inline Trivial Fix (ITF) lane` (C0–C8 table).
 Guard 3 (`constitutional-guard.py`) enforces C1/C3/C4/C5 once the marker exists; it cannot be exceeded.
 
 **Invocation:** `/pro-itf <ID> <repo-relative file> "<root cause>"` — ID is the BUG-NNN, task ID, or spike slug.

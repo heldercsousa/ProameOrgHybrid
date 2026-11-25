@@ -25,7 +25,7 @@ STATUSES = (PENDING, SPEC, PLAN, READY, IN_PROGRESS, DEFERRED, BLOCKED,
             DONE, FIXED, SUPERSEDED, DUPLICATE)
 TERMINAL = (DONE, FIXED, SUPERSEDED, DUPLICATE)
 SEVERITIES = ("Critical", "Major", "Minor")
-SECTIONS = ("BusinessFeatures", "DevCycleCraft")
+SECTIONS = ("BusinessFeatures", "cross-cutting")
 KINDS = ("feature", "bug", "change", "milestone", "group")
 
 # Optional `horizon:` key (2026-11-15). An item marked post-MVP is rendered into

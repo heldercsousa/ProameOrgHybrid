@@ -26,7 +26,7 @@ class CheckDxTests(unittest.TestCase):
     def test_sf_file_name_pattern_is_case_sensitive(self):
         """[AC] REQ-UIMIG-11: only exact Sf / SfPage suffixes mark an Sf copy."""
         self.assertIsNone(check_dx.SF_FILE.match("Foosf.xaml"))
-        self.assertIsNotNone(check_dx.SF_FILE.match("VenuesSfPage.xaml.cs"))
+        self.assertIsNotNone(check_dx.SF_FILE.match("ProjectsSfPage.xaml.cs"))
 
     def test_closing_tag_and_markup_extension_forms_are_detected(self):
         """[AC] REQ-UIMIG-11: closing tags and markup extensions count as references."""
@@ -36,7 +36,7 @@ class CheckDxTests(unittest.TestCase):
 
     def test_added_dx_line_in_dx_original_fails(self):
         """[AC] REQ-UIMIG-12: a new DevExpress line in a DX original is blocked."""
-        path = "MyVocaList/UI/Pages/Venues/VenuesPage.xaml.cs"
+        path = "MyVocaList/UI/Pages/Projects/ProjectsPage.xaml.cs"
         added = {path: [(12, "using DevExpress.Maui.Core;")]}
         result = check_dx.check_staged(added, {path: "using DevExpress.Maui.Core;\n"})
         self.assertEqual(["added-devexpress-line"], rules(result))
@@ -49,13 +49,13 @@ class CheckDxTests(unittest.TestCase):
 
     def test_removed_lines_are_ignored(self):
         """[AC] REQ-UIMIG-12: untouched or removed DX lines are not flagged."""
-        path = "MyVocaList/UI/Pages/Venues/VenuesPage.xaml"
+        path = "MyVocaList/UI/Pages/Projects/ProjectsPage.xaml"
         result = check_dx.check_staged({}, {path: DX_NS + "\n<dx:DXButton/>"})
         self.assertNotIn("added-devexpress-line", rules(result))
 
     def test_word_containing_dx_without_declared_prefix_passes(self):
         """[AC] REQ-UIMIG-12: no declared DX prefix means no false positive."""
-        path = "MyVocaList/UI/Pages/Venues/VenuesPage.xaml"
+        path = "MyVocaList/UI/Pages/Projects/ProjectsPage.xaml"
         line = '<local:dxLike Text="dx:none"/>'
         result = check_dx.check_staged({path: [(5, line)]}, {path: line})
         self.assertEqual([], result)

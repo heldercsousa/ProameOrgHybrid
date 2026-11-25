@@ -24,7 +24,7 @@
 ## EF Core / PostgreSQL
 
 - **Provider:** PostgreSQL via EF Core + Npgsql only. No EF Core InMemory provider in any test (see `rules/testing.md`).
-- **String search and uniqueness are database-side:** case- and accent-insensitive matching uses `citext` columns or `EF.Functions.ILike(...)` (with the `unaccent` extension where accent-insensitivity is required); trigram indexes (`pg_trgm`) for substring search when measured as necessary. Extension and index choices are recorded in the feature's design.
+- **String search and uniqueness are database-side:** case-insensitive matching uses `citext` columns or `EF.Functions.ILike(...)`. `ILike` is **case-insensitive only**: it does not treat accented and unaccented text as equal. Accent-insensitive matching needs either `immutable_unaccent` (the `unaccent` extension wrapped in an `IMMUTABLE` SQL function, mapped with `HasDbFunction`) or a nondeterministic ICU collation; the index and query shape are in `database-indexing.md § Text search indexes`. Trigram indexes (`pg_trgm`) for substring search when measured as necessary. Extension and index choices are recorded in the feature's design.
 - **No C#-side string normalization for search/deduplication:** never `ToLowerInvariant()`, `ToUpperInvariant()`, `RemoveDiacritics()`, or `*Normalized` shadow columns for search, duplicate detection or uniqueness. Reasons: (1) correctness — lower-casing does not strip accents ("café" ≠ "cafe"), so accent-insensitive matching silently fails; (2) performance — a C#-computed value cannot use a database index, forcing a scan. Configure the column collation or the database-side comparison in the entity configuration and let the engine normalize at query time.
 - **Migrations are the only schema change path:** EF Core migrations in `Proame.Infrastructure`, sequential-only (`rules/workflow.md § Sequential-only file registry`). Never edit an applied migration; add a new one.
 - **Repository tests run against a real PostgreSQL container** (Testcontainers). Reason: `ILIKE`, `citext`, `unaccent` and transaction behaviour do not exist in an in-memory fake.
@@ -47,9 +47,9 @@
   	EndProjectSection
   EndProject
   \\\${nl}  Then add a `NestedProjects` entry in `GlobalSection(NestedProjects)`:
-  - Under `BusinessFeatures` → parent `{8AB01C9F-E0FD-49D5-AE2C-E27AD8C8F05D}`
-  - Under `DevCycleCraft` → parent `{0C4BA720-519E-4818-BD9B-34AC19E4FCD7}`
-  - Under `Management` root → parent `{15F1DA03-2180-47BF-BC40-1BB457C97F9E}`
+  - Under `BusinessFeatures` → parent: the `BusinessFeatures` solution folder GUID in `Proame.sln`
+  - Under `cross-cutting` → parent: the `cross-cutting` solution folder GUID in `Proame.sln`
+  - Under `Management` root → parent: the `Management` solution folder GUID in `Proame.sln`
 
   **GUIDs — the counter's single source of truth is the `.sln` itself (do not restate a value):**
   The final GUID segment is **exactly 12 hex characters**: ten zeros followed by a two-hex-digit counter, e.g. `{FA1234BC-0001-4000-8000-0000000000XX}`.
@@ -72,6 +72,22 @@
 - **Clickable prototype is the visual reference:** `Docs/Benchmark/prototype/` (MD3 styles in `styles.css`). Implementation matches the prototype's tokens, not a generated design export.
 
 ---
+
+## Uploads (Editais)
+
+Source: `CLAUDE.md § Constitutional Constraints` (Uploads). Applies to every file the admin uploads, starting with Editais PDFs.
+
+- The size cap is admin-configurable and enforced in the API service layer, never only in the UI. An upload over the cap is rejected with a pt-BR message.
+- The stored file is byte-identical to the uploaded file. Record its SHA-256 at upload time.
+- No lossy conversion, recompression or ZIP packaging of the stored file.
+
+## LGPD
+
+Source: `CLAUDE.md § Constitutional Constraints` (Privacy, LGPD, `[Unamendable]`).
+
+- Beneficiary data (name, address, phone, CadÚnico) is served only from the private API, behind admin authentication. Never in a public endpoint, never in logs.
+- Consent is captured at signup and logged with the policy version and a timestamp.
+- Every export of beneficiary data is audited.
 
 ## How to add entries
 

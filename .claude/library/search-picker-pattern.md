@@ -52,11 +52,11 @@ Callers open the dialog through `IDialogService` and await the result. No messag
 ```csharp
 var options = new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true };
 var parameters = new DialogParameters<PickerParams> { ... };
-var dialog = await Dialogs.ShowAsync<VenuePickerDialog>("Escolher local", parameters, options);
+var dialog = await Dialogs.ShowAsync<ProjectPickerDialog>("Escolher local", parameters, options);
 var result = await dialog.Result;
-if (result is { Canceled: false, Data: VenueListItemDto venue })
+if (result is { Canceled: false, Data: ProjectListItemDto project })
 {
-    _selected = venue;
+    _selected = project;
 }
 ```
 

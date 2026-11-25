@@ -6,10 +6,10 @@
 
 > **Note:** the confirmation lives inside `CrudList` (`crud-listview.md`). Do not add a dialog to page markup for the standard delete. The page supplies the delete callback (`OnDelete`); `CrudList` shows the confirmation first.
 
-Use `MudMessageBox` (static `Show`) for any destructive action — never a native browser dialog and never a bottom sheet:
+Use `MudMessageBox` through the injected `IDialogService` (instance call `DialogService.ShowMessageBox(...)`, not a static `Show`) for any destructive action — never a native browser dialog and never a bottom sheet. Verify the exact signature against the MudBlazor MCP at the manifest version before writing it:
 
 ```csharp
-bool? confirmed = await Dialog.ShowMessageBox(
+bool? confirmed = await DialogService.ShowMessageBox(
     title: "Excluir registro",
     markupMessage: new MarkupString("Esta ação não pode ser desfeita."),
     yesText: "Excluir",
@@ -41,7 +41,7 @@ Registration rules (lifetimes and extension-method composition) are in `code-sty
 |------|----------|--------|
 | Razor page / component | Not registered (Blazor creates them) | Components are resolved by the router |
 | Page-level state holder (if any) | `AddScoped` (per circuit) or `AddTransient` | Fresh state per navigation in Blazor Web/Hybrid |
-| API client (`IVenueClient`-style) | `AddScoped` (Blazor) / typed `HttpClient` | Per-circuit in the UI; typed client in the API host |
+| API client (`IProjectClient`-style) | `AddScoped` (Blazor) / typed `HttpClient` | Per-circuit in the UI; typed client in the API host |
 | Service (API) | `AddScoped` | Per request |
 | Repository (API) | `AddScoped` | Per request, shares the request's `DbContext` |
 

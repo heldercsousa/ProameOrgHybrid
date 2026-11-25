@@ -22,7 +22,7 @@ ARROW = "↳"
 # it is the order the regions are spliced and the order they appear in the file.
 ARCHIVE_REGIONS = (
     ("BusinessFeatures", "archive-business"),
-    ("DevCycleCraft", "archive-craft"),
+    ("cross-cutting", "archive-craft"),
 )
 ARCHIVE_SECTIONS = tuple(section for section, _region in ARCHIVE_REGIONS)
 
@@ -141,7 +141,7 @@ def _render_live(existing_text, items, post_mvp):
     active = [i for i in items
               if i.status not in TERMINAL and is_post_mvp(i, items) == post_mvp]
     business = [i for i in active if _section_of(i, items) == "BusinessFeatures"]
-    craft = [i for i in active if _section_of(i, items) == "DevCycleCraft"]
+    craft = [i for i in active if _section_of(i, items) == "cross-cutting"]
 
     out = splice(existing_text, "business-features",
                  render_table(business, TABLE_HEAD_BUSINESS_SLIM, slim=True))

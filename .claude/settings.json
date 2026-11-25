@@ -283,7 +283,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -c \"import json,sys,re; d=json.load(sys.stdin); p=d.get('prompt',''); matched=re.search(r'\\\\b(implement|dispatch|resume)\\\\b|\\\\bstart (the |a )?(next )?(task|feature|wave|coding)\\\\b', p, re.I); matched and print('{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"UserPromptSubmit\\\",\\\"additionalContext\\\":\\\"WORKFLOW GATE: read the feature design.md + requirements.md before code; feature work is subagent-driven in a worktree (CLAUDE.md Roles, workflow.md Rule 2); /sln-commit after each task.\\\"}}')\" 2>/dev/null || true"
+            "command": "python -c \"import json,sys,re; d=json.load(sys.stdin); p=d.get('prompt',''); matched=re.search(r'\\\\b(implement|dispatch|resume)\\\\b|\\\\bstart (the |a )?(next )?(task|feature|wave|coding)\\\\b', p, re.I); matched and print('{\\\"hookSpecificOutput\\\":{\\\"hookEventName\\\":\\\"UserPromptSubmit\\\",\\\"additionalContext\\\":\\\"WORKFLOW GATE: read the feature design.md + requirements.md before code; feature work is subagent-driven in a worktree (CLAUDE.md Roles, workflow.md Rule 2); /pro-commit after each task.\\\"}}')\" 2>/dev/null || true"
           }
         ]
       }

@@ -23,7 +23,7 @@ def changed_paths():
 def stop_message(paths):
     if not paths:
         return ""
-    msg = ["UNCOMMITTED CHANGES - build + test, then /sln-commit."]
+    msg = ["UNCOMMITTED CHANGES - build + test, then /pro-commit."]
     if any("task-log" in p for p in paths) and not any(p.endswith("README.md") for p in paths):
         msg.append("task-log changed but no item README.md - if a feature phase completed, "
                    "run backlog_gen.py status.")
@@ -39,7 +39,7 @@ def main() -> int:
             hook_out.additional_context(
                 "PostToolUse",
                 "Subagent returned with uncommitted changes in the main checkout - "
-                "run /sln-commit now.")
+                "run /pro-commit now.")
         elif "--stop" in sys.argv:
             hook_out.system_message(stop_message(paths))
     except Exception:

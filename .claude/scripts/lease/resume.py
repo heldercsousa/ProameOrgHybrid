@@ -7,7 +7,7 @@
 
 CANONICAL POINTER VALUE (T11): the resume_pointer is a pointer to the task-log's
 live `### Checkpoint` block (session-ops.md § Checkpoint Ping & Context Manifest),
-e.g. `Docs/Management/DevCycleCraft/<feature>/task-log.md § Checkpoint`.
+e.g. `Docs/Management/cross-cutting/<feature>/task-log.md § Checkpoint`.
 The resumer reads that block + its Context manifest — never a prose to-do.
 The heartbeat self-defaults an empty pointer to this form from active-task.json.
 

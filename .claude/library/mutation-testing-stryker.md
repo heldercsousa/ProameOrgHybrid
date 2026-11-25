@@ -75,4 +75,4 @@ Create `.stryker-config.json` at solution root when exclusions are needed:
 
 ---
 
-> **Authorship note:** This file must be human-reviewed before it is relied upon (CLAUDE.md § Continuous Enhancement — Authorship).
+> **Authorship note:** This file must be human-reviewed before it is relied upon (see `library/authorship-log.md`).

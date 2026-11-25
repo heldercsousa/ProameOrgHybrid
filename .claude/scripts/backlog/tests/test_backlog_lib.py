@@ -78,7 +78,7 @@ class TestClassifyMemoryChange(unittest.TestCase):
         self.assertEqual(
             backlog_lib.classify_memory_change(
                 "MEMORY.md",
-                "TODO: build a CSV import feature for singers.",
+                "TODO: build a CSV import feature for signups.",
             ),
             "candidate",
         )

@@ -7,7 +7,7 @@ worktree — the edit is then inside the declared lane and Guard 3
 reminder naming both legitimate routes, returned as additionalContext so the
 model sees it. Silent for subagents (`agent_id` in the hook input). Never blocks.
 
-Spec: Docs/Management/DevCycleCraft/inline-trivial-fix/changes/
+Spec: Docs/Management/cross-cutting/inline-trivial-fix/changes/
       2026-08-18-recalibrate-agent-dispatch-settings-.../requirements.md AC-ADR-07
 """
 import json
@@ -43,7 +43,7 @@ def main() -> int:
             hook_out.additional_context(
                 "PreToolUse",
                 "WORKFLOW REMINDER: main agent is editing a code file with no ITF "
-                "declaration. For a diagnosed 1-file / <=5-line fix run /sln-itf; "
+                "declaration. For a diagnosed 1-file / <=5-line fix run /pro-itf; "
                 "otherwise dispatch an implementor (workflow.md Rule 2).")
     except Exception:
         pass

@@ -45,7 +45,7 @@ Read these files (paths only — your `Read` tool fetches the content):
 
 **Docs/ scope rule:** Read only `Docs/Management/[section-or-filing-dir]/[feature]/` and the explicit plan path from your briefing. Never glob-scan `Docs/`. `Docs/DevEnv/SDD/`, `Docs/Changelog/`, and `Docs/Plans/` are `.claudeignore`-excluded — access by explicit absolute path only if the briefing authorises it.
 
-> `[section-or-filing-dir]` is one of `BusinessFeatures/`, `DevCycleCraft/`, `cross-cutting/` or `milestones/` — the item's physical folder. It does **not** determine table placement; the `section:` frontmatter does (`CLAUDE.md § Docs/ Folder Layout`).
+> `[section-or-filing-dir]` is one of `BusinessFeatures/`, `cross-cutting/`, `cross-cutting/` or `milestones/` — the item's physical folder. It does **not** determine table placement; the `section:` frontmatter does (`CLAUDE.md § Docs/ Folder Layout`).
 
 Invoke the `proame-coding` skill before any UI, MudBlazor, or CRUD implementation work.
 
@@ -139,7 +139,7 @@ Before writing any code, confirm these preconditions are in place:
 - [ ] If TDD applies (see `testing.md`): a failing test file exists, OR writing the test is the first step of this task
 - [ ] The acceptance criteria that this task addresses have been identified (for AC traceability matrix)
 - [ ] The role scope block has been confirmed (files owned, files off-limits)
-- [ ] Required MCPs for this task are available (per CLAUDE.md § MCP Availability Gate). If unavailable: set status `blocked: MCP unavailable`, stop.
+- [ ] Required MCPs for this task are available (per CLAUDE.md § MCP & Skills (MCP Availability Gate)). If unavailable: set status `blocked: MCP unavailable`, stop.
 
 **If any gate item fails:**
 - Spec files missing → set task-log status to `blocked: spec gap`, stop

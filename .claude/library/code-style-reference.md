@@ -27,19 +27,19 @@
 
 ```csharp
 // Interface — owns the documentation
-public interface IVenueService
+public interface IProjectService
 {
-    /// <summary>Creates a new venue with the given name.</summary>
-    /// <param name="name">The display name for the venue.</param>
+    /// <summary>Creates a new project with the given name.</summary>
+    /// <param name="name">The display name for the project.</param>
     /// <returns>(true, message) on success; (false, reason) on failure.</returns>
-    Task<(bool success, string message)> CreateVenueAsync(string name);
+    Task<(bool success, string message)> CreateProjectAsync(string name);
 }
 
 // Implementation — inherits it
-public sealed class VenueService : IVenueService
+public sealed class ProjectService : IProjectService
 {
     /// <inheritdoc />
-    public async Task<(bool success, string message)> CreateVenueAsync(string name) { ... }
+    public async Task<(bool success, string message)> CreateProjectAsync(string name) { ... }
 }
 ```
 
@@ -62,11 +62,11 @@ public sealed class VenueService : IVenueService
 - Prefer primary constructors for simple types
 
 ### Naming
-- Interfaces: `IVenueService`, `IVenueRepository`
-- Services: `VenueService`, `VenueRepository`
-- Razor components: `VenuesPage.razor` (routable page) / `VenueForm.razor` (reusable component); code-behind in `VenueForm.razor.cs`
+- Interfaces: `IProjectService`, `IProjectRepository`
+- Services: `ProjectService`, `ProjectRepository`
+- Razor components: `ProjectsPage.razor` (routable page) / `ProjectForm.razor` (reusable component); code-behind in `ProjectForm.razor.cs`
 - Commands and event callbacks: verb + noun, e.g. `OnSaveClicked`, `OnDeleteRequested` (`EventCallback<T>` parameters)
-- Async methods: `VerbNounAsync` e.g. `CreateVenueAsync`
+- Async methods: `VerbNounAsync` e.g. `CreateProjectAsync`
 
 ### Projects and folders
 - Each layer project lives in a folder named after its layer; the project file, assembly and root namespace keep the `Proame.` prefix:
@@ -92,15 +92,15 @@ public sealed class VenueService : IVenueService
 
 ### Component Code-Behind Pattern (Razor)
 ```csharp
-// VenueForm.razor.cs — partial class; markup stays in VenueForm.razor
-public partial class VenueForm : IAsyncDisposable
+// ProjectForm.razor.cs — partial class; markup stays in ProjectForm.razor
+public partial class ProjectForm : IAsyncDisposable
 {
-    [Parameter] public int? VenueId { get; set; }
-    [Parameter] public EventCallback<VenueDto> OnSaved { get; set; }
-    [Inject] private IVenueClient Venues { get; set; } = default!;
+    [Parameter] public int? ProjectId { get; set; }
+    [Parameter] public EventCallback<ProjectDto> OnSaved { get; set; }
+    [Inject] private IProjectClient Projects { get; set; } = default!;
 
     private bool _isLoading = true;
-    private VenueDto? _venue;
+    private ProjectDto? _project;
     private CancellationTokenSource? _cts;
 
     protected override async Task OnParametersSetAsync()
@@ -108,7 +108,7 @@ public partial class VenueForm : IAsyncDisposable
         _cts?.Cancel();
         _cts = new CancellationTokenSource();
         _isLoading = true;
-        _venue = VenueId is null ? new VenueDto() : await Venues.GetAsync(VenueId.Value, _cts.Token);
+        _project = ProjectId is null ? new ProjectDto() : await Projects.GetAsync(ProjectId.Value, _cts.Token);
         _isLoading = false;
     }
 
@@ -123,10 +123,10 @@ public partial class VenueForm : IAsyncDisposable
 Services return tuples for operations that can fail:
 ```csharp
 // Create: returns (success, message, entity?)
-Task<(bool success, string message, Venue? venue)> CreateVenueAsync(string name, CancellationToken ct);
+Task<(bool success, string message, Project? project)> CreateProjectAsync(string name, CancellationToken ct);
 
 // Update/Delete: returns (success, message)
-Task<(bool success, string message)> UpdateVenueAsync(int id, string name, CancellationToken ct);
+Task<(bool success, string message)> UpdateProjectAsync(int id, string name, CancellationToken ct);
 
 // Validation: returns (isValid, message)
 (bool isValid, string message) ValidateNameInput(string name);
@@ -162,7 +162,7 @@ catch (ObjectDisposedException) { /* ignore disposal races */ }
 ```csharp
 catch (Exception ex)
 {
-    _logger.LogError(ex, "Failed to load more venues (page {Page})", loadingPage);
+    _logger.LogError(ex, "Failed to load more projects (page {Page})", loadingPage);
     _isLoading = false;
     Snackbar.Add("Não foi possível carregar os dados.", Severity.Error);
 }
@@ -243,4 +243,4 @@ If you cannot fix a warning without suppressing it, log a `blocked: spec gap` st
 
 ---
 
-> **Authorship note:** Content adapted from the inherited governance (`.claude/rules/code-principles.md`, 2026-07-04) to the PROAME stack (MudBlazor, ASP.NET Core API, PostgreSQL). Human-review before relied upon (CLAUDE.md § Continuous Enhancement — Authorship).
+> **Authorship note:** Content adapted from the inherited governance (`.claude/rules/code-principles.md`, 2026-07-04) to the PROAME stack (MudBlazor, ASP.NET Core API, PostgreSQL). Human-review before relied upon (see `library/authorship-log.md`).

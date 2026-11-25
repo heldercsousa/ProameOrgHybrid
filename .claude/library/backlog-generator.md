@@ -17,7 +17,7 @@ mechanical validation error (`bug-tracking.md`).
 
 `README.md` opens with a flat `key: value` frontmatter block (`id, title, status, severity,
 target, section, parent, goal, gate, pointer, closed, order` — schema in
-`DevCycleCraft/spec-evolution-versioning/design.md § 2`). `Docs/Management/BACKLOG.md` and the
+`cross-cutting/spec-evolution-versioning/design.md § 2`). `Docs/Management/BACKLOG.md` and the
 monthly `backlog-archive/*.md` files are **generated** from those blocks between
 `<!-- BACKLOG:GENERATED:BEGIN … -->` fences. **Never hand-edit a fenced row** — it is silently
 overwritten on the next regeneration, not merge-conflicted.

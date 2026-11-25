@@ -1,6 +1,6 @@
 """Guard 3 (ITF bounds) tests — Level A per testing.md (enforcement logic).
 
-Spec: Docs/Management/DevCycleCraft/inline-trivial-fix/{requirements,design}.md
+Spec: Docs/Management/cross-cutting/inline-trivial-fix/{requirements,design}.md
 Each test traces to an AC per testing.md § Acceptance Criteria Traceability.
 """
 import contextlib
@@ -402,6 +402,97 @@ class TestCommitTrailerAudit(ItfGuardTestBase):
             capture_output=True, text=True)
         self.assertEqual(out.returncode, 0)
         self.assertIn("SongService", out.stdout)
+
+
+class TestBlazorHookCoverage(ItfGuardTestBase):
+    """Guards 1-2 cover Blazor sources (.razor, .razor.cs, .razor.css); Guard 2
+    also blocks JS dialogs reached through IJSRuntime (CLAUDE.md § Constitutional
+    Constraints -> Native dialogs). Exercised end-to-end through main()."""
+
+    def _run(self, rel, **tool):
+        target = os.path.join(self.root, rel.replace("/", os.sep))
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        payload = {"tool_input": dict(tool, file_path=target.replace("\\", "/"))}
+        return subprocess.run(
+            [sys.executable, _GUARD_PATH], input=json.dumps(payload),
+            capture_output=True, text=True)
+
+    def _on_develop(self):
+        _git(self.root, "checkout", "-q", "-b", "develop")
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): branch guard covers Blazor sources on develop
+    def test_branch_guard_blocks_razor_family_on_develop(self):
+        self._on_develop()
+        for rel in ("UI/Components/Foo.razor", "UI/Components/Foo.razor.cs",
+                    "UI/Components/Foo.razor.css"):
+            with self.subTest(rel=rel):
+                proc = self._run(rel, new_string="<div></div>")
+                self.assertEqual(proc.returncode, 2)
+                self.assertIn("develop", proc.stderr)
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): Blazor sources on a task branch pass the branch guard
+    def test_razor_family_on_task_branch_is_permitted(self):
+        proc = self._run("UI/Components/Foo.razor", new_string="<div></div>")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): MAUI native dialog call blocked in a .razor file
+    def test_display_alert_in_razor_is_blocked(self):
+        proc = self._run("UI/Components/Foo.razor",
+                         new_string='@code { void X() => DisplayAlert("a", "b", "c"); }')
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("MudMessageBox", proc.stderr)
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): JS alert/confirm/prompt via IJSRuntime is blocked
+    def test_js_dialog_via_ijsruntime_is_blocked(self):
+        cases = (
+            'await JS.InvokeVoidAsync("alert", "Saved");',
+            'var ok = await JS.InvokeAsync<bool>("confirm", "Delete?");',
+            'await JS.InvokeVoidAsync(\n    "window.prompt", "Name?");',
+            'await JS.InvokeVoidAsync("eval", "alert(\'Saved\')");',
+        )
+        for text in cases:
+            for rel in ("UI/Components/Foo.razor", "UI/Components/Foo.razor.cs",
+                        "UI/Components/Foo.razor.css"):
+                with self.subTest(text=text, rel=rel):
+                    proc = self._run(rel, new_string=text)
+                    self.assertEqual(proc.returncode, 2, proc.stderr)
+                    self.assertIn("MudMessageBox", proc.stderr)
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): non-dialog JS interop and MudBlazor dialogs are permitted
+    def test_non_dialog_js_and_mud_dialog_are_permitted(self):
+        for text in ('await JS.InvokeVoidAsync("console.log", "x");',
+                     'await JS.InvokeVoidAsync("eval", "document.title");',
+                     'await Dialog.ShowMessageBox("Título", "Texto");'):
+            with self.subTest(text=text):
+                proc = self._run("UI/Components/Foo.razor", new_string=text)
+                self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    # Coverage (no AC: governance hook, CLAUDE.md § Constitutional Constraints): JS-dialog check is scoped to Blazor sources only
+    def test_js_dialog_pattern_is_not_applied_to_cs_files(self):
+        proc = self._run("UI/Services/Foo.cs",
+                         new_string='await JS.InvokeVoidAsync("alert", "x");')
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+
+class TestItfSoftSetPortedNames(ItfGuardTestBase):
+    """PROAME composition roots and lock files join the C5 soft set (workflow.md
+    Rule 2 § Sequential-only file registry); MAUI names stay listed."""
+
+    # Coverage (no AC: workflow.md Rule 2 C5 soft set, PROAME names): sole_writer required
+    def test_proame_soft_set_names_require_sole_writer(self):
+        for rel in ("src/Proame.Web/Program.cs", "src/Proame.Api/Program.cs",
+                    "Directory.Packages.props"):
+            with self.subTest(rel=rel):
+                target = _touch(self.root, rel)
+                _declare(self.root, rel)
+                self.assertEqual(self.run_guard(target, EDIT_3_LINES), 2)
+                _declare(self.root, rel, sole_writer=True)
+                self.assertEqual(self.run_guard(target, EDIT_3_LINES), 0)
+
+    # Coverage (no AC: registry names kept after the PROAME additions)
+    def test_maui_program_still_listed_as_sequential(self):
+        self.assertIn("MauiProgram.cs", guard._ITF_SEQUENTIAL_SOFT)
+        self.assertIn("AppDbContext.cs", guard._ITF_SEQUENTIAL_HARD)
 
 
 if __name__ == "__main__":

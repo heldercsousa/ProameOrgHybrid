@@ -33,7 +33,7 @@ Single-agent sessions add one test, make it pass, then add the next. Batching te
 
 - Whole solution: `dotnet test Proame.sln`
 - One project: `dotnet test tests/Proame.Api.Tests/Proame.Api.Tests.csproj`
-- One test: `dotnet test --filter "FullyQualifiedName~VenueServiceTests"`
+- One test: `dotnet test --filter "FullyQualifiedName~ProjectServiceTests"`
 - Testcontainers tests need a running Docker engine; they are not skipped silently. A missing Docker engine is a blocked environment, not a pass.
 - Coverage and mutation testing are periodic (`mutation-testing-stryker.md`), not per commit.
 

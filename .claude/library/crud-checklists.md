@@ -33,12 +33,12 @@ Every list page code-behind shall:
 - Dispose its pending work in `DisposeAsync` (cancel the `CancellationTokenSource`).
 
 ```razor
-@* Venues.razor — markup only *@
-@page "/admin/venues"
+@* Projects.razor — markup only *@
+@page "/admin/projects"
 @attribute [Authorize]
 @implements IAsyncDisposable
 
-<CrudList TItem="VenueListItemDto"
+<CrudList TItem="ProjectListItemDto"
           Query="LoadPageAsync"
           OnAdd="NavigateToAdd"
           OnEdit="NavigateToEdit"
@@ -52,19 +52,19 @@ Every list page code-behind shall:
 ```
 
 ```csharp
-// Venues.razor.cs — code-behind
-public partial class Venues : IAsyncDisposable
+// Projects.razor.cs — code-behind
+public partial class Projects : IAsyncDisposable
 {
-    [Inject] private IVenueClient Client { get; set; } = default!;
+    [Inject] private IProjectClient Client { get; set; } = default!;
     [Inject] private INavigator Navigator { get; set; } = default!;
 
-    private Task<GridData<VenueListItemDto>> LoadPageAsync(GridState<VenueListItemDto> state, CancellationToken ct)
+    private Task<GridData<ProjectListItemDto>> LoadPageAsync(GridState<ProjectListItemDto> state, CancellationToken ct)
         => Client.ListAsync(state.Page, state.PageSize, state.SortDefinitions, ct);
 
-    private void NavigateToAdd() => Navigator.To("/admin/venues/new");
-    private void NavigateToEdit(VenueListItemDto item) => Navigator.To($"/admin/venues/{item.Id}");
+    private void NavigateToAdd() => Navigator.To("/admin/projects/new");
+    private void NavigateToEdit(ProjectListItemDto item) => Navigator.To($"/admin/projects/{item.Id}");
 
-    private async Task<bool> DeleteAsync(IReadOnlyList<VenueListItemDto> items)
+    private async Task<bool> DeleteAsync(IReadOnlyList<ProjectListItemDto> items)
     {
         // API call; returns the (success) flag the list uses to reload
         return true;
