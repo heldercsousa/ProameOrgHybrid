@@ -3,7 +3,7 @@
 # Runs the test suite before allowing a commit that touches code, so a broken
 # build or a red test can never be recorded. `dotnet test` transitively builds
 # Domain, Contracts, Infra, Services AND the MAUI head (net10.0 lib) referenced
-# by MyVocaList.Tests, so ViewModel/Component compile errors are caught too.
+# by the Proame test projects in Proame.sln, so ViewModel/Component compile errors are caught too.
 #
 # Scope note: this gate does NOT build the Android head (XAML/XamlC). XAML is
 # covered by the incremental-edit rule + emulator smoke tests. Keeping the gate
@@ -32,7 +32,7 @@ if ! printf '%s\n' "$STAGED" | grep -Eq '\.(cs|xaml)$'; then
   echo "pre-commit: no .cs/.xaml changes staged — skipping build+test gate."
 else
   echo "pre-commit: code changes staged — running dotnet test (bypass with --no-verify)..."
-  if ! dotnet test Tests/MyVocaList.Tests.csproj -v q --nologo; then
+  if ! dotnet test Proame.sln -v q --nologo; then
     echo ""
     echo "pre-commit: BLOCKED — build or tests failed. Fix before committing."
     echo "            To commit anyway (e.g. an intentional WIP checkpoint):"
@@ -123,7 +123,7 @@ fi
 # SafeAreaEdges="Container", and 'To Review' task-log entries without
 # '### Changed files'. Details: .claude/scripts/process_checks.py.
 if printf '%s
-' "$STAGED" | grep -Eq '^Docs/|^MyVocaList\.sln$|\.xaml$'; then
+' "$STAGED" | grep -Eq '^Docs/|^Proame.sln$|\.xaml$'; then
   if ! python .claude/scripts/process_checks.py --staged; then
     echo ""
     echo "pre-commit: BLOCKED by process checks (see above)."
