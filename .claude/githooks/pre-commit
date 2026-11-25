@@ -28,8 +28,8 @@ set -e
 STAGED=$(git diff --cached --name-only --diff-filter=ACM)
 
 # Does the commit touch compilable code?
-if ! printf '%s\n' "$STAGED" | grep -Eq '\.(cs|xaml)$'; then
-  echo "pre-commit: no .cs/.xaml changes staged — skipping build+test gate."
+if ! printf '%s\n' "$STAGED" | grep -Eq '\.(cs|xaml|razor|csproj|props)$'; then
+  echo "pre-commit: no .cs/.xaml/.razor/.csproj/.props changes staged — skipping build+test gate."
 else
   echo "pre-commit: code changes staged — running dotnet test (bypass with --no-verify)..."
   if ! dotnet test Proame.sln -v q --nologo; then
