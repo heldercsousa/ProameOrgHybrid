@@ -12,6 +12,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Benchmark", "Benchmark", "{
 		Docs\Benchmark\features.md = Docs\Benchmark\features.md
 		Docs\Benchmark\goal.md = Docs\Benchmark\goal.md
 		Docs\Benchmark\plan.md = Docs\Benchmark\plan.md
+		Docs\Benchmark\decisions.md = Docs\Benchmark\decisions.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prototype", "prototype", "{0089C472-6B5D-5EDE-85A4-60CD2B643050}"
