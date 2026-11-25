@@ -1,59 +1,37 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
-
 # Testing — Reference — Naming conventions + what to test per layer
 
-> Section file split from `testing-reference.md` on 2026-07-14 (token-scoped reads). Index + provenance: `testing-reference.md`. Never-miss rules: `.claude/rules/testing.md`.
+> Section file. Index: `testing-reference.md`.
 
 ## Naming Conventions
 
 ### Test Class
-`{Subject}Tests` where subject is the class under test:
-- `VenueServiceTests`
-- `VenuesViewModelTests`
-- `VenueRepositoryTests`
+`<ClassUnderTest>Tests` — one test class per production class: `VenueServiceTests`, `VenueRepositoryTests`, `VenuesPageTests`.
 
 ### Test Method
-`{Method}_{Context}_{Expected}`:
-- `CreateVenueAsync_NameTooLong_ReturnsFalse`
-- `InitializeAsync_EmptyDb_SetsIsEmptyNoVenues`
-- `SearchAsync_CaseInsensitive_FindsMatch`
+`MethodName_Condition_ExpectedResult` or a plain sentence when the AC is clearer:
+- `CreateVenueAsync_DuplicateName_ReturnsFailureMessage`
+- `Save_WhenFormInvalid_DoesNotCallApi`
 
-All three parts are required. No generic names like `Test1`, `CreateVenue_Works`, or `ItWorks`.
-
----
+The first line of the test's comment carries the AC id (`// [AC] REQ-...`, `rules/testing.md`).
 
 ## What to Test
 
-| Layer | Test | Skip |
-|---|---|---|
-| **Service** | Validation logic, business rules, tuple return values, error messages | Framework plumbing, DI wiring |
-| **ViewModel** | Command execution, state after commands, derived properties (AppBarTitle, IsEmpty*), CanExecute gates | XAML bindings, Shell.Current calls, DX control state |
-| **Repository** | CRUD operations, search/filter queries, unique constraint enforcement, EF configuration | EF migration internals, DTO mapping done by services |
-
 ### Service — what defines a test boundary
-Every `if` branch in a service method that changes the return value is a test case:
-```csharp
-// This generates 3 test cases:
-if (name.Length > MaxLength) return (false, "Name too long", null);       // test 1
-if (await _repo.ExistsByNameAsync(name)) return (false, "Duplicate", null); // test 2
-// ... success path                                                          // test 3
-```
+- Business rules, validation, state changes, and the tuple result (`success`, `message`, `entity`).
+- Mock every repository and external client with Moq; no database, no HTTP.
 
-### ViewModel — focus on observable state
-Test what the ViewModel exposes to the view, not how it calls services internally:
-- `[ObservableProperty]` values after commands run
-- Derived `bool` properties (`CanDeleteSelected`, `IsEmptyNoVenues`, `IsAllSelected`)
-- `AppBarTitle` string derived from `SelectedCount`
+### API endpoint — the contract
+- Status codes and `ProblemDetails` shape for success, validation failure, not-found, and unauthorised callers.
+- Authorization: an anonymous call to an admin endpoint fails; a public endpoint never returns private (LGPD) fields.
+- Use `WebApplicationFactory` with the real pipeline and a real PostgreSQL container for data-dependent cases.
 
 ### Repository — always test the query, not just CRUD
-For every repository method that takes a filter/sort/page parameter, write one test that verifies the filtering is actually applied:
-```csharp
-// Not enough:
-[Fact] async Task AddAsync_PersistsVenue() { ... }
+- Search and filter queries against real PostgreSQL: case and accent handling (`citext`/`unaccent`), paging, ordering, unique constraint enforcement.
+- EF configuration: indexes and required columns exist (`database-indexing.md`).
 
-// Required:
-[Fact] async Task GetPagedAsync_SearchQuery_ReturnsOnlyMatching() { ... }
-[Fact] async Task GetPagedAsync_Page2_SkipsFirstPage() { ... }
-```
+### Component — focus on what the user sees and does
+- Rendered state for loading, empty, error and loaded states.
+- Commands and callbacks: a click calls the right handler once; disabled actions cannot fire.
+- Not tested: MudBlazor internals, CSS layout, pixel positions (device or browser checks cover those).
 
 ---

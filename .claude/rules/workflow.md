@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Development Workflow — Routing Table
 
@@ -30,14 +29,14 @@ Spike = time-boxed exploration producing `findings.md`. Its code is throwaway, t
 Orchestrator only; **a fix that qualifies goes through ITF — dispatching for it is the wrong lane.** Run it with **`/pro-itf`**; conditions C0–C8 are in `workflow-rule-2.md § Inline Trivial Fix (ITF) lane` (Guard 3 enforces C1/C3/C4/C5). Trailer: `Lane: ITF (N files, N lines)`.
 
 - **Wave cap `[HARD RULE]`:** max **4** parallel subagents; wait for the whole wave; never reuse a finished subagent.
-- **Worktrees `[HARD RULE]`:** every `.cs`/`.xaml` edit happens in a worktree on a task branch, never on `develop`/`main` (hook-enforced, as is the `develop` base check at worktree creation).
-- **Docs land on develop `[HARD RULE]`:** specs, task-logs, `tasks.md`, LEDGER — never stranded on a task branch (`/sln-docs-sync`).
+- **Worktrees `[HARD RULE]`:** every `.cs`/`.razor`/`.razor.cs`/`.css` edit happens in a worktree on a task branch, never on `develop`/`main` (hook-enforced, as is the `develop` base check at worktree creation).
+- **Docs land on develop `[HARD RULE]`:** specs, task-logs, `tasks.md`, LEDGER — never stranded on a task branch (`/pro-docs-sync`).
 - **Generated artifacts `[HARD RULE]`:** BACKLOG.md, `backlog-archive/`, README frontmatter are single-writer (hook-enforced; `workflow-rule-2.md § Generated artifacts`).
 - **One writer per file;** a briefing over 5 files or 2 hours must be split.
 - **Subagent exit checklist:** verification → build (0 errors, 3 tries) → test → re-read → `.sln` registration → living-spec check → task-log → commit → push.
 
 ### Sequential-only file registry
-Never concurrent writers: `MauiProgram.cs`, `AppShell.xaml(.cs)`, `AppDbContext.cs`, `Migrations/*`, `GlobalUsings.cs`, `Directory.Build.props`, spec `tasks.md`. Rationale and the ITF soft/hard split: `workflow-rule-2.md § Sequential-only file registry`.
+Never concurrent writers: `src/Proame.App/MauiProgram.cs`, `src/Proame.Web/Program.cs`, `src/Proame.Api/Program.cs`, Infrastructure `AppDbContext.cs`, `Migrations/*`, `Directory.Build.props`, `Directory.Packages.props`, the MudTheme definition file in `Proame.UI`, spec `tasks.md`. Rationale and the ITF soft/hard split: `workflow-rule-2.md § Sequential-only file registry`.
 
 ## Rule 3 — Commit After Every Task
 **`/pro-commit` after every completed task** (Stop hook warns on uncommitted changes). Complete = 0 build errors + tests pass + `tasks.md` box checked. `feat:`/`refactor:`/`perf:`/`amend:` commits carry an `Item: <backlog-id>` trailer (commit-msg hook). Before committing: demo verifiable · new types registered in `MauiProgram.cs` · AC evidence in the task-log · **`.sln` registration of every created/moved/deleted `Docs/` file — BLOCKING**. Session end: reconcile touched specs (in-place note if unshipped, `changes/` folder if shipped), update frontmatter + `backlog_gen.py regen`. Review: automatic under `subagent-driven-development`, otherwise `/pro-review`. Detail: `workflow-rule-3.md`.

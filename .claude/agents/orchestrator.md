@@ -4,7 +4,6 @@ description: PROAME multi-wave feature coordinator. Use when coordinating subage
 disallowedTools: Artifact, NotebookEdit
 ---
 
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Orchestrator Agent — PROAME
 
@@ -107,7 +106,7 @@ See `.claude/agents/verifier.md` for the full Verifier agent definition.
 - Set `[~]` on each task being dispatched in `tasks.md`
 
 ### After each wave
-- Merge commits in dependency order (Domain → Infra → Services → UI)
+- Merge commits in dependency order (Domain → Infrastructure → API services → UI)
 - Run post-wave verification (see above)
 - Produce a wave discovery brief documenting what was actually built vs. planned
 - Update `ACTIVE-CONSIDERATIONS.md` with wave status and open items
@@ -192,7 +191,7 @@ Before dispatching a wave, perform a dependency check:
 ```
 Wave N file ownership:
 - Subagent A: [file1.cs, file2.cs]
-- Subagent B: [file3.cs, file4.xaml]
+- Subagent B: [file3.cs, file4.razor]
 - Overlap: none ✓
 ```
 
@@ -217,7 +216,7 @@ Before dispatching any wave, verify that the spec being implemented is still cur
 
 | File | Reason |
 |------|--------|
-| `PROAME.sln` | Parallel agents create duplicate solution folders with colliding GUIDs when each tries to register its own new files |
+| `Proame.sln` | Parallel agents create duplicate solution folders with colliding GUIDs when each tries to register its own new files |
 
 **Rule:** Parallel subagents must include this file in their `Files off-limits` list. The main agent adds the `.sln` registrations manually after merging each worktree branch.
 
@@ -273,10 +272,10 @@ Use this format when a task spans multiple layers but must be handled by a singl
 
 ### Layers to implement (in this order)
 1. Domain: [entity or interface change — file path]
-2. Infra: [migration or repository change — file path]
+2. Infrastructure: [migration or repository change — file path]
 3. Services: [service method — file path]
-4. ViewModel: [ViewModel change — file path]
-5. UI: [XAML change — file path]
+4. Component state: [component state change — file path]
+5. UI: [markup change — file path]
 
 ### Acceptance criteria to satisfy
 - AC-1: [criterion from requirements.md]
@@ -381,7 +380,7 @@ For features spanning 3 or more waves, perform a **multi-wave checkpoint** after
 
 ## Dependency-First Merge Sequencing
 
-After a parallel wave completes, merge commits in dependency order — Domain → Infra → Services → UI:
+After a parallel wave completes, merge commits in dependency order — Domain → Infrastructure → API services → UI:
 
 1. After all subagents stop, list their commits ordered by layer (innermost first, matching `tasks.md` order)
 2. Pull/merge commits in that order
@@ -394,7 +393,7 @@ After a parallel wave completes, merge commits in dependency order — Domain �
 
 ## Git Worktrees as Isolation Primitive — MANDATORY for ALL Implementation Work
 
-**This rule is not opt-in. Amended 2026-07-14: any task that edits code files (`.cs`, `.xaml`, `.xaml.cs`) — single-subagent tasks and bug fixes included, not just parallel waves — MUST run in a git worktree on a task branch, never directly on `develop` or `main`.** `constitutional-guard.py` blocks code edits on develop/main. `develop` remains the docs + integration branch: specs, task-logs, BACKLOG.md, and LEDGER.md are committed there directly (docs edits on develop are allowed and expected).
+**This rule is not opt-in. Amended 2026-07-14: any task that edits code files (`.cs`, `.razor`, `.razor.cs`, `.css`) — single-subagent tasks and bug fixes included, not just parallel waves — MUST run in a git worktree on a task branch, never directly on `develop` or `main`.** `constitutional-guard.py` blocks code edits on develop/main. `develop` remains the docs + integration branch: specs, task-logs, BACKLOG.md, and LEDGER.md are committed there directly (docs edits on develop are allowed and expected).
 
 **Why mandatory:** (a) Parallel subagents sharing the same working tree collide on `git add`/`git commit` — one session unstages the other's files between `git add` and `git commit`, making both commits incomplete. Not recoverable without re-running the task. (b) Even a single agent working on develop locks the branch: unfinished code blocks docs commits, ledger updates, and other sessions from using develop as the stable integration point.
 
@@ -441,10 +440,10 @@ Before dispatching a wave where two or more subagents implement components that 
 3. **Include the contract file paths** in every affected subagent's briefing
 
 **Pre-parallel contracts checklist:**
-- [ ] All `interface` types consumed by this wave are committed in `PROAME.Domain` or `PROAME.Services`
-- [ ] All `record` DTO types consumed by this wave are committed in `PROAME.Contracts`
-- [ ] All navigation route names used by this wave are committed in `AppShell.xaml`
-- [ ] All DI registrations that any subagent in this wave will inject are committed in `MauiProgram.cs`
+- [ ] All `interface` types consumed by this wave are committed in `Proame.Domain` or `Proame.Api`
+- [ ] All `record` DTO types consumed by this wave are committed in `Proame.Contracts`
+- [ ] All route constants used by this wave are committed in the shared navigation code in `Proame.UI`
+- [ ] All DI registrations that any subagent in this wave will inject are committed in `AddProameServices()` / `AddProameUi()` or the head composition root
 
 **If any item is not committed:** create a sequential "contracts commit" task first; do not start the parallel wave until that task's commit is pulled.
 
@@ -513,7 +512,7 @@ Terminate and restart if ANY of these are true:
 | Spec gap resolution (blocking) | Helder | Set status `blocked: spec gap`; stop and wait |
 | New interface or DTO signature | Main agent + Helder | Commit spec with signature; Helder reviews before wave dispatches |
 | EF Core migration | Main agent | Post-wave verification includes migration review |
-| DI registration change in `MauiProgram.cs` | Main agent | Single-writer serialized; main agent verifies after commit |
+| DI registration change in a composition root or `AddProame*()` extension | Main agent | Single-writer serialized; main agent verifies after commit |
 | Architecture-level decision (new layer, new pattern) | Helder | Cannot proceed without explicit approval; set `blocked: awaiting Helder review` |
 | Irreversible action (drop column, remove interface method) | Helder | Bounded autonomy rule applies; stop and document |
 | Spec content (requirements.md, design.md) | Helder | Subagents may not write or rewrite specs |
@@ -533,21 +532,21 @@ Terminate and restart if ANY of these are true:
 |------|---------|--------------|-----|
 | **Standard** | Single-layer change, no shared interfaces, no schema changes | Spot-check AC traceability + build pass | Same session |
 | **Elevated** | Multi-layer change, new service/repository method, UI change affecting navigation | Full AC review + E2E emulator check + spec drift check | Within 2 sessions |
-| **Architectural** | New public interface, schema migration, changes to MauiProgram.cs, changes to shared contracts | Full review by Helder + Adversarial Critic pass + Verifier subagent | Must be reviewed before next wave starts |
+| **Architectural** | New public interface, schema migration, changes to composition roots, changes to shared contracts | Full review by Helder + Adversarial Critic pass + Verifier subagent | Must be reviewed before next wave starts |
 
 ### How to classify a task's review lane
 
 Default is **Standard**. Escalate to **Elevated** if ANY of these are true:
 - Task touches ≥ 2 architectural layers
-- Task adds or modifies a ViewModel command
+- Task adds or modifies a component command or callback
 - Task adds or modifies a navigation route
 - Task modifies a page's data loading behavior
 
 Escalate to **Architectural** if ANY of these are true:
 - Task creates or modifies a domain interface or DTO record
 - Task adds an EF Core migration
-- Task changes DI registrations in `MauiProgram.cs`
-- Task modifies `AppShell.xaml` or `AppShell.xaml.cs`
+- Task changes DI registrations in a composition root or `AddProame*()` extension
+- Task modifies the shared layout or navigation in `Proame.UI`
 - Task changes a method signature that has existing consumers
 
 **Architectural-lane tasks must not be merged into the main work queue as if they are Standard.** They require explicit acknowledgment by the main agent before the next wave is dispatched.
@@ -576,9 +575,9 @@ Not all subagent tasks require Sonnet. Assigning `haiku` to eligible tasks cuts 
 | Docs-only updates (task-log, handoff, BACKLOG entry) | ✅ Yes | Always — no code |
 | `.sln` registration of new files | ✅ Yes | Mechanical pattern, no logic |
 | EF Core migration-only (no entity change, no repo change) | ✅ Yes | Generated output, well-defined pattern |
-| Boilerplate file scaffolding (empty ViewModel shell, empty page XAML) | ✅ Yes | Template-driven, no business logic |
+| Boilerplate file scaffolding (empty component shell, empty page markup) | ✅ Yes | Template-driven, no business logic |
 | Test scaffolding (empty test class, AC tag stubs, no assertions) | ✅ Yes | Mechanical structure only |
-| XAML-only cosmetic change (color, padding, label text — no binding change) | ✅ Yes | Single-file, no logic |
+| Markup-only cosmetic change (color, padding, label text — no binding change) | ✅ Yes | Single-file, no logic |
 | Single-file rename / string replacement | ✅ Yes | Mechanical, deterministic |
 | Service method with pure validation logic (no EF, no DI, no navigation) | ⚠️ Evaluate | Only if spec is complete and unambiguous |
 | Any task touching ≥ 2 architectural layers | ❌ No | Requires cross-layer reasoning |
@@ -593,9 +592,9 @@ Add `Model: haiku` to the role scope block for eligible tasks:
 
 ```
 Role: Implementor
-Scope: Register new spec files in PROAME.sln
+Scope: Register new spec files in Proame.sln
 Model: haiku
-Files owned: PROAME.sln
+Files owned: Proame.sln
 Files off-limits: all others
 ```
 

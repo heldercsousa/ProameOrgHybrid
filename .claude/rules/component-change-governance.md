@@ -2,12 +2,12 @@
 
 > Full detail (governed-component list, four-gate specifics, artifacts template, no-bundling rationale): `.claude/library/component-safety-gate.md`. The non-negotiables below stay inline (`[HARD RULE]`).
 
-A change to any **governed component** (a custom UI component consumed by 2+ pages/views — e.g. `SearchAppBar`, `SmallAppBar`, `ListItem`, `EmptyState`, `AutocompleteField`, `CrudListView`) ripples across every consumer. Such a change is a deliberate, tracked, reviewed act — never a side effect of a feature task.
+A change to any **governed component** (a custom UI component in `Proame.UI` consumed by 2+ pages/components — e.g. `AppBarBase`-derived bars, `EmptyState`, `ListItemRow`, `AutocompleteField`, `CrudListBase`, `FloatingToolbar`) ripples across every consumer. Such a change is a deliberate, tracked, reviewed act — never a side effect of a feature task.
 
 ## The Rule `[HARD RULE]` — all four gates required, in order, before any edit
 
-1. **Dedicated task** for the component change + explicit MD3 review against m3.material.io.
-2. **Consumer map** — grep every `<local:ComponentName` / `x:Reference` usage (never from memory).
+1. **Dedicated task** for the component change + explicit MD3 review against m3.material.io, mapped to the MudBlazor component that implements it.
+2. **Consumer map** — grep every component tag usage (e.g. `<AppBar` or the shared list component tag) and every `@page`/parameter binding (never from memory).
 3. **Per-consumer risk assessment** — one line per consumer: what could break + verification step.
 4. **Helder approval** recorded before implementation begins.
 

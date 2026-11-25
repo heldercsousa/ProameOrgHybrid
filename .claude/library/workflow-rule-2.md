@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Development Workflow — Reference — Rule 2 — Subagent Delegation (full detail)
 
@@ -13,9 +12,9 @@
 | Main agent does | Subagent does |
 |----------------|---------------|
 | `dotnet build` | Any file creation or edit outside the ITF lane |
-| `dotnet test` | ViewModels, pages, services, repositories |
-| `dotnet ef migrations add` | XAML, code-behind, multi-line DI registration |
-| `git status`, `git add`, `git commit` | Route additions, AppShell registration |
+| `dotnet test` | Components, pages, API endpoints, services, repositories |
+| `dotnet ef migrations add` | `.razor` / `.razor.cs`, multi-line DI registration |
+| `git status`, `git add`, `git commit` | Route additions, layout/navigation registration |
 | Reading spec before briefing subagent | Everything in `crud-pages.md` |
 | Read lane — grep + ≤ 2 source files to confirm a diagnosis | Exploration — flows, surveys, consumer maps |
 | ITF lane — a diagnosed 1-file / ≤ 5-line fix (`/pro-itf`) | — |
@@ -29,9 +28,9 @@
 | Task type | Max files touched | Max estimated effort |
 |-----------|-------------------|----------------------|
 | New service method + tests | 4 files | 90 min |
-| New ViewModel + page + tests | 5 files | 2 hours |
+| New component + page + endpoint + tests | 5 files | 2 hours |
 | Migration + repository + tests | 4 files | 90 min |
-| UI page only (XAML + code-behind) | 3 files | 60 min |
+| UI page only (`.razor` + `.razor.cs`) | 3 files | 60 min |
 | Full CRUD feature (all layers) | Split into 2+ tasks | — |
 
 **Rule:** If a proposed task exceeds these limits, split it before dispatching.
@@ -58,15 +57,15 @@ Some files must never be edited by more than one agent at a time:
 
 | File | Reason |
 |------|--------|
-| `MauiProgram.cs` | DI registration — ordering matters; parallel edits produce conflicts |
-| `AppShell.xaml` / `AppShell.xaml.cs` | Route registration — one canonical route table |
-| `AppDbContext.cs` | EF Core model config — entity set definitions must be coherent |
+| `src/Proame.App/MauiProgram.cs`, `src/Proame.Web/Program.cs`, `src/Proame.Api/Program.cs` | DI and host composition — ordering matters; parallel edits produce conflicts |
+| The MudTheme definition file in `Proame.UI` | Single palette and component-defaults source — parallel edits produce divergent tokens |
+| `AppDbContext.cs` (`Proame.Infrastructure`) | EF Core model config — entity set definitions must be coherent |
 | Any file under a `Migrations/` folder | EF migrations are sequential by design. Match on the folder, not on a `*Migration.cs` name pattern — EF generates `20260407190608_PersonConfigFixes.cs`, which no name-suffix rule catches (corrected 2026-07-21) |
 | `GlobalUsings.cs` (any project) | Global using declarations — merge conflicts produce duplicate errors |
-| `Directory.Build.props` | Shared MSBuild properties — parallel edits produce conflicts |
+| `Directory.Build.props`, `Directory.Packages.props` | Shared MSBuild and central package versions — parallel edits produce conflicts |
 | `tasks.md` (any spec) | Task status tracking — parallel checkbox edits produce divergent state |
 
-**ITF soft / hard split `[added 2026-11-03]`:** for the ITF lane only (condition C5), `MauiProgram.cs`, `GlobalUsings.cs` and `Directory.Build.props` are the **soft** set — eligible when the declaration carries `"sole_writer": true` after the sole-writer check (`/pro-itf` step 2). `AppShell.xaml(.cs)`, `AppDbContext.cs`, `tasks.md` and anything under `Migrations/` are the **hard** set — never ITF-eligible. The split does not relax wave planning: two tasks owning the same registry file are still serialized. Guard 3 mirrors this split in `_ITF_SEQUENTIAL_SOFT` / `_ITF_SEQUENTIAL_HARD`.
+**ITF soft / hard split `[added 2026-11-03]`:** for the ITF lane only (condition C5), the three composition roots, `GlobalUsings.cs`, `Directory.Build.props` and `Directory.Packages.props` are the **soft** set — eligible when the declaration carries `"sole_writer": true` after the sole-writer check (`/pro-itf` step 2). The MudTheme file, `AppDbContext.cs`, `tasks.md` and anything under `Migrations/` are the **hard** set — never ITF-eligible. (Guard 3 constants in the ITF scripts still carry the inherited MAUI file names and must be updated to this list by a scripts task.) The split does not relax wave planning: two tasks owning the same registry file are still serialized. Guard 3 mirrors this split in `_ITF_SEQUENTIAL_SOFT` / `_ITF_SEQUENTIAL_HARD`.
 
 **How to add entries:** If a session discovers a new hotspot file, add it to this registry before ending the session — and to the hard set in `constitutional-guard.py` unless Helder places it in the soft set.
 
@@ -74,11 +73,11 @@ Some files must never be edited by more than one agent at a time:
 
 Every subagent must complete ALL of these steps in order before stopping:
 
-1. **Invoke `superpowers:verification-before-completion`** — catches non-negotiable violations (DevExpress-first, SafeAreaEdges, English-only, no DisplayAlert, etc.)
+1. **Invoke `superpowers:verification-before-completion`** — catches non-negotiable violations (MudBlazor-only UI, one RCL for all UI, English-only code, MudDialog instead of native dialogs, etc.)
 2. **Build:** Run `dotnet build` and confirm 0 errors. If build fails, apply the build retry cap (max 3 attempts). Document result in Verification evidence.
 3. **Test:** If any `.cs` implementation file was changed, run `dotnet test` and confirm 0 failures. Document result. Skip only if no code files were modified.
 4. **Post-edit re-read:** Re-read the affected section of every edited file and confirm correctness.
-5. **.sln registration — BLOCKING:** For every file created, moved, or deleted in `Docs/` or `.claude/`: update `PROAME.sln` now (same commit). See `constraints-registry.md § Visual Studio Solution (.sln)` for exact pattern. Do NOT skip even if only docs changed.
+5. **.sln registration — BLOCKING:** For every file created, moved, or deleted in `Docs/` or `.claude/`: update `Proame.sln` now (same commit). See `constraints-registry.md § Visual Studio Solution (.sln)` for exact pattern. Do NOT skip even if only docs changed.
 6. **Living spec check:** Review decisions made during implementation — write back any undocumented decisions to the spec.
 7. **Task-log:** Complete the task-log entry including Changed files, Verification evidence, and AC traceability matrix (if applicable).
 8. **Commit:** Commit all changed files including any spec updates.
@@ -181,16 +180,16 @@ implementor; there is no partial qualification.
 | C0 | A **declaration** exists in the worktree where the edit occurs, naming this file |
 | C1 | Exactly **1 file**, **≤ 5 changed lines** (guard's upper-bound count) |
 | C2 | Fix **fully diagnosed** — root cause, exact file and exact line recorded before the edit. The diagnosis may come from a stack trace, a subagent report, or the **read lane** (grep + ≤ 2 source files, `orchestrator.md § Orchestrator Read-Scope`); if it needs more than that, it is not fully diagnosed *(amended 2026-11-03)* |
-| C3 | Target is **not** `.xaml` / `.xaml.cs` |
+| C3 | Target is **not** a `.razor` / `.razor.cs` file (multi-file UI changes go through the subagent lane) |
 | C4 | Target is **not** a governed component (`component-change-governance.md`) |
-| C5 | Target is **not** in the hard sequential-only set; a **soft-set** file (`MauiProgram.cs`, `GlobalUsings.cs`, `Directory.Build.props`) qualifies only with `"sole_writer": true` in the declaration after the sole-writer check (`§ Sequential-only file registry`, `/pro-itf` step 2) *(amended 2026-11-03)* |
+| C5 | Target is **not** in the hard sequential-only set; a **soft-set** file (the composition roots, `GlobalUsings.cs`, `Directory.Build.props`, `Directory.Packages.props`) qualifies only with `"sole_writer": true` in the declaration after the sole-writer check (`§ Sequential-only file registry`, `/pro-itf` step 2) *(amended 2026-11-03)* |
 | C6 | Severity ≤ Major **and** no regression test is mandatory per `bug-tracking.md`. In practice: Critical always dispatches; Major dispatches wherever testable. The lane's population is Minor bugs, UI-only Major bugs verified by manual E2E, and non-bug trivia |
 | C7 | Edit is in a **worktree on a task branch** (a throwaway spike branch qualifies) — ITF grants NO worktree exemption |
 | C8 | Build (0 errors) + affected tests green before commit |
 
 **Opt-in is explicit.** Before editing, the orchestrator (a) writes `<worktree>/.itf-active` —
 worktree root, never repo root — and (b) logs one line in the feature's `task-log.md`:
-`ITF: BUG-050 — SongFormViewModel.cs — root cause: SelectArtist omits IsArtistLocked = true — expected 1 line.`
+`ITF: BUG-050 — SongFormPage.razor.cs — root cause: SelectArtist omits IsArtistLocked = true — expected 1 line.`
 The orchestrator **deletes the marker as the final step of the ITF commit**; a 30-minute expiry is
 the safety net for a dead session.
 

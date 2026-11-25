@@ -216,7 +216,7 @@ Context window exhaustion degrades output quality before the window is fully use
 - Subagent contradicts a decision it made earlier in the same session
 - Subagent asks about information it was given in the briefing
 - Subagent produces code that duplicates something it already wrote
-- Subagent forgets a constraint it acknowledged earlier (e.g., uses `DisplayAlert` after being told not to)
+- Subagent forgets a constraint it acknowledged earlier (e.g., uses `window.alert` or a native dialog after being told not to)
 - Build errors reference types or namespaces the subagent invented rather than read from the spec
 - Subagent output becomes shorter and less specific with each iteration
 - Subagent claims work is done but Changed files list is sparse relative to the task scope

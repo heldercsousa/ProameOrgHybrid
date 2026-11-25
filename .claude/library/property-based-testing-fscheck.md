@@ -1,6 +1,6 @@
 # Property-Based Testing with FsCheck — Reference
 
-> Extracted from `.claude/rules/testing.md` (2026-07-05, rules-file-refactoring Task 09–10). Its own on-demand file because PBT applies to a minority of methods (invariants across an input space) — no reason to carry it in the unconditionally-loaded rule. Discovered via the `myvocalist-coding` skill map or the `testing.md` routing table.
+> Extracted from `.claude/rules/testing.md` (2026-07-05, rules-file-refactoring Task 09–10). Its own on-demand file because PBT applies to a minority of methods (invariants across an input space) — no reason to carry it in the unconditionally-loaded rule. Discovered via the `proame-coding` skill map or the `testing.md` routing table.
 > Content moved verbatim; corrupted code fences normalized only.
 
 Use property-based testing (PBT) for service methods whose correctness must hold across a wide range of inputs — not just the specific examples in example-based tests.
@@ -16,7 +16,7 @@ Use property-based testing (PBT) for service methods whose correctness must hold
 
 ## Setup
 
-Add to `MyVocaList.Tests.csproj`:
+Add to `Proame.Tests.csproj`:
 
 ```xml
 <PackageReference Include="FsCheck.Xunit" Version="2.*" />

@@ -18,7 +18,7 @@ In spec files (`requirements.md`, `design.md`) and in task descriptions, vague q
 | "the list loads quickly" | "the list renders within 300 ms on a mid-range Android device" |
 | "handles errors gracefully" | "returns `(false, "message")` on failure; no exception escapes the service boundary" |
 | "the form validates correctly" | "name ≤ 30 chars; empty name returns `(false, "Name is required")`" |
-| "secure storage" | "stored via `SecureStorage.SetAsync`; never in `Preferences` or plain SQLite" |
+| "secure storage" | "stored via the platform secure store (`SecureStorage`); never in `Preferences`, local files or the browser's local storage" |
 
 If the threshold is not yet known, write: `[threshold TBD — establish before implementation starts]`. This is valid in a draft spec; it is **not** valid when a task is dispatched to a subagent.
 
@@ -158,7 +158,7 @@ Create `Docs/Management/[section-or-filing-dir]/[feature]/spec-changelog.md` the
 | Validation rules from user perspective | EF Core entity configuration |
 | Business invariants | Navigation stack design |
 | Out of scope statements | Repository method signatures |
-| Domain vocabulary | ViewModel state machine |
+| Domain vocabulary | Component state machine |
 
 **Rule:** If you cannot decide which file a piece of information belongs in, ask: "Is this about what the user needs, or how the system is built?" User need → `requirements.md`. System construction → `design.md`.
 
@@ -280,7 +280,7 @@ A spec that is too long is as harmful as one that is too short. Over-specified s
 | Over-specified (avoid) | Thin (prefer) |
 |------------------------|---------------|
 | "The VenueRepository will use a LEFT JOIN with parameterized WHERE clause" | "Venues are searchable by name (case-insensitive)" |
-| "The ViewModel will call `ReplaceRange` in a `RunOnUiThread` block" | "The list updates immediately after a venue is added" |
+| "The list component will apply one state update after the page loads" | "The list updates immediately after a venue is added" |
 | "The button will have a 48dp minimum touch target" | "All touch targets meet platform UX standards" |
 
 **Spec length guideline:** `requirements.md` should not exceed 2 pages. `design.md` should not exceed 3 pages. If you find yourself writing more, split the feature into sub-features.

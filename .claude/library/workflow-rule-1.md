@@ -35,7 +35,7 @@ The spec is the authoritative description of intended behavior. When spec and co
 | Docs/rules/config update | < 30 min | No | Minimal | Commit message |
 | Small isolated change (1 file, no interface change, < 1 hour) | 30–60 min | No | Light | `tasks.md` entry + commit message (only if task is tracked in an active feature plan) |
 | Multi-file change within one layer | 1–2 hours | No | Standard | `tasks.md` + inline design notes in commit |
-| Cross-layer feature (any two of: Domain, Infra, Services, UI) | 2–8 hours | **Yes** | Full | All three spec files |
+| Cross-layer feature (any two of: Domain, Infrastructure, API services, UI) | 2–8 hours | **Yes** | Full | All three spec files |
 | Multi-session feature | > 8 hours | **Yes** | Full + Decision log | All three spec files + `decisions.md` |
 | New feature (any complexity) | Any | **Yes** | Full | All three spec files |
 | Non-trivial refactor (cross-layer, affects interfaces) | Any | **Yes** | Full | `design.md` + `tasks.md` |

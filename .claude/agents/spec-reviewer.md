@@ -5,7 +5,6 @@ model: haiku
 tools: Read, Grep, Glob
 ---
 
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Spec Reviewer Agent — PROAME
 
@@ -52,16 +51,16 @@ Fresh-context spec reviewer. Read the spec with no prior context bias — verify
 
 ### Constitutional Compliance (CLAUDE.md non-negotiables)
 
-- [ ] No `DisplayAlert`, `DisplayActionSheet`, or `DisplayPromptAsync` in any design decision — must use `SfBottomSheet` (pages not yet migrated keep `dx:BottomSheet`)
-- [ ] Syncfusion-first: no stock MAUI component used where a Syncfusion equivalent exists; no new DevExpress usage
-- [ ] Business logic is described as living in Services only — not ViewModels or pages
+- [ ] No `DisplayAlert`, `DisplayActionSheet`, `DisplayPromptAsync`, `window.alert` or `window.confirm` in any design decision — dialogs are `MudDialog` / `MudMessageBox` only
+- [ ] MudBlazor only: no second component library; no hand-rolled control where a MudBlazor equivalent exists
+- [ ] Business logic is described as living in the API services layer only — not components or pages
 - [ ] All component names, style keys, and BindableProperty names use official MD3 terminology
 - [ ] All identifiers, labels, and log messages are English only
 
 ### Design Completeness
 
 - [ ] `design.md` includes full interface signatures (not just names)
-- [ ] `design.md` lists all layers affected (Domain / Infra / Services / MAUI)
+- [ ] `design.md` lists all layers affected (Domain / Infrastructure / API services / UI / heads)
 - [ ] Invariants & Postconditions are documented
 - [ ] No placeholder values: no "TBD", "TODO", "add appropriate validation", "handle as needed"
 

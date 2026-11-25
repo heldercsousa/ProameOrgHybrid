@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Development Workflow — Reference — Hook Enforcement Notes + SDD Invariant
 
@@ -21,7 +20,7 @@ The hooks in `.claude/settings.json` enforce specific rules from this document.
 | `SessionStart` hook | New session begins | Hook health verification |
 | `SessionStart` hook, matcher `compact` | After a compaction | One line: re-read the task-log Checkpoint and the active spec. Replaced the `PostCompact` echo on 2026-11-15 (that event's output reaches nobody) |
 | `UserPromptSubmit` hook | Prompt names implementation work (`implement`, `dispatch`, `resume`, `start the task/feature/wave`) | WORKFLOW GATE line (Rule 1, Rule 2). Narrowed on 2026-11-15; it used to fire on `add`, `fix`, `update`, `write`, `continue` |
-| `pre-commit` (`process_checks.py`) | Staged `Docs/`, `PROAME.sln` or `.xaml` | `.sln` registration incl. moves/deletes; `SafeAreaEdges="Container"` (or `"All"` on pages with text input) on ContentPages; `To Review` task-log entries need `### Changed files` |
+| `pre-commit` (`process_checks.py`) | Staged `Docs/`, `Proame.sln` or `.razor` / `.razor.cs` | `.sln` registration incl. moves/deletes; `To Review` task-log entries need `### Changed files`. Safe-area and XAML checks do not apply to the MudBlazor stack (see `process_checks.py` for the live rule set) |
 | `commit-msg` (`process_checks.py`) | Every commit | `feat:`/`refactor:`/`perf:`/`amend:` need an `Item: <backlog-id>` trailer naming a registered item; docs/chore/merge/fix exempt |
 | `pre-commit` (`ledger-row-guard.py`) | Staged `LEDGER.md` | Ledger row length (max 450 chars) |
 

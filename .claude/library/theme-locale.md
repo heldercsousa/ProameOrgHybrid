@@ -1,141 +1,48 @@
 # Theme & Locale Rules
 
+> On-demand reference for the MudBlazor theme (Material Design 3 seeded from the PROAME logo green) and for pt-BR localization. Tokens are mirrored from the prototype: `Docs/Benchmark/prototype/styles.css`. Decision record: `Docs/Benchmark/decisions.md`.
+
 ## Theme Setup
 
-DevExpress is initialized in `MauiProgram.cs` with:
-```csharp
-.UseDevExpress(useLocalization: false)
-.UseDevExpressCollectionView()
-.UseDevExpressControls()
-.UseDevExpressEditors()
-```
+- One `MudTheme` is defined in `Proame.UI` (a single definition file, sequential-only per `rules/workflow.md`) and applied once in the shared layout (`MudThemeProvider`).
+- Both heads use the same theme: the MAUI Blazor Hybrid head (`Proame.App`) and the Blazor Web head (`Proame.Web`) render the same `Proame.UI` layout.
+- Light and dark schemes: `PaletteLight` and `PaletteDark`, both defined in the same theme file. The user's choice follows the system setting by default; the admin and public areas use the same scheme logic.
+- Typography and shape come from the theme's `Typography` and `LayoutProperties` (`DefaultBorderRadius`), not from per-component overrides.
 
-No `ThemeManager` call is used. The app is **dark mode only** (light mode is planned for v2.0).
+## Colour System
 
-## Theme Approach
+- **Seed:** the PROAME logo green `#A8CF45`. The MD3 tonal palette is generated from it (primary, secondary, tertiary, neutral, error), and the mapping to MudBlazor palette slots is recorded in the theme file.
+- **Brand green is a fill, never text.** `#A8CF45` on a light surface is about 1.8:1 contrast. Use it as a fill with dark ink (on-brand `#141F00`, about 11:1), and as the primary colour of the dark scheme (text on `#1B2A07`, about 9:1).
+- **Text-bearing primary on light surfaces** uses the tone-40 primary (`#4C6707`, about 6.4:1 with white).
+- **WCAG AA** is the target for every text and background pair. Check new pairs against the tokens before use.
+- Neutrals are slightly green-tinted (from the same seed) so greys harmonise with the brand.
+- Category colours (if the public area uses them) are tone-40 hues with at least 4.5:1 contrast with white text.
 
-**Applied palette:** Indigo (exported from Google Material Theme Builder, 2026-02-27)
-**Approach:** Option B — Full token override in `MaterialColors.xaml`. No `ThemeManager.Theme` seed color is set; all colors live in the XAML ResourceDictionary.
-**Approximate seed color:** `#4858AB` (indigo — derived from `InversePrimary` value)
+## Referencing Colours
 
-**Tonal palette section note:** `MaterialColors.xaml` still contains a tonal palette section (Primary0–Primary100, etc.) from the previous Pink/Purple/Gold theme. These are only referenced by gradient brushes and represent design debt — they do not affect semantic token usage. Update separately if gradients need to match the new palette.
-
-## Color System
-
-The app uses a Material Design 3 color system defined in:
-- `Resources/Styles/MaterialColors.xaml` — tonal palettes + semantic tokens
-- `Resources/Styles/MaterialStyles.xaml` — styles for DX controls, Shell, typography
-
-Both are merged in `App.xaml` via `ResourceDictionary.MergedDictionaries`.
-
-### Semantic Tokens (Dark Mode — Active)
-
-| Token | Value | Use |
-|-------|-------|-----|
-| `Primary` | `#BAC3FF` | Buttons, active states, icons |
-| `OnPrimary` | `#15267B` | Text/icon on primary |
-| `PrimaryContainer` | `#5C6BC0` | Container backgrounds |
-| `OnPrimaryContainer` | `#F8F6FF` | Text on primary container |
-| `Secondary` | `#BFC4EC` | Secondary actions |
-| `OnSecondary` | `#292E4E` | Text on secondary |
-| `SecondaryContainer` | `#3F4566` | Chip/badge backgrounds |
-| `OnSecondaryContainer` | `#AEB3DA` | Text on secondary container |
-| `Tertiary` | `#FFABF2` | Accent color |
-| `OnTertiary` | `#551153` | Text on tertiary |
-| `Error` | `#FFB4AB` | Error states |
-| `OnError` | `#690005` | Text on error |
-| `Background` | `#121318` | Page backgrounds |
-| `Surface` | `#121318` | Cards, sheets |
-| `OnSurface` | `#E3E1E9` | Primary text |
-| `OnSurfaceVariant` | `#C6C5D3` | Secondary text, icons |
-| `SurfaceVariant` | `#454651` | Dividers, chips |
-| `SurfaceContainerLowest` | `#0D0E13` | Deepest surface (new in indigo theme) |
-| `SurfaceContainerLow` | `#1B1B21` | List item backgrounds |
-| `SurfaceContainer` | `#1F1F25` | Tab bar, elevated surfaces |
-| `SurfaceContainerHigh` | `#29292F` | Pressed states |
-| `SurfaceContainerHighest` | `#34343A` | Input field backgrounds |
-| `Outline` | `#8F909D` | Borders |
-| `OutlineVariant` | `#454651` | Subtle dividers |
-
-### Custom Semantic Colors (not MD3 standard)
-| Token | Value | Use |
-|-------|-------|-----|
-| `Success` | `#2E7D32` | Positive feedback |
-| `Warning` | `#FF9800` | Caution states |
-| `Info` | `#2196F3` | Informational |
-
-### Gradients (defined in MaterialColors.xaml)
-- `AppBackgroundGradient` — page background
-- `CardBackgroundGradient` — card surfaces
-- `SelectedGradient` — selected item highlight
-- `ButtonGradient` — button backgrounds
-- `FabGradient` — FAB background
-
-## Referencing Colors
-
-**In XAML — two valid ways:**
-
-```xml
-<!-- StaticResource (compile-time resolved, preferred for defined tokens) -->
-BackgroundColor="{StaticResource Surface}"
-TextColor="{StaticResource OnSurface}"
-
-<!-- dx:ThemeColor (DevExpress runtime token, required for some DX properties) -->
-CheckedCheckBoxColor="{dx:ThemeColor Primary}"
-BorderColor="{dx:ThemeColor Primary}"
-```
-
-**Rule:** Prefer `{StaticResource X}` for layout properties. Use `{dx:ThemeColor X}` when DevExpress requires it (e.g., `CheckEdit.CheckedCheckBoxColor`, `DXButton.IconColor` in certain contexts). Both token names are identical.
-
-**Never use:** raw hex colors, `Color.FromArgb`, or `Colors.X` in XAML.
-
-**Hex format in MaterialColors.xaml:** Always use plain 6-digit hex (`#RRGGBB`) for opaque colors. Never use the 8-digit `#FFRRGGBB` form — MAUI accepts both but mixing them in the same file is a maintenance hazard.
+- Components use MudBlazor colour enums (`Color.Primary`, `Color.Secondary`, `Color.Error`) or the theme's semantic CSS variables. No hex in `.razor`, `.razor.cs` or component CSS.
+- Custom colour that is not in the theme: add it to the theme file as a named token first, then reference the token.
+- Gradients and decorative fills are defined once in the shared stylesheet, never repeated per page.
 
 ## Typography
 
-Fonts configured in `MauiProgram.cs`:
-- `RobotoRegular` — body text, labels
-- `RobotoMedium` — medium-weight labels, button text
-- `RobotoBold` — headings, brand name
+- Font family from the theme (`Typography.Default`); the brand font is recorded in `decisions.md` when chosen. Until then, the system font stack is the default.
+- Use MudBlazor type variants (`Typo.h1`–`Typo.body2`, `Typo.caption`) — not inline font sizes.
+- Minimum body text size keeps readability on phones; check it on the Hybrid head, not only in the browser.
 
-Typography styles defined in `MaterialStyles.xaml`:
-```xml
-StyleClass="Display.Large"   <!-- 57pt RobotoRegular -->
-StyleClass="Headline.Large"  <!-- 32pt RobotoRegular -->
-StyleClass="Title.Medium"    <!-- 16pt RobotoMedium -->
-StyleClass="Body.Medium"     <!-- 14pt RobotoRegular -->
-StyleClass="Label.Large"     <!-- 14pt RobotoMedium -->
-```
+## Component Styling
 
-## Defined Styles (MaterialStyles.xaml)
-
-### DXButton styles
-- `FilledButton` — Primary background, OnPrimary text, CornerRadius=20
-- `FilledTonalButton` — SecondaryContainer background
-- `OutlinedButton` — Transparent + Outline border
-- `TextButton` — Transparent, Primary text
-- `FlyoutMenuButton` — Navigation drawer items
-
-### TextEdit (implicit style)
-- `BoxMode="Outlined"`, `FocusedBorderColor=Primary`, `BorderColor=Outline`
-- `BackgroundColor=SurfaceContainerHighest`, `TextColor=OnSurface`
-- Note: `BoxCornerRadius` removed in DevExpress 25.1.3+
-
-### Shell (implicit style)
-- `BackgroundColor=Surface`, `ForegroundColor=OnSurface`
-- `NavBarHasShadow=False`, `TabBarBackgroundColor=SurfaceContainer`
-
-### Container styles
-- `PageContainer` — VerticalStackLayout, Padding=16, Spacing=16
-- `SectionContainer` — VerticalStackLayout, Spacing=12, Margin bottom=24
+- Prefer MudBlazor parameters (`Variant`, `Color`, `Size`, `Elevation`) over custom CSS.
+- Shared overrides (for example, density or default corner radius) live in the theme's `Components` section or in the one shared stylesheet.
+- Per-page CSS isolation (`.razor.css`) is for layout only, never colours.
 
 ## Locale
 
-`useLocalization: false` is set in `UseDevExpress()`. No localization framework is active.
-All text is English only. No `.resx` files exist yet.
+- **User-facing text is pt-BR.** Code, comments, logs and identifiers are English (`CLAUDE.md § Constitutional Constraints`).
+- Strings for the UI come from the resource/localization layer (`.resx` or a typed string catalogue in `Proame.UI`); components reference keys, not literal text, when the string is reused. One-off labels in markup are allowed if they are pt-BR and not reused.
+- Culture is set to `pt-BR` for the app (number, date and currency formats). Dates display as `dd/MM/yyyy`; decimals use a comma.
+- MudBlazor's own strings (pickers, paging, dialogs) are set to pt-BR through its localization support (version-specific — confirm with the MudBlazor MCP).
+- Right-to-left is not a target; no RTL work is planned.
+- Validation and error messages are pt-BR (`dialogs-validation.md`).
 
-**Date input/display format is locale-dependent.** English speakers expect `MM/dd/yyyy`; Brazilian
-Portuguese expects `dd/MM/yyyy` (future); Japanese is TBD. The app plans 6 languages, so the
-**Form Validation Standard** (`dialogs-validation.md § Masked inputs — dates`) forbids hard-coding a single
-date format. Because localization is currently disabled (`useLocalization:false`, no `.resx`), locale-aware
-date masks are **future work** — the standard states the intent; implementation waits on localization.
+---

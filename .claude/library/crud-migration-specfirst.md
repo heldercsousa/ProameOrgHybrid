@@ -1,42 +1,37 @@
 # CRUD Page Design Laws — Page migration checklist + spec-first development
 
-> Section file split from `crud-pages.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `crud-pages.md`.
+> Section file. Index + never-miss rules: `crud-pages.md`.
 
 ## Page migration checklist
 
-Use when migrating an existing CRUD list page to `CrudListView` (or building a new one from scratch).
+Use when migrating an existing CRUD list page to `CrudList` (or building a new one from scratch).
 
-**XAML**
-- [ ] Root element is `<pages:CrudListPageBase>` with `xmlns:pages="clr-namespace:MyVocaList.UI.Pages.Base"`
-- [ ] `xmlns:views="clr-namespace:MyVocaList.UI.Components"` declared for CrudListView
-- [ ] `SafeAreaEdges="Container"` (or `"All"` on pages with text input) present on the root element
-- [ ] `Shell.BackButtonBehavior IsVisible="False" IsEnabled="False"` present
-- [ ] `Shell.TitleView` contains `Grid` with `SmallAppBar` + `SearchAppBar`
-- [ ] Single `<views:CrudListView>` element as page content — no manual ShimmerView, DXCollectionView, FloatingToolbar, EmptyState, or BottomSheet in the page XAML
-- [ ] All required BindableProperties set (`ItemsSource`, `SelectedItemsSource`, `IsEmptyNoItems`, `EmptyNoItemsIllustration`, `EmptyNoItemsHeadline`, `FabCommand`, `FabDescription`)
-- [ ] `ItemTemplate` and `SelectedItemTemplate` slots defined with entity-specific DataTemplates
+**Markup (`.razor`)**
+- [ ] Routable with `@page`; `[Authorize]` present on every admin route
+- [ ] Single `<CrudList>` element as page content — no hand-built table, skeleton, selection bar, empty state or dialog in the page markup
+- [ ] Required parameters set (`Query`, `EmptyTitle`, `SearchPlaceholder`; `OnAdd`/`OnEdit`/`OnDelete` as the page supports them)
+- [ ] Column or row templates are entity-specific and use MudBlazor components only
+- [ ] Page title set through the shared title mechanism
 
-**Code-behind**
-- [ ] Class inherits `CrudListPageBase`
-- [ ] `ListViewModel` abstract property implemented (`protected override ICrudListViewModel ListViewModel => _viewModel;`)
-- [ ] `ViewModel` public property present for compiled-binding DataTemplates
-- [ ] `AttachViewModel()` called from constructor
-- [ ] No `OnCollectionViewScrolled`, `OnSelectionChanged`, or `OnConfirmSheetStateChanged` overrides — CrudListView owns these
+**Code-behind (`.razor.cs`)**
+- [ ] Data callback (`Query`) calls one API endpoint with `CancellationToken`
+- [ ] Navigation through the navigation wrapper, not `NavigationManager` directly
+- [ ] `DisposeAsync` cancels pending work
+- [ ] No row-click, selection or search handlers — `CrudList` owns them
 
-**ViewModel**
-- [ ] Inherits `CrudListViewModelBase<TDto>`
-- [ ] All abstract methods implemented: `FetchPageAsync`, `FetchMoreAsync`, `ExecuteDeleteAsync`, `BuildDeleteConfirmMessage`, `NavigateToAddAsync`, `NavigateToEditAsync`, `RaiseEntityEmptyStateProperties`
-- [ ] Entity-specific `IsEmptyNoXxx` bool property present (e.g. `IsEmptyNoVenues`) and raised inside `RaiseEntityEmptyStateProperties`
-- [ ] `IList SelectedXxxRaw` non-generic wrapper property present for `SelectedItemsSource` binding
+**API and services**
+- [ ] Endpoint returns `(items, total)` with server-side paging and sorting
+- [ ] Business rules live in the service layer; the endpoint maps the service tuple to HTTP results
+- [ ] Authorization enforced on the endpoint, not only in the UI
 
 **DI**
-- [ ] Page and ViewModel both registered as `AddTransient` in `MauiProgram.cs`
+- [ ] Services and repositories registered in the feature's `AddProameServices()` extension; UI registrations in `AddProameUi()`
 
 ---
 
 ## Spec-First Development
 
-Every new CRUD feature gets a spec before any code is written. Copy the structure from `Docs/specs/venues/` — three files:
+Every new CRUD feature gets a spec before any code is written. Use the spec folder structure of the feature (`Docs/Management/[section-or-filing-dir]/[feature]/`) — the files below:
 
 | File | What it answers |
 |------|----------------|

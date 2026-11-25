@@ -1,6 +1,6 @@
 # Mutation Testing with Stryker.NET — Reference
 
-> Extracted from `.claude/rules/testing.md` (2026-07-05, rules-file-refactoring Task 09–10). Its own on-demand file because mutation testing is a periodic quality gate, not per-commit work — no reason to carry it in the unconditionally-loaded rule. Discovered via the `myvocalist-coding` skill map or the `testing.md` routing table.
+> Extracted from `.claude/rules/testing.md` (2026-07-05, rules-file-refactoring Task 09–10). Its own on-demand file because mutation testing is a periodic quality gate, not per-commit work — no reason to carry it in the unconditionally-loaded rule. Discovered via the `proame-coding` skill map or the `testing.md` routing table.
 > Content moved verbatim; corrupted code fences normalized only.
 
 Use mutation testing to detect tests that pass even when the production code is subtly wrong. Stryker.NET introduces small code mutations and verifies that at least one test fails per mutation.
@@ -22,9 +22,9 @@ dotnet tool install -g dotnet-stryker
 ## Running
 
 ```bash
-# From solution root — targets Services project, reports to TestResults/
-dotnet stryker --project MyVocaList.Services/MyVocaList.Services.csproj \
-               --test-project MyVocaList.Tests/MyVocaList.Tests.csproj \
+# From solution root — targets the service layer project, reports to TestResults/
+dotnet stryker --project src/Proame.Api/Proame.Api.csproj \
+               --test-project tests/Proame.Api.Tests/Proame.Api.Tests.csproj \
                --reporter html \
                --output TestResults/Stryker
 ```
@@ -46,7 +46,7 @@ Open `TestResults/Stryker/reports/mutation-report.html` to review surviving muta
 |-------|--------------|
 | Services (Level A methods) | 80% |
 | Repositories (Level B methods) | 60% |
-| ViewModels (Level A state transitions) | 70% |
+| Components with logic (Level A state transitions) | 70% |
 
 > These are minimums, not targets. Aim higher when the effort is justified by risk.
 
@@ -65,8 +65,8 @@ Create `.stryker-config.json` at solution root when exclusions are needed:
 {
   "stryker-config": {
     "mutate": [
-      "MyVocaList.Services/**/*.cs",
-      "!MyVocaList.Services/GlobalUsings.cs"
+      "src/Proame.Api/**/*.cs",
+      "!src/Proame.Api/GlobalUsings.cs"
     ],
     "excluded-mutations": ["StringLiteral"]
   }

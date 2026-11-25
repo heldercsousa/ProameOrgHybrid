@@ -1,135 +1,74 @@
 # UX Patterns
 
+> Component names are MudBlazor. Material 3 intent is mapped to components in the `m3-*.md` files. Touch and accessibility rules apply to the Blazor Hybrid (Android, iOS) and Blazor Web heads alike.
+
 ## Touch Targets
 
-All interactive controls must be at least **48×48dp** (WCAG 2.5.5 / MD3).
+All interactive controls must be at least **48×48 px (CSS)** on touch heads (WCAG 2.5.5 / MD3). Use MudBlazor size and padding props (`Size.Large`, `Class="pa-3"`) or a shared CSS class from the MudTheme tokens — no inline pixel sizes per control.
 
-```xml
-<dx:DXButton WidthRequest="48" HeightRequest="48" CornerRadius="24" ... />
-```
-
-Icon-only FABs use 56×56 with CornerRadius=16 (MD3 standard FAB shape).
+Icon-only FABs use the MudBlazor `MudFab` default size (56 px) with the MD3 shape.
 
 ## Form Validation Timing (pointer)
 
-Form-field validation timing follows the **Form Validation Standard** in `dialogs-validation.md § Form
-Validation Standard` — validate on blur (dirty fields), keystroke-on-error to clear immediately, Save as the
-safety net. Two IxD refinements (Nielsen heuristics) apply:
+Form-field validation timing follows the **Form Validation Standard** in `dialogs-validation.md § Form Validation Standard` — validate on blur (dirty fields), keystroke-on-error to clear immediately, Save as the safety net. Two refinements apply:
 
-- **Do not fire a blur error on a pristine field** the user only tabbed through without editing (error
-  prevention, H5) — validate on blur only once the field is dirty, or on Save. Firing on untouched fields is
-  the "impatient teacher" anti-pattern.
-- **Async guidance/availability checks** (username, duplicate name) must show a **pending status indicator**
-  while in flight (visibility of system status, H1), and every error message must be **specific and
-  actionable** — say what is wrong and how to fix it, never a bare "Invalid" (help users recover, H9).
+- **Do not fire a blur error on a pristine field** the user only tabbed through without editing (error prevention, H5). Validate on blur only once the field is dirty, or on Save.
+- **Async availability checks** (duplicate name, slug in use) show a **pending indicator** (`MudProgressCircular` adornment) while in flight (visibility of system status, H1), and every error message is **specific and actionable** — say what is wrong and how to fix it, never a bare "Inválido" (help users recover, H9). Messages are pt-BR.
 
-The standard itself is single-sourced in `dialogs-validation.md`; this is a pointer.
-
-## ~~MD3 Contextual Action Bar (Multi-Select Mode)~~ — RETIRED
-
-> **This pattern is retired as of the Venues MD3 rebuild (2026-03-29).**
-> The 5-column Grid contextual bar in `Shell.TitleView` is replaced by:
-> - `SmallAppBar.Title` binding showing "N selected" (no separate contextual bar needed)
-> - `FloatingToolbar` for page-level actions (Select All / Edit / Delete)
->
-> See `.claude/rules/crud-pages.md` for the current pattern.
-
-## Form Action Buttons vs Toolbar Action Icons
+## Selection Actions vs Form Actions
 
 These are intentionally different — do not "unify" them:
 
 | Context | Pattern | Reason |
 |---------|---------|--------|
-| Add/Edit form (Shell nav page) | Labeled buttons — `Cancel` + `Save` | User needs label clarity when entering data |
-| Contextual action bar (multi-select) | Icon-only buttons (48×48) | Space is constrained; actions are reversible/confirmable |
+| Add/Edit form (routable page or dialog) | Labelled buttons — "Cancelar" + "Salvar" | Clear labels when entering data |
+| Selection toolbar on a list (`crud-appbar-list-toolbar.md`) | Icon buttons with tooltips and `aria-label` | Space is constrained; actions are confirmable |
 
-Both are correct per MD3. Labeled toolbar actions (`Content="Select all"`) are acceptable
-only when icon meaning is ambiguous.
+Labelled toolbar actions are acceptable only when icon meaning is ambiguous.
 
-## Multi-Select Mode Behavior
+## Selection Behaviour (list pages)
 
-- **Enter**: Long press on an item → `EnterMultiSelectMode(item)` → item is pre-selected → haptic feedback
-- **Tap in multi-select**: DXCollectionView handles selection natively — do NOT double-toggle in `OnItemTapped`
-- **Tap in normal mode**: Navigate to detail/edit page
-- **Select All toggle**: If all selected → deselect all but **remain in multi-select mode** (do not exit)
-- **Exit**: Cancel button or selection count drops to 0 via selection event (suppress exit when programmatically clearing)
-- **Swipe suppressed during multi-select**: `OnSwipeItemShowing` → `e.Cancel = true` when `IsMultiSelectMode`
-
-```csharp
-// Select All — stays in multi-select even when deselecting
-private void ToggleSelectAll()
-{
-    if (IsAllSelected)
-    {
-        _suppressSelectionChangedExit = true;
-        RunOnUiThread(() =>
-        {
-            SelectedItems.ClearRange();
-            _suppressSelectionChangedExit = false;
-        });
-        SelectedCount = 0;
-        return;
-    }
-    IsMultiSelectMode = true;
-    _suppressSelectionChangedExit = true;
-    RunOnUiThread(() =>
-    {
-        SelectedItems.ReplaceRange([.. Items]);
-        _suppressSelectionChangedExit = false;
-    });
-    SelectedCount = Items.Count;
-}
-```
+- Selection is driven by the row checkbox column in `CrudList`; the page adds no selection logic (`crud-appbar-list-toolbar.md § Gestures`).
+- **Select all** toggles: if all visible rows are selected, clear the selection; otherwise select all visible rows. The mode stays on after clearing only while the toolbar is still needed by the page's design.
+- **Clearing selection** happens after a reload that replaces rows, never by re-matching ids on the UI thread.
+- **Exit selection mode** when the selection count drops to 0 (computed from the selection state, not a separate flag).
+- **Row click in selection mode** toggles the row; **row click in browse mode** follows the page's `OnRowClick`, if any.
 
 ## Empty State Positioning
 
-Empty state containers must be **vertically centered**, not top-aligned:
+Empty, error and loading placeholder states are **vertically centred** in their container, not top-aligned:
 
-```xml
-<VerticalStackLayout VerticalOptions="Center"
-                     HorizontalOptions="Center"
-                     Spacing="8" Margin="32">
-    <!-- icon, heading, subtitle -->
-</VerticalStackLayout>
+```razor
+<MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="2" Class="pa-8" Style="min-height: 240px;">
+    <!-- icon, headline, supporting text -->
+</MudStack>
 ```
 
-Never use `VerticalOptions="Start"` for empty/error/loading placeholder states.
+Never align these placeholders to the start of the container.
 
-## Autocomplete — DevExpress docked menu, no customisation (Helder ruling 2026-11-11)
+## Autocomplete — MudAutocomplete, shared wrapper (ruling pending)
 
-**Rule:** every autocomplete uses the shared `UI/Components/TextFields/AutocompleteDXField` (DevExpress `AutoCompleteEdit`)
-with its docked menu below the field, on every window size. Use what the DX editor offers; do not add customisation
-that needs complex code or time (Helder, 2026-11-11: "We will use what DX one have available and avoid any
-customization that would required complex coding and time spent").
+**Rule:** every autocomplete is a `MudAutocomplete` wrapped in the shared field component in `Proame.UI`, so debounce, minimum length, cancellation, pick and clear behave the same everywhere. Behaviour belongs to the component, never to a page.
 
-- **No full-screen Search View on phones.** It would need a custom component; DX has no such mode. The former
-  "Responsive Full-Screen Expansion" rule (2026-07-15, `AutocompleteField` + `AutocompleteMobileField`, now frozen) is
-  abandoned.
-- **No create-new / `Add "<typed text>"` row.** Unpicked text is handled by the consumer on Save (ACF ruling Q1; the
-  Song form creates artists automatically at Save). The former no-match add-new affordance is abandoned.
-- **No "no results" / "Not found" row and no loading indicator.** The menu opens only when there are options
-  (REQ-ACF-31). A slow third-party search (e.g. Deezer) shows its options when the response arrives.
-- Behaviour (debounce, minimum length, pick, X, blur, keyboard) is owned by the component, never by a page.
-  Spec: `Docs/Management/DevCycleCraft/autocomplete-component/changes/2026-09-24-shared-autocomplete-field-pick-lock-via-x-centralised-behaviour/`.
-  DX constraint behind the no-loading rule: `constraints-reference.md` § DevExpress / UI.
+- The menu opens only when there are options. A "no results" row is shown only if the feature spec requires it (`MudAutocomplete` `NoItemsTemplate`).
+- Slow searches show `Loading` in the field while the request is in flight, and the previous request is cancelled when a new search starts.
+- Unpicked typed text is handled by the feature, not the component, unless the spec says otherwise.
+- Component API questions go to the MudBlazor MCP at the manifest version.
 
-MD3 terminology: the docked menu maps to MD3 *Menus — filtering* / exposed dropdown (m3.material.io/components/menus).
+## Badge / Chip Pattern (count)
 
-## Badge / Chip Pattern (event count)
+Use `MudChip` (or `MudBadge` on an icon) for informational counts. Show the count, not just a binary flag:
 
-Use `dx:DXBorder` + `Label` for informational badges. Show count, not just a binary flag:
-
-```xml
-<dx:DXBorder IsVisible="{Binding HasEvents}"
-             BackgroundColor="{StaticResource SecondaryContainer}"
-             CornerRadius="12"
-             Padding="8,4">
-    <Label Text="{Binding EventCount, StringFormat='{0} events'}"
-           FontFamily="RobotoMedium" FontSize="11"
-           TextColor="{StaticResource OnSecondaryContainer}"
-           VerticalOptions="Center" />
-</dx:DXBorder>
+```razor
+@if (item.EventCount > 0)
+{
+    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">
+        @($"{item.EventCount} eventos")
+    </MudChip>
+}
 ```
 
-`HasEvents` is a derived property (`EventCount > 0`) on the DTO — not a separate DB column.
-The repository counts via `v.Events.Count()` in the EF Core projection (translated to SQL COUNT).
+- The count comes from the API DTO (a computed field in the service/query projection), not a separate stored column.
+- Labels are pt-BR and pluralised in code, not with string concatenation in markup.
+
+---

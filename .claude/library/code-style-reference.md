@@ -1,20 +1,20 @@
 # Code Style Reference
 
-> On-demand reference. Loaded via the `myvocalist-coding` skill or a routing pointer from `.claude/rules/code-principles.md`.
+> On-demand reference. Loaded via the `proame-coding` skill or a routing pointer from `.claude/rules/code-principles.md`.
 > Language rule: English only — see `CLAUDE.md § Constitutional Constraints`.
 > Spec language determinism (prohibited vague terms): see `workflow.md § Spec quality four-gate review`.
 
 ## Contents
 
 - [XML Documentation Comments](#xml-documentation-comments)
-- [Nullable Reference Types — DISABLED](#nullable-reference-types--disabled)
+- [Nullable Reference Types](#nullable-reference-types)
 - [C# Style](#c-style)
 - [Service Return Patterns](#service-return-patterns)
 - [Exception Handling](#exception-handling)
 - [Global Usings](#global-usings)
 - [Pagination](#pagination)
-- [DI Registration Conventions](#di-registration-conventions-mauiprogramcs)
-- [UI Thread Performance — ObservableRangeCollection](#ui-thread-performance--observablerangecollection)
+- [DI Registration Conventions](#di-registration-conventions)
+- [UI Rendering Performance](#ui-rendering-performance)
 - [Loading Pattern — Lists and Data Loads](#loading-pattern--lists-and-data-loads)
 - [Static Analysis Suppressions](#static-analysis-suppressions)
 
@@ -43,16 +43,11 @@ public sealed class VenueService : IVenueService
 }
 ```
 
-## Nullable Reference Types — DISABLED
-`Directory.Build.props` sets `<Nullable>disable</Nullable>` as a baseline, but every individual `.csproj` overrides to `<Nullable>enable</Nullable>` with specific warnings suppressed (CS8618, CS8601, CS8603, CS8604, CS8625, CS8602, etc.).
+## Nullable Reference Types
+> **OPEN — Helder to confirm before the first project is created.** The inherited governance policy was lenient nullable analysis (per-project overrides with suppressed warnings). PROAME has no code yet, so no policy is recorded as decided. Until confirmed, follow the `<Nullable>` setting in `Directory.Build.props` and do not add suppressions to hide nullable warnings.
 
-**Effective behavior:** Nullable analysis is on but lenient — warnings that would require defensive rewrites of existing patterns are suppressed.
-
-- **Do NOT** add `?` to reference types or use null-forgiving operators `!` beyond what already exists
-- **Do NOT** add `= string.Empty` initializers just to satisfy nullability analysis
-- **Do NOT** add null guards that exist solely to satisfy the nullable analyzer (real null guards for real nulls are fine)
-- Do not change suppressed warning sets without discussing it first
-- This is a deliberate project decision — do not "fix" it by enabling stricter checking
+- Do not add `= string.Empty` initializers or null guards whose only purpose is to silence the analyzer (real null guards for real nulls are fine).
+- Do not change the nullable setting or its suppressed-warning set without an architecture decision.
 
 ## C# Style
 
@@ -60,7 +55,7 @@ public sealed class VenueService : IVenueService
 - Prefer composition over inheritance
 
 ### Modern C# (13+)
-- Use `record` for DTOs and value objects
+- Use `record` for DTOs (in `Proame.Contracts`) and value objects
 - Use pattern matching over `if/switch` chains where it reads clearly
 - Use `ArgumentNullException.ThrowIfNull`, `ArgumentOutOfRangeException.ThrowIfNegativeOrZero`
 - Use collection expressions `[item1, item2]` over `new List<T> { ... }`
@@ -69,75 +64,83 @@ public sealed class VenueService : IVenueService
 ### Naming
 - Interfaces: `IVenueService`, `IVenueRepository`
 - Services: `VenueService`, `VenueRepository`
-- ViewModels: `VenuesViewModel` (plural for list pages)
-- Commands: verb + noun + `Command` e.g. `AddVenueCommand`
+- Razor components: `VenuesPage.razor` (routable page) / `VenueForm.razor` (reusable component); code-behind in `VenueForm.razor.cs`
+- Commands and event callbacks: verb + noun, e.g. `OnSaveClicked`, `OnDeleteRequested` (`EventCallback<T>` parameters)
 - Async methods: `VerbNounAsync` e.g. `CreateVenueAsync`
 
 ### Projects and folders
-- Each layer project lives in a folder named after its layer only. The project file, assembly and root
-  namespace keep the `MyVocaList.` prefix:
+- Each layer project lives in a folder named after its layer; the project file, assembly and root namespace keep the `Proame.` prefix:
 
   | Folder | Project file | Root namespace |
   |--------|--------------|----------------|
-  | `Domain/` | `MyVocaList.Domain.csproj` | `MyVocaList.Domain` |
-  | `Contracts/` | `MyVocaList.Contracts.csproj` | `MyVocaList.Contracts` |
-  | `Services/` | `MyVocaList.Services.csproj` | `MyVocaList.Services` |
-  | `Infra/` | `MyVocaList.Infra.csproj` | `MyVocaList.Infra` |
-  | `Extensions/` | `MyVocaList.Extensions.csproj` | `MyVocaList.Extensions` (e.g. `MyVocaList.Extensions.Strings`) |
-  | `MyVocaList/` | `MyVocaList.csproj` (MAUI app) | `MyVocaList` |
-  | `MyVocaList.Tests/` | `MyVocaList.Tests.csproj` | `MyVocaList.Tests` |
+  | `src/Proame.Domain/` | `Proame.Domain.csproj` | `Proame.Domain` |
+  | `src/Proame.Contracts/` | `Proame.Contracts.csproj` | `Proame.Contracts` |
+  | `src/Proame.Infrastructure/` | `Proame.Infrastructure.csproj` | `Proame.Infrastructure` |
+  | `src/Proame.Api/` | `Proame.Api.csproj` | `Proame.Api` |
+  | `src/Proame.UI/` | `Proame.UI.csproj` (Razor Class Library) | `Proame.UI` |
+  | `src/Proame.App/` | `Proame.App.csproj` (MAUI Blazor Hybrid head) | `Proame.App` |
+  | `src/Proame.Web/` | `Proame.Web.csproj` (Blazor Web App head) | `Proame.Web` |
+  | `tests/` | one test project per layer, named `Proame.<Layer>.Tests.csproj` | `Proame.<Layer>.Tests` |
 
-- A new layer project follows the same rule: folder `<Layer>/`, project `MyVocaList.<Layer>.csproj`.
-  A `ProjectReference` uses the folder path, e.g. `..\Extensions\MyVocaList.Extensions.csproj`.
-- The `Extensions/` project holds extension methods shared by more than one layer (string trimming
-  used by Services, Infra and the app). The app's own `MyVocaList/Extensions/` folder (DI
-  registration, logging setup, XAML markup extensions) is a different thing: it is app-only code,
-  even though it also uses the `MyVocaList.Extensions` namespace.
+- Business logic lives in the services layer behind the API. `Proame.UI` renders and calls the API; the heads contain no logic.
+- A new project follows the same rule: folder `src/Proame.<Layer>/`, project `Proame.<Layer>.csproj`.
 
 ### Async
 - Always `async/await` for I/O — never `.Result` or `.Wait()`
-- Use `CancellationToken` on all async service methods
-- `Task.Run` is acceptable for debounce patterns in ViewModels (see `VenuesViewModel.TriggerSearchDebounce`)
+- Use `CancellationToken` on all async service and API-client methods; components cancel their pending work in `DisposeAsync`
+- Debounce for search inputs is a timer or `Task.Delay` cancelled on the next keystroke, owned by the component (not a fire-and-forget task)
 
-### ViewModel Pattern (CommunityToolkit.Mvvm)
+### Component Code-Behind Pattern (Razor)
 ```csharp
-public abstract partial class ViewModelBase : ObservableObject
+// VenueForm.razor.cs — partial class; markup stays in VenueForm.razor
+public partial class VenueForm : IAsyncDisposable
 {
-    protected void RunOnUiThread(Action action) { ... }
-    protected Task RunOnUiThreadAsync(Func<Task> asyncAction) { ... }
+    [Parameter] public int? VenueId { get; set; }
+    [Parameter] public EventCallback<VenueDto> OnSaved { get; set; }
+    [Inject] private IVenueClient Venues { get; set; } = default!;
+
+    private bool _isLoading = true;
+    private VenueDto? _venue;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _cts?.Cancel();
+        _cts = new CancellationTokenSource();
+        _isLoading = true;
+        _venue = VenueId is null ? new VenueDto() : await Venues.GetAsync(VenueId.Value, _cts.Token);
+        _isLoading = false;
+    }
+
+    public async ValueTask DisposeAsync() => _cts?.Cancel();
 }
-
-// Fields generate properties via source generator
-[ObservableProperty] private bool _isLoading;
-
-// partial methods for change notification
-partial void OnIsLoadingChanged(bool value) => NotifyEmptyStates();
 ```
+- Markup holds bindings and layout only; no service calls, LINQ over large sets or branching business rules in `.razor`.
+- Background-thread updates use `InvokeAsync(StateHasChanged)`.
+- Navigation, browser APIs and clocks are injected behind interfaces so bUnit tests can fake them.
 
 ## Service Return Patterns
-Services return tuples for operations that can fail (confirmed in codebase):
+Services return tuples for operations that can fail:
 ```csharp
 // Create: returns (success, message, entity?)
-Task<(bool success, string message, Venue? venue)> CreateVenueAsync(string name);
+Task<(bool success, string message, Venue? venue)> CreateVenueAsync(string name, CancellationToken ct);
 
 // Update/Delete: returns (success, message)
-Task<(bool success, string message)> UpdateVenueAsync(int id, string name);
+Task<(bool success, string message)> UpdateVenueAsync(int id, string name, CancellationToken ct);
 
 // Validation: returns (isValid, message)
 (bool isValid, string message) ValidateNameInput(string name);
 ```
 
-Never throw exceptions for expected business failures (name too long, duplicate, etc.) — return `(false, message)`.
+Never throw exceptions for expected business failures (name too long, duplicate, etc.) — return `(false, message)`. The API maps the tuple to HTTP status codes and `ProblemDetails`; the UI shows the message in pt-BR through a `MudAlert` or the form's error summary.
 
 ## Exception Handling
 
-### GlobalExceptionHandler (Services project)
-Handles three categories:
-1. `AppDomain.CurrentDomain.UnhandledException` — logged as Fatal, app may terminate
-2. `TaskScheduler.UnobservedTaskException` — logged as Error, marked observed (prevents crash)
-3. Android: `AndroidEnvironment.UnhandledExceptionRaiser` — logged as Fatal, marked handled
+### Global handlers
+- **API:** a global exception handler (`IExceptionHandler` + `ProblemDetails`) logs unexpected exceptions with full context and returns a generic 500 payload. No stack traces in responses.
+- **Heads (App/Web):** the Blazor error boundary plus global handlers for `AppDomain.CurrentDomain.UnhandledException` and `TaskScheduler.UnobservedTaskException` log the error (Fatal/Error) and never swallow it silently.
 
-**Rule:** Do NOT add try-catch for exceptions that `GlobalExceptionHandler` will catch. Let unexpected exceptions bubble up so they are logged with full context.
+**Rule:** Do NOT add try-catch for exceptions the global handlers will catch. Let unexpected exceptions bubble up so they are logged with full context.
 
 ### Allowed try-catch patterns
 
@@ -151,22 +154,17 @@ catch (OperationCanceledException)
 
 **2. Disposal races on CancellationTokenSource:**
 ```csharp
-try { _searchCts?.Cancel(); _searchCts?.Dispose(); }
-catch { /* ignore disposal races */ }
+try { _cts?.Cancel(); _cts?.Dispose(); }
+catch (ObjectDisposedException) { /* ignore disposal races */ }
 ```
 
-**3. First-run DB table absence:**
-```csharp
-try { await dbContext.Database.ExecuteSqlRawAsync("DELETE FROM __EFMigrationsLock"); }
-catch { /* Table does not exist on first run — safe to ignore. */ }
-```
-
-**4. Error recovery with logging (not swallowed):**
+**3. Error recovery with logging (not swallowed):**
 ```csharp
 catch (Exception ex)
 {
     _logger.LogError(ex, "Failed to load more venues (page {Page})", loadingPage);
-    RunOnUiThread(() => IsRefreshing = false);
+    _isLoading = false;
+    Snackbar.Add("Não foi possível carregar os dados.", Severity.Error);
 }
 ```
 
@@ -175,119 +173,62 @@ catch (Exception ex)
 ## Global Usings
 
 ### Directory.Build.props (all projects)
-```csharp
-System
-System.Collections.Generic
-System.Collections.ObjectModel
-System.Linq
-System.Threading
-System.Threading.Tasks
-System.Windows.Input
-```
+Global usings shared by 2+ projects go here. Verify against the actual `Directory.Build.props` — this section is a convention, not a snapshot.
 
-> *Verify against the project's `Directory.Build.props` — this list is a snapshot, not the authoritative source.*
-
-### MyVocaList (MAUI) — GlobalUsings.cs
-```csharp
-CommunityToolkit.Mvvm.ComponentModel
-CommunityToolkit.Mvvm.Input
-DevExpress.Maui
-DevExpress.Maui.CollectionView
-DevExpress.Maui.Controls
-DevExpress.Maui.Core
-Microsoft.Extensions.Logging
-MyVocaList.Contracts.DTOs.List
-MyVocaList.Navigation
-MyVocaList.Services
-MyVocaList.UI.Models
-MyVocaList.UI.Pages.*  (all page namespaces)
-MyVocaList.UI.Services
-MyVocaList.UI.ViewModels
-```
-
-> *Verify against the project's `GlobalUsings.cs` — this list is a snapshot, not the authoritative source.*
-
-### Services — GlobalUsings.cs
-```csharp
-Microsoft.Extensions.Logging
-```
-
-> *Verify against the project's `GlobalUsings.cs` — this list is a snapshot, not the authoritative source.*
-
-### Infra — GlobalUsings.cs
-```csharp
-Microsoft.Extensions.Logging
-System.Text
-```
-
-> *Verify against the project's `GlobalUsings.cs` — this list is a snapshot, not the authoritative source.*
-
-### Rule for new usings
-- Applies to 2+ types in one project → add to that project's `GlobalUsings.cs`
-- Applies across 2+ projects → add to `Directory.Build.props`
+### Per-project `GlobalUsings.cs`
+Applies to 2+ types in one project → add to that project's `GlobalUsings.cs`. Applies across 2+ projects → add to `Directory.Build.props`. Never list namespaces here as a snapshot; read the file.
 
 ## Pagination
-`AppPagination.DefaultPageSize = 20` in `MyVocaList.Contracts` is the **single source of truth** for page size.
-Never declare a local `const int PageSize` or hardcode `20` — always reference `AppPagination.DefaultPageSize`.
+A single constant in `Proame.Contracts` (e.g. `AppPagination.DefaultPageSize`) is the **single source of truth** for page size, shared by the API and the UI. Never declare a local page-size constant or hard-code the number. Server-side paging is the default for every list; the UI never loads a full table to page it locally.
 
-## DI Registration Conventions (MauiProgram.cs)
-- `AddSingleton` — AppShell, AppShellViewModel, ISnackbarService (shared state)
-- `AddScoped` — Repositories, Services, IDatabaseInit (per-lifetime scope)
-- `AddTransient` — Pages, ViewModels (new instance per navigation)
+## DI Registration Conventions
+Registration lives in extension methods, composed from the entry points:
+- `AddProameServices()` (in `Proame.Infrastructure` / services) — repositories, domain services, storage clients, DB context.
+- `AddProameUi()` (in `Proame.UI`) — MudBlazor services, UI state, API client registrations.
+- Entry points only compose these: `Program.cs` (Api, Web), `MauiProgram.cs` (App).
 
-## UI Thread Performance — ObservableRangeCollection
+Lifetimes:
+- `AddSingleton` — shared, read-mostly state (theme/config options, cached settings)
+- `AddScoped` — repositories and services (per request on the API; per circuit in Blazor Web/Hybrid)
+- `AddTransient` — stateless helpers and HTTP clients' delegating handlers
 
-`ObservableRangeCollection.ReplaceRange` and `ClearRange` fire `CollectionChanged(Reset)`.
-Each `Reset` inside a `RunOnUiThread` block triggers a full DXCollectionView re-render of all items.
+Never resolve services from a static `IServiceProvider` to get around injection.
 
-**Rules:**
-- Never call `ReplaceRange` more than once per `RunOnUiThread` block. Two calls = two full render passes = ANR risk.
-- After a list refresh or search, **clear selection** (`ClearRange` + `SelectedCount = 0`) — never restore selection via `ReplaceRange`. Restoring selection fires a second `Reset` and is confusing UX (selection crossing a data reload boundary).
-- All collection mutations that must happen together belong in a single `RunOnUiThread(() => { ... })` call — but keep the work inside minimal: no LINQ queries, no service calls, only collection operations and property assignments.
+## UI Rendering Performance
+
+Large MudBlazor grids and lists re-render on every state change. Rules:
+- **One state update per completed load.** Assign the list results and the loading flag in one step, then call `StateHasChanged` once — not one update per row or per field.
+- **Server-side paging and filtering.** A grid never holds more rows than the current page; filters and sorting run in the API.
+- **Keep render work minimal:** no LINQ over full lists, no service calls and no formatting of every row inside the render path. Compute view data once when the data changes, not in markup.
+- **Selection after a reload is cleared**, not restored by re-matching IDs on the UI thread, unless the feature spec requires it.
+- Virtualization (`Virtualize`) is the choice for long client-side lists; record the decision in the feature design.
 
 ```csharp
-// Correct — single Reset, selection cleared
-RunOnUiThread(() =>
-{
-    Venues.ReplaceRange(list);
-    if (SelectedVenues.Count > 0)
-    {
-        SelectedVenues.ClearRange();
-        SelectedCount = 0;
-    }
-    NotifyEmptyStates();
-});
+// Correct — one update for the loaded page
+_rows = page.Items;
+_total = page.Total;
+_isLoading = false;
+StateHasChanged();
 
-// Wrong — two Resets, two full re-renders, ANR risk
-RunOnUiThread(() =>
-{
-    Venues.ReplaceRange(list);
-    var restored = Venues.Where(v => selectedIds.Contains(v.Id)).ToList(); // LINQ on UI thread
-    SelectedVenues.ReplaceRange(restored); // second Reset
-    SelectedCount = SelectedVenues.Count;
-    NotifyEmptyStates();
-});
+// Wrong — per-row updates and LINQ in the render path
+foreach (var item in page.Items) { _rows.Add(item); StateHasChanged(); }
 ```
 
 ## Loading Pattern — Lists and Data Loads
 
-> Helder, 2026-11-17: the way the lists load is the app pattern "whenever a list is loaded", for every
-> current and future list, so that no agent bypasses it. Specs: REQ-SLD-32 to 34 (song form),
-> `Docs/Management/BusinessFeatures/cross-cutting/changes/2026-11-17-debug-builds-hold-the-loading-shimmer-for-a-while/` (REQ-DLH-01 to 05).
-
 **Lists — never hand-roll loading.**
-- Every list ViewModel derives from `CrudListViewModelBase<TItem>` and overrides only `FetchPageAsync` / `FetchMoreAsync` (one service call each, passing the `CancellationToken`). Every list page derives from `CrudListPageBase` and uses `CrudListView`.
-- The base owns: the fetch inside `Task.Run` (Microsoft.Data.Sqlite runs "async" calls synchronously, so a direct await freezes the UI thread), the 400 ms search debounce, the shimmer flag bound by `CrudListView`, result application in one `RunOnUiThread` block, and the debug-build hold. A list that needs other loading behaviour changes the base in its own task — never a copy in the derived class.
-- Shimmer: shown whenever the list replaces its rows (first load, later visit, search, filter reload) until the new rows are applied, in **every build**. Pull-to-refresh keeps the DevExpress refresh circle and load-more keeps the DevExpress load-more indicator; neither shows the shimmer.
+- Every list page uses the shared list component in `Proame.UI` (proposed name `CrudList<TItem>`; the name is fixed by the first feature's design) built on `MudDataGrid` (or `MudTable` for simple lists). The page supplies only the data callback (`ServerData`-style) that calls one API endpoint with the `CancellationToken`.
+- The shared component owns: the loading state (`Loading` + `MudSkeleton` placeholders for the first load and for every reload that replaces rows), the search debounce, paging, the empty state, and the error message. A list that needs different loading behaviour changes the shared component in its own task — never a copy in the page.
+- Refresh and load-more controls keep the MudBlazor pattern chosen in the feature design; they do not show the full-page skeleton.
 
 **Any other screen that loads data before it can be used** (an edit form, a picker):
-- The service call runs off the UI thread (`Task.Run`); a loading flag is set before it and cleared only after the results are applied on the UI thread (`RunOnUiThreadAsync`); the page shows a `dx:ShimmerView` (or the DX loading control of that screen) bound to the flag.
-- Commands that would write (Save) do nothing while the flag is true. A failed load is caught, logged, shown with a message, and the screen navigates back — it never stays open half-filled.
-- Tests wait for the load to end (`WaitUntilAsync(() => !vm.IsXxxLoading)` or an exposed load task), never `Task.Yield()` alone.
+- The API call uses `CancellationToken`; a loading flag is set before it and cleared only after the results are applied. The screen shows a `MudSkeleton` (or `MudProgressCircular`) bound to the flag.
+- Commands that would write (Save) are disabled while the flag is true. A failed load is caught, logged, shown with a message, and the screen navigates back — it never stays open half-filled.
+- Component tests wait for the load to end (bUnit `WaitForState` / `WaitForAssertion`), never a fixed delay.
 
-**Field searches** (autocomplete, remote APIs): the search runs off the UI thread and the field shows that a search is running. Pending item: `Docs/Management/BusinessFeatures/artists-songs/changes/2026-11-17-remote-and-local-field-searches-show-a-loading-indicator/`.
+**Field searches** (autocomplete, remote lookups): the search runs against the API with debounce and a cancellation of the previous request; the field shows `Loading` while a search is running.
 
-**Debug-build hold:** in debug builds only, the app start-up sets a minimum loading time (1,500 ms) so the shimmer can be checked; release builds compile no hold; unit tests run with no hold. New loads that show a shimmer use the same hold, never their own delay.
+**Debug-build delay:** none. Skeletons are checked on a real device or in the browser with throttled network, not by an artificial delay in code.
 
 ## Static Analysis Suppressions
 
@@ -296,10 +237,10 @@ RunOnUiThread(() =>
 2. An expiry comment if the suppression is temporary: `// TODO: Remove after [condition]`
 3. Logging the suppression in `.claude/exception-registry.md` if it suppresses a constitutional rule
 
-Existing suppressions in `Directory.Build.props` for nullable analysis (CS8618, CS8601, CS8603, CS8604, CS8625, CS8602, etc.) are pre-approved project decisions — do not add to that list without architecture review.
+Suppressions in `Directory.Build.props` are project decisions — do not add to that list without architecture review.
 
 If you cannot fix a warning without suppressing it, log a `blocked: spec gap` status and stop.
 
 ---
 
-> **Authorship note:** Content extracted verbatim from `.claude/rules/code-principles.md` (Rules File Refactoring, Phase 0 spike, 2026-07-04). Zero content change — container change only. Human-review before relied upon (CLAUDE.md § Continuous Enhancement — Authorship).
+> **Authorship note:** Content adapted from the inherited governance (`.claude/rules/code-principles.md`, 2026-07-04) to the PROAME stack (MudBlazor, ASP.NET Core API, PostgreSQL). Human-review before relied upon (CLAUDE.md § Continuous Enhancement — Authorship).

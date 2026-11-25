@@ -5,7 +5,6 @@ model: haiku
 tools: Read, Grep, Glob
 ---
 
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Plan Reviewer Agent — PROAME
 
@@ -54,13 +53,13 @@ Fresh-context plan reviewer. Read the plan and associated spec with no prior con
 
 - [ ] Domain tasks (entities, interfaces) precede Infra tasks
 - [ ] Infra tasks (migrations, repositories) precede Services tasks
-- [ ] Services tasks precede UI tasks (ViewModels, pages)
+- [ ] Services tasks precede UI tasks (components, pages)
 - [ ] No Wave N task lists a `Consumes` dependency that is produced in Wave N (same wave)
 
 ### File Ownership (Single-Writer Rule)
 
 - [ ] No file appears in the `Files owned` list of two parallel tasks in the same wave
-- [ ] Sequential-only files (`MauiProgram.cs`, `AppShell.xaml`, `AppDbContext.cs`, migrations, `GlobalUsings.cs`, `Directory.Build.props`) are owned by exactly one task at a time — never parallel
+- [ ] Sequential-only files (composition roots, `AppDbContext.cs`, migrations, `GlobalUsings.cs`, `Directory.Build.props`, `Directory.Packages.props`, MudTheme file) are owned by exactly one task at a time — never parallel
 
 ### Task Sizing
 

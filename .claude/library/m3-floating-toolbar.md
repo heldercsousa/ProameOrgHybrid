@@ -1,142 +1,48 @@
-# M3 Components — M3 Floating Toolbar
+# M3 Components — M3 Floating Toolbar (selection toolbar)
 
-> Section file split from `m3-components.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `m3-components.md`.
+> MD3 floating toolbar mapped to MudBlazor. MudBlazor has no floating-toolbar component; PROAME implements it as a shared selection bar in `Proame.UI` (a `MudPaper` with `MudIconButton`/`MudButton` actions). Layout laws: `crud-appbar-list-toolbar.md § Selection Toolbar`.
 
 ## M3 Floating Toolbar
 
-> **M3 Expressive component.** The floating toolbar (and "vibrant" color scheme) are M3 Expressive features — not in standard M3. "Vibrant" is the official spec term (confirmed via m3.material.io 2026-04-04).
->
-> **Color design decision.** Official M3 Expressive vibrant uses `PrimaryContainer` bg + `OnPrimaryContainer` icons. This project uses `SecondaryContainer` bg + `OnSecondaryContainer` icons — a deliberate choice for better contrast in the indigo dark theme.
->
-> **Selected (toggle) state — amended 2026-11-11.** Selected = MD3 vibrant "Toggle tonal button: (Surface container, On surface)" → `SurfaceContainer` bg + `OnSurface` icon (was `Primary`/`OnPrimary`). Reason: MD3 Toolbars guidelines — "Don't emphasize multiple buttons with bold, primary colors, such as a button and FAB together. Emphasize one action at a time." The paired FAB is the single `Primary` action.
->
-> **Height.** Confirmed from official MD3 measurements: floating toolbar = **64dp**. FAB = 56dp. Default padding = 8dp. Slot spacing = 4dp. FAB gap = 8dp. Screen margins: 16dp minimum left/right, 16dp above OS bottom bar (40dp total including OS bar). Confirmed via official spec images 2026-04-06.
-
 ### Spec
+- MD3: a floating container of up to a few actions, used for contextual actions, elevated above content, usually paired with a FAB.
+- Shape: rounded container (theme `DefaultBorderRadius`), elevation shadow from the theme, surface container colour.
+- Actions: icon buttons with tooltips and accessible names (pt-BR), or labelled buttons when the icon is ambiguous.
 
-| Property | Value |
-|---|---|
-| Height | **64dp** (per official MD3 Expressive spec) |
-| FAB height | 56dp |
-| Width | Wrap content (auto-sizes to populated slots) |
-| Padding (H, outside icon slots) | **8dp** |
-| Slot spacing (between buttons) | **4dp** |
-| FAB gap (toolbar ↔ FAB) | **8dp** (HorizontalStackLayout Spacing) |
-| Background | **SecondaryContainer** (project vibrant — see note above) |
-| Shape | CornerRadius = **32dp** (half of 64dp for full pill) |
-| Screen margin left/right | **16dp minimum** |
-| Screen margin bottom | **16dp** above OS bottom bar (40dp total including ~24dp OS nav bar) |
-| Elevation | Omitted — tint conveys elevation in dark mode |
-| Icon button tap zone | **48×48dp** (confirmed by spec: "minimum 48×48dp target area") |
-| Icon size | 24dp (DXButton default) |
-| Icon color (rest) | **OnSecondaryContainer** |
-| Icon bg (selected) | **SurfaceContainer** (toggle tonal) |
-| Icon color (selected) | **OnSurface** |
-| Min slots | none in MD3 (no minimum stated on any toolbar page, verified 2026-11-11) |
-| Max slots | 5 (component); MD3: "Be cautious of including too many controls" |
-| Scroll animation | NOT used (valid per M3 spec; animation adds threading risk) |
-| Visibility (CRUD lists) | selection mode only — contextual actions |
-| Position | See FAB Coexistence below |
-
-### Color tokens (dark mode — project vibrant)
-| Token | Hex |
-|---|---|
-| SecondaryContainer | `#3F4566` |
-| OnSecondaryContainer | `#AEB3DA` |
-| Primary | `#BAC3FF` |
-| OnPrimary | `#15267B` |
+### Colour tokens
+- Surface container and on-surface colours come from the theme slots (`theme-locale.md`). Toggle (selected) actions use the secondary container colour; enabled primary action uses `Color.Primary`.
+- The FAB is the only primary-coloured action on a screen with a toolbar.
 
 ### When to use
-- Contextual, page-specific actions (MD3: "best used for contextual actions relevant to the body content or the specific page") — e.g. CRUD list selection actions (Select all, Delete)
-- Paired with a FAB: "A FAB can be placed next to a floating toolbar to present one high-priority action alongside a unified set of toolbar actions."
+- A list page with actions that apply to the selected rows (select all, delete, export).
 
 ### When NOT to use
-- Single action → use FAB instead
-- App bar is for 1–2 essential page actions; "If the product has many actions, place those in a toolbar" (MD3 App bars)
-- Navigation actions → use Shell flyout
-- ≤ 3 actions already covered by SmallAppBar trailing slots
-
-**Full-screen CRUD forms (not list pages):** use a native Shell `ToolbarItem` for Save, not `SmallAppBar`. Full pattern + rationale: `crud-pages.md § Save/Cancel placement (full-screen forms)`.
+- A form page (competes with the form's Save action and the keyboard) — `crud-form-page.md`.
+- A page with no selection actions — omit it.
+- Navigation — use the app bar or the navigation menu.
 
 ### Anatomy
-```
-[DXBorder: pill, 64dp tall, CornerRadius=32, SecondaryContainer (vibrant), Padding="8,0"]
-  └── HorizontalStackLayout (Spacing="4")
-        ├── Slot 1: DXButton 48×48 (hidden if ActionNIcon empty)
-        ├── Slot 2: DXButton 48×48
-        ├── Slot 3: DXButton 48×48
-        ├── Slot 4: DXButton 48×48
-        └── Slot 5: DXButton 48×48
-```
+- Container → up to three actions (plus the FAB placed beside it) → optional divider.
 
 ### Component
-File: `MyVocaList/UI/Components/Toolbars/FloatingToolbar.xaml` + `.xaml.cs`
-Namespace: `xmlns:toolbars="clr-namespace:MyVocaList.UI.Components.Toolbars"`
-
-BindableProperties per slot (N = 1–5):
-- `ActionNIcon` (string) — slot hidden when null/empty
-- `ActionNCommand` (ICommand)
-- `ActionNDescription` (string) — SemanticProperties.Description for TalkBack
-- `ActionNIsSelected` (bool) — toggle actions only; applies `SurfaceContainer` bg + `OnSurface` icon (MD3 toggle tonal) when selected
+- `SelectionToolbar.razor` (+ `.razor.cs`) in `Proame.UI/Components/Toolbars/`: parameters for the action list (label, icon, `Disabled`, callback), `Visible` bound to the selection state.
+- Enablement from the selection state; the toolbar never decides business rules.
+- Governed component once two pages use it (`component-safety-gate.md`).
 
 ### Page integration pattern
-
-Toolbar and FAB are placed in a single `HorizontalStackLayout`, centered at the bottom.
-FAB is to the RIGHT of the toolbar. `VerticalOptions=Center` on both aligns them vertically
-(toolbar 64dp > FAB 56dp — center alignment keeps them visually level).
-
-```xml
-<!-- Root: single-cell Grid (toolbar+FAB row overlays content) -->
-<Grid>
-    <!-- Content list — bottom margin clears the combined bar -->
-    <!-- Formula: max(toolbar 64dp, FAB 56dp) + 16dp margin + 8dp breathing = 88dp -->
-    <dxcv:DXCollectionView Margin="0,0,0,88" ... />
-
-    <!-- Combined toolbar + FAB row — centered, 16dp above safe area bottom -->
-    <HorizontalStackLayout HorizontalOptions="Center"
-                           VerticalOptions="End"
-                           Margin="0,0,0,16"
-                           Spacing="8">
-        <toolbars:FloatingToolbar
-            VerticalOptions="Center"
-            Action1Icon="edit_outlined"
-            Action1Command="{Binding EditCommand}"
-            Action1Description="Edit"
-            Action2Icon="delete_outlined"
-            Action2Command="{Binding DeleteCommand}"
-            Action2Description="Delete" />
-        <dx:DXButton Style="{StaticResource Fab}"
-                     Icon="add_outlined"
-                     VerticalOptions="Center"
-                     Command="{Binding AddCommand}" />
-    </HorizontalStackLayout>
-</Grid>
-```
-
-**Never** use independent overlays (FAB at bottom-right with Margin formula, toolbar separately centered). That pattern is retired.
+- The page passes the actions; `CrudList` places the toolbar at the bottom centre with the FAB in one row (`crud-appbar-list-toolbar.md`).
+- The toolbar is visible only while rows are selected.
 
 ### FAB coexistence
-FAB is placed to the RIGHT of `FloatingToolbar` inside a shared `HorizontalStackLayout`.
-The whole unit is `HorizontalOptions=Center`, not independently positioned.
-`DXCollectionView.Margin="0,0,0,88"` — max(toolbar 64dp, FAB 56dp) + 16dp margin + 8dp breathing.
+- FAB (`MudFab`) sits to the right of the toolbar in one flex row, bottom-centred, respecting `env(safe-area-inset-bottom)` on the Hybrid head.
+- The grid's bottom padding is at least the toolbar height plus the FAB offset, so no row is hidden.
 
 ### Accessibility
-- Every `ActionNDescription` is mandatory — TalkBack reads it as the button label
-- Touch targets: 48×48dp (DXButton WidthRequest/HeightRequest)
-- Focus order: left-to-right (HorizontalStackLayout natural order)
+- The toolbar is a labelled region (`aria-label` pt-BR "Ações da seleção").
+- Each action has a tooltip and an accessible name; disabled actions stay focusable with a reason where practical.
+- Keyboard: Tab moves through the actions; the FAB remains reachable.
 
-### Scroll animation — deliberately omitted
-`DXCollectionView.CollectionViewScrolled` fires every frame. Multiple overlapping
-`TranslateTo` calls create animation jitter. Debounce via `CancellationTokenSource` adds
-race condition risk between scroll callbacks and animation state. For a queue management
-admin app the UX benefit is marginal. Persistent toolbar is valid per MD3 spec.
-
-### Global using
-Add `MyVocaList.UI.Components.Toolbars` to `GlobalUsings.cs` **only when 2+ pages use it**.
-Reference the namespace directly per-page until then.
-
-### No DX/MAUI built-in
-DevExpress MAUI has no Toolbar component. .NET MAUI `ToolbarItem` adds to Shell top bar only.
-FloatingToolbar is always a custom `ContentView` — same approach as AppBars.
+### Motion
+- Show and hide use a short fade; no scroll-linked animation (deliberately omitted). Respect `prefers-reduced-motion`.
 
 ---

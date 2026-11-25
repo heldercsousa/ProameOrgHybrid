@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Development Workflow — Reference — Rule 4 — Tasks.md Source of Truth (full detail + DRY Onion phases)
 
@@ -15,9 +14,9 @@ Check off each task in `Docs/Management/[section-or-filing-dir]/[feature]/tasks.
 ### In-progress marker — [~] for claimed tasks
 
 ```markdown
-- [~] **Implement ISingerService** [SEQUENTIAL]  ← claimed — do not reassign
-- [ ] **Implement SingersViewModel** [P]          ← available
-- [x] **Define SingerEntry entity**               ← done
+- [~] **Implement IVenueService** [SEQUENTIAL]  ← claimed — do not reassign
+- [ ] **Implement VenuesComponent state** [P]          ← available
+- [x] **Define VenueEntry entity**               ← done
 ```
 
 | Marker | Meaning |
@@ -55,7 +54,7 @@ helper rather than assuming the owner is still alive:
 
 A task is **atomic** if it passes this checklist:
 
-- [ ] The task produces a single, clearly named artifact (one method, one ViewModel, one page, one migration)
+- [ ] The task produces a single, clearly named artifact (one method, one component, one page, one migration)
 - [ ] The task does not require knowledge of the output of another in-progress task
 - [ ] The task can be described in one sentence without using "and" more than once
 - [ ] The task fits within the sizing limits (see Rule 2)
@@ -70,7 +69,7 @@ Tasks must be ordered from the inside of the architecture outward — Domain fir
 Wave 1 (innermost):  Domain entities + repository interfaces
 Wave 2:              EF Core migrations + repository implementations
 Wave 3:              Service methods
-Wave 4 (outermost):  ViewModels + pages
+Wave 4 (outermost):  Components + pages
 ```
 
 **Rule:** Do NOT dispatch a task in Wave N+1 until all tasks in Wave N that produce types consumed by Wave N+1 have been committed.
@@ -92,41 +91,41 @@ Wave 4 (outermost):  ViewModels + pages
 ```markdown
 ## Phase 1 — Domain (no dependencies)
 - [ ] **Define entity** [P]
-  - Produces: `PROAME.Domain/Entities/SingerEntry.cs`
+  - Produces: `src/Proame.Domain/Entities/VenueEntry.cs`
   - Consumes: nothing
-  - Files owned: `PROAME.Domain/Entities/SingerEntry.cs`
+  - Files owned: `src/Proame.Domain/Entities/VenueEntry.cs`
 
 - [ ] **Define repository interface** [P]
-  - Produces: `PROAME.Domain/Interfaces/ISingerRepository.cs`
-  - Consumes: `SingerEntry.cs`
-  - Files owned: `PROAME.Domain/Interfaces/ISingerRepository.cs`
+  - Produces: `src/Proame.Domain/Interfaces/IVenueRepository.cs`
+  - Consumes: `VenueEntry.cs`
+  - Files owned: `src/Proame.Domain/Interfaces/IVenueRepository.cs`
 
-## Phase 2 — Infra [SEQUENTIAL — waits for Phase 1]
+## Phase 2 — Infrastructure [SEQUENTIAL — waits for Phase 1]
 - [ ] **Add EF Core migration** [SEQUENTIAL]
-  - Produces: `*_AddSingerEntry.cs` migration
-  - Consumes: `SingerEntry.cs`
-  - Files owned: `PROAME.Infra/Migrations/*.cs`, `AppDbContext.cs`
+  - Produces: `*_AddVenueEntry.cs` migration
+  - Consumes: `VenueEntry.cs`
+  - Files owned: `src/Proame.Infrastructure/Migrations/*.cs`, `AppDbContext.cs`
 
 - [ ] **Implement repository** [SEQUENTIAL — waits for interface]
-  - Produces: `PROAME.Infra/Repositories/SingerRepository.cs`
-  - Consumes: `ISingerRepository.cs`
-  - Files owned: `SingerRepository.cs`
+  - Produces: `src/Proame.Infrastructure/Repositories/VenueRepository.cs`
+  - Consumes: `IVenueRepository.cs`
+  - Files owned: `VenueRepository.cs`
 
 ## Phase 3 — Services [SEQUENTIAL — waits for Phase 2]
-- [ ] **Implement ISingerService + SingerService** [SEQUENTIAL]
-  - Produces: `ISingerService.cs`, `SingerService.cs`
-  - Consumes: `ISingerRepository.cs`
+- [ ] **Implement IVenueService + VenueService** [SEQUENTIAL]
+  - Produces: `IVenueService.cs`, `VenueService.cs`
+  - Consumes: `IVenueRepository.cs`
   - Files owned: both service files
 
-## Phase 4 — UI [SEQUENTIAL — waits for Phase 3]
-- [ ] **ViewModel** [P]
-  - Produces: `SingersViewModel.cs`
-  - Consumes: `ISingerService.cs`
-  - Files owned: `SingersViewModel.cs`
+## Phase 4 — UI (components and pages) [SEQUENTIAL — waits for Phase 3]
+- [ ] **Component state** [P]
+  - Produces: `VenuesPage.razor.cs` (state holder)
+  - Consumes: `IVenueService.cs`
+  - Files owned: `VenuesPage.razor.cs`
 
-- [ ] **Page + XAML** [P]
-  - Produces: `SingersPage.xaml`, `SingersPage.xaml.cs`
-  - Consumes: `SingersViewModel.cs`
+- [ ] **Page + markup** [P]
+  - Produces: `VenuesPage.razor`, `VenuesPage.razor.cs`
+  - Consumes: `VenuesPage.razor.cs`
   - Files owned: both page files
 ```
 

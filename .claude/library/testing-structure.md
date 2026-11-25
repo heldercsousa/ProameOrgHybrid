@@ -1,47 +1,33 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
+# Testing — Reference — Test project structure
 
-# Testing — Reference — Test project structure (csproj deltas, GlobalUsings)
-
-> Section file split from `testing-reference.md` on 2026-07-14 (token-scoped reads). Index + provenance: `testing-reference.md`. Never-miss rules: `.claude/rules/testing.md`.
+> Section file. Index: `testing-reference.md`.
 
 ## Test Project Structure
 
-### Project: `PROAME.Tests`
+Tests live under `tests/`, one project per layer, named after the production project:
 
 ```
-PROAME.Tests/
-├── PROAME.Tests.csproj
-├── GlobalUsings.cs
-├── Unit/
-│   ├── Services/              ← pure business logic, Moq dependencies
-│   │   └── VenueServiceTests.cs
-│   └── ViewModels/            ← ViewModel commands + state, Moq services
-│       └── VenuesViewModelTests.cs
-├── Integration/
-│   └── Repositories/          ← real SQLite temp DB, no containers
-│       └── VenueRepositoryTests.cs
-└── Infrastructure/
-    └── TestDbContextFactory.cs ← shared DB setup/teardown helper
+tests/
+├── Proame.Domain.Tests/          ← invariants of domain types (Level A where logic exists)
+├── Proame.Api.Tests/             ← service tests (Moq) + endpoint tests (WebApplicationFactory)
+├── Proame.Infrastructure.Tests/  ← repository tests against real PostgreSQL (Testcontainers)
+└── Proame.UI.Tests/              ← Razor component tests (bUnit)
 ```
+
+Layout inside a project follows the production folders (`Services/`, `Endpoints/`, `Repositories/`, `Components/`). Test doubles and builders shared by several projects live in one `Proame.Tests.Shared` project (infra; exempt from AC traceability).
+
+- **Services:** `Services/<Entity>ServiceTests.cs`
+- **Repositories:** `Repositories/<Entity>RepositoryTests.cs`
+- **Components:** `Components/<Name>Tests.cs` (bUnit)
+
+Heads (`Proame.App`, `Proame.Web`) have no test project of their own; their wiring is covered by the endpoint and component tests and by device/browser checks.
 
 ### .csproj — project-specific deltas only
+- Package versions come from `Directory.Packages.props` (central package management). Test packages: xUnit, Moq, bUnit, Testcontainers.PostgreSQL, Microsoft.AspNetCore.Mvc.Testing (endpoint tests), coverlet.
+- Reference only the production projects the tests need. Test projects do not reference the heads.
+- Test SDK and target framework match the solution (`net10.0`).
 
-Generic test-project setup (csproj skeleton, xUnit/Moq/coverlet packages, conditional `OutputType` trick for referencing the app head) → **`maui-unit-testing` skill § Test Project Setup**. PROAME-specific facts:
-
-- **TFM is `net10.0` only** (NOT `net10.0-android`) so tests run on the desktop host.
-- Add `Microsoft.EntityFrameworkCore.Sqlite` `10.*` (repository integration tests use real SQLite).
-- Reference the five non-MAUI projects: `PROAME.Domain`, `PROAME.Contracts`, `PROAME.Infra`, `PROAME.Services`, `PROAME.Extensions` (folder `Extensions/`; folder naming: `code-style-reference.md § C# Style › Projects and folders`).
-- Do NOT reference `PROAME.csproj` (MAUI head) unless ViewModel tests are needed; if referenced, apply the skill's conditional `<OutputType>Library</OutputType>` on the `net10.0` TFM.
-
-### GlobalUsings.cs
-
-```csharp
-global using Xunit;
-global using Moq;
-global using PROAME.Domain.Entities;
-global using PROAME.Domain.Interfaces;
-global using PROAME.Contracts.DTOs.List;
-global using PROAME.Services;
-```
+### Global usings
+- Keep test global usings to xUnit, Moq, and the production namespaces the project uses most (`Proame.Contracts`, `Proame.Domain`). Per-project `GlobalUsings.cs` only when 2+ test types use it (`code-style-reference.md § Global Usings`).
 
 ---

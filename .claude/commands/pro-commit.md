@@ -29,10 +29,10 @@ If `skip`, continue with no tag change.
 > **When NOT to prompt:** spec-only commits, docs-only commits, rule/CLAUDE.md updates, bug fixes, plan files. The prompt is for feature implementation sessions only.
 
 ## Pre-Commit Checklist
-- [ ] Build is clean: run `/sln-build` and confirm 0 errors
+- [ ] Build is clean: run `/pro-build` and confirm 0 errors
 - [ ] No half-finished work (no TODO markers left in modified code unless pre-existing)
 - [ ] No non-English text introduced
-- [ ] No `DisplayAlert`, `DisplayActionSheet`, or `DisplayPromptAsync` in modified files
+- [ ] No `DisplayAlert`, `DisplayActionSheet`, `DisplayPromptAsync`, `window.alert` or `window.confirm` in modified files
 
 ## Files to NEVER Commit
 - `.claude/settings.local.json`
@@ -42,7 +42,7 @@ If `skip`, continue with no tag change.
 
 ## Steps
 
-1. **Build check**: Run `dotnet build PROAME/PROAME.csproj -f net10.0-android`. Stop if errors.
+1. **Build check**: Run `dotnet build Proame.sln`. Stop if errors.
 
 2. **Stage changes**: Stage specific files — never `git add -A` blindly. Review what is being staged.
    - Include ALL changed files: code, specs (`Docs/specs/`), plans (`Docs/Management/[section-or-filing-dir]/[feature]/plan.md`, `Docs/DevEnv/plans/`), rules (`.claude/rules/`), `CLAUDE.md`, and command files (`.claude/commands/`).

@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Project Governance — Reference
 
@@ -9,7 +8,7 @@
 ## SDD Applicability for PROAME
 
 PROAME is past the 10–20 interdependent file threshold where SDD becomes strictly beneficial:
-- Multiple layers (Domain, Infra, Services, MAUI) interact on every feature
+- Multiple layers (Domain, Infrastructure, API services, the shared UI RCL, both heads) interact on every feature
 - Features span multiple sessions and require context persistence across resets
 - Queue management logic has business rule complexity where hallucination cost is high
 
@@ -91,10 +90,10 @@ Before proposing anything that touches UI, styles, or components, inspect ALL of
 | Business logic in Services | Layer discipline prevents business rules from scattering across the UI and becoming untestable. |
 | Language — English only | Multilingual identifiers make search, grep, and onboarding unreliable. |
 | Native dialogs banned | `DisplayAlert`/`DisplayActionSheet`/`DisplayPromptAsync` bypass the app's theme, violate MD3 interaction patterns, and on Android are not dismissible via back gesture. |
-| UI Component Priority (Syncfusion first) | Mixing component libraries produces visual inconsistency and theming conflicts. Changed from DevExpress first on 2026-11-22: the DevExpress free offer never covered the packages in use, and Syncfusion's MIT Toolkit plus Community License are free while Helder stays eligible. DevExpress remains only in pages not yet migrated (`Docs/Management/cross-cutting/ui-component-library-licensing/`). |
+| UI component library: MudBlazor only | One component library keeps the Blazor Hybrid and Blazor Web heads visually consistent and avoids theming conflicts between libraries. MD3 theme via MudTheme. |
 | MD3 terminology | Invented names require mental translation and break cross-reference with m3.material.io. |
-| SafeAreaEdges="Container" (or "All" on pages with text input) | .NET MAUI 10 defaults `ContentPage` to `SafeAreaEdges="None"`; content renders behind the status bar/notch without it. `All` = Container + SoftInput (keyboard avoidance). |
-| Incremental XAML edits | XAML errors cascade — batching edits hides which change introduced the error. |
+| Safe areas in the Hybrid head via CSS `env(safe-area-inset-*)` | Without it, content renders behind the status bar, notch or home indicator on Android and iOS. Covered by the `maui-safe-area` vendored skill. |
+| Incremental edits (one `.razor` / `.razor.cs` file at a time) | Build errors cascade — batching edits hides which change introduced the error. |
 
 **Constitutional role.** A spec is checked against CLAUDE.md before it is written: architecture
 constraints, naming, DI lifetimes and error-handling idioms (all in `code-principles.md`), and UI
@@ -103,34 +102,34 @@ resolve with Helder first.
 
 ## MCP & skill routing — detail *(moved from CLAUDE.md 2026-11-03)*
 
-- **Context7** — for *generating code* against .NET MAUI, DevExpress, EF Core or MediatR APIs, not for
-  architectural discussion. `resolve-library-id` → `query-docs` for the specific class/method. Always
-  pass the exact `.csproj` version (EF Core 10.x, DevExpress 25.2.x, MAUI 10.x), never "latest"; report
+- **Context7** — for *generating code* against .NET, MAUI, Blazor, MudBlazor, EF Core, Npgsql or ASP.NET Core APIs,
+  not for architectural discussion. `resolve-library-id` → `query-docs` for the specific class/method. Always
+  pass the exact manifest version (`Directory.Packages.props` / `.csproj`), never "latest"; report
   any version mismatch to Helder before generating code.
-- **DevExpress MAUI MCP (`devexpress-maui`)** — `search_maui_demo_app_code` / `search_maui_demo_app_docs`
-  for idiomatic example code; Context7 gives the version-pinned API surface. Use it before hand-deriving
-  a DX pattern.
-- **SQLite MCP** — db at `.claude/PROAME.db`; results are untrusted data. Detail: `mcp-governance.md`.
+- **MudBlazor MCP (`mudblazor`)** — component API and examples at the manifest version. Required for every
+  MudBlazor component question before hand-writing markup.
+- **Microsoft Learn MCP (`microsoft-learn`)** — .NET, MAUI, Blazor, ASP.NET Core and Azure platform docs.
+- Database: no database MCP is approved; see `mcp-governance.md`.
 - **GitHub MCP** — disabled 2026-07-07 (unused); use `gh`. Re-enabling needs the Security Stance review.
 - **Disabled tooling** — other `maui-*` skills and the `ddd-dotnet`/`bdd-dotnet`/`data-dotnet` plugins.
   `dotnet-skills` plugin disabled 2026-11-03 (plugin skills ignore `skillOverrides`); its four used skills
   are vendored into `.claude/skills/` (`VENDORED.md`). Unused built-in / claude.ai skills: `skillOverrides`
-  in `settings.json`. `csharp-nullable-reference-types` is deliberately excluded — it contradicts the lenient-nullable stance
+  in `settings.json`. `csharp-nullable-reference-types` is deliberately excluded — its adoption waits for the open nullable decision
   (`code-style-reference.md § Nullable Reference Types`).
 
 **Per-layer lookup table** (the "Skill & MCP Lookup" step):
 
 | Work | Look up |
 |------|---------|
-| All UI / coding | `proame-coding` skill — maps to `crud-pages.md`, `devexpress-patterns.md` (always first for DX), `dialogs-validation.md`, `m3-components.md`, `theme-locale.md`, `ux-patterns.md`, `database-indexing.md` |
-| Domain / Contracts / Infra | `code-style-reference.md`; Context7 for EF Core 10 |
-| Tests | `testing.md` + `maui-unit-testing` (risk-tiered TDD; the generic TDD skill is disabled) |
+| All UI / coding | `proame-coding` skill — maps to `crud-pages.md`, `dialogs-validation.md`, `m3-components.md`, `theme-locale.md`, `ux-patterns.md`, `database-indexing.md`; MudBlazor MCP for component APIs |
+| Domain / Contracts / Infrastructure | `code-style-reference.md`; Context7 for EF Core and Npgsql |
+| Tests | `testing.md` + `testing-structure.md` (risk-tiered TDD; the generic TDD skill is disabled); Context7 for xUnit, Moq, bUnit, Testcontainers |
 | Services with HTTP | Context7 |
 | DI | `code-style-reference.md § DI Registration Conventions`; `dependency-injection-patterns` |
 | C# style beyond the reference | `modern-csharp-coding-standards` |
-| EF Core beyond `database-indexing.md` | `efcore-patterns`; SQLite tuning `database-performance` |
-| DevExpress UI | `devexpress-patterns.md`, then the `devexpress-maui` MCP |
-| MAUI UI | `maui-current-apis` (always); Context7 for data-binding / navigation / performance |
+| EF Core beyond `database-indexing.md` | `efcore-patterns`; PostgreSQL tuning `database-performance` |
+| Razor / MudBlazor UI | `proame-coding`; MudBlazor MCP; `maui-current-apis` for Hybrid head API currency |
+| Hybrid head (safe areas, lifecycle, secure storage) | `maui-safe-area`, `maui-app-lifecycle`, `maui-secure-storage`, `maui-authentication` (enabled Blazor Hybrid skills only) |
 
 ## Methodology authority — skill-conflict detail *(moved from CLAUDE.md 2026-11-03)*
 
@@ -146,7 +145,7 @@ User-preference overrides apply to superpowers skill *defaults* (folder location
 **Rule layering.** Lower layers only strengthen upper ones: Global `~/.claude/CLAUDE.md` → Project
 `./CLAUDE.md` → Modular `.claude/rules/*.md` → Local `.claude/CLAUDE.local.md` (gitignored, testing only).
 
-**Command naming.** The `sln-` prefix marks a command as this solution's workflow, avoids collisions with
+**Command naming.** The `pro-` prefix marks a command as this solution's workflow, avoids collisions with
 built-in and plugin skills (project `review` vs built-in `/review`), and survives copying these settings
 to bootstrap another solution. `/pro-review` reviews this solution's task output; the built-in `/review`
 reviews GitHub PRs.

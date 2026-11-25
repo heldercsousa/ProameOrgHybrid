@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Inline Trivial Fix Command (`/pro-itf`)
 
@@ -14,9 +13,9 @@ Guard 3 (`constitutional-guard.py`) enforces C1/C3/C4/C5 once the marker exists;
 |---|-------|
 | C1 | Exactly 1 file, ≤ 5 changed lines |
 | C2 | Root cause + exact file + exact line known (stack trace, subagent report, or read lane: grep + ≤ 2 source files) |
-| C3 | Not `.xaml` / `.xaml.cs` |
+| C3 | Not a `.razor` / `.razor.cs` file |
 | C4 | Not a governed component (`library/component-safety-gate.md`) |
-| C5 | Not `AppShell.xaml(.cs)` / `AppDbContext.cs` / `tasks.md` / `Migrations/*`. `MauiProgram.cs`, `GlobalUsings.cs`, `Directory.Build.props` → step 2 |
+| C5 | Not the MudTheme file / `AppDbContext.cs` / `tasks.md` / `Migrations/*`. The composition roots (`MauiProgram.cs`, `Program.cs`), `GlobalUsings.cs`, `Directory.Build.props`, `Directory.Packages.props` → step 2 |
 | C6 | Severity ≤ Major and no mandatory regression test (`bug-tracking.md`) |
 | C7 | Inside a worktree on a task or spike branch based on develop — never `develop` / `main` |
 
@@ -66,4 +65,4 @@ Regression risk: [None | Low | Medium — reason]
 Lane: ITF (1 files, <n> lines)
 ```
 
-The task-log line is docs: it lands on develop (`/sln-docs-sync` at merge). Audit trail: `git log --grep "Lane: ITF"`.
+The task-log line is docs: it lands on develop (`/pro-docs-sync` at merge). Audit trail: `git log --grep "Lane: ITF"`.

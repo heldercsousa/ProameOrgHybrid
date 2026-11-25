@@ -1,87 +1,36 @@
 # M3 Components — M3 Empty State + Filter Chip
 
-> Section file split from `m3-components.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `m3-components.md`.
+> Maps the Material 3 empty-state and filter-chip patterns to MudBlazor. Shared empty state is `EmptyState` in `Proame.UI`.
 
 ## M3 Empty State component
 
-| Slot | BindableProperty | Control | Style |
-|---|---|---|---|
-| Illustration | `Illustration` (string icon name) | `dx:DXButton` (display-only) | `EmptyStateIllustration` |
-| Headline | `Headline` (string) | `Label` | `EmptyStateHeadline` |
-| Supporting text | `SupportingText` (string, optional) | `Label` | `Body.Medium` + `OnSurfaceVariant` |
+MD3 has no fixed empty-state component; the pattern is an icon, a headline, optional supporting text and an optional action, centred in its container.
 
-Usage:
-```xml
-<states:EmptyState
-    Illustration="nightlife_outlined"
-    Headline="No items yet"
-    IsVisible="{Binding IsEmpty}"
-    Margin="32,32,32,80" />
-```
+- Implemented as `EmptyState` in `Proame.UI/Components/States/` with parameters `Icon` (MudBlazor icon), `Headline` (pt-BR), `SupportingText` (optional), `ActionText` + `OnAction` (optional).
+- Layout: vertically and horizontally centred (`ux-patterns.md § Empty State Positioning`), `MudStack` based.
+- Typography: headline `Typo.h6`, supporting text `Typo.body2` with `Color.Secondary` (contrast checked against the theme).
+- Two states are used across lists: **no items** (offers the add action) and **no results** (offers "limpar busca"). The page chooses which one to show; the component does not decide.
 
-Namespace: `xmlns:states="clr-namespace:MyVocaList.UI.Components.States"`
+### Section header typography
 
-### NavDrawer section header typography fix
-- **Was:** `RobotoMedium 14sp` (= Label Large)
-- **Correct:** `RobotoMedium 12sp` = Label Medium per MD3 Navigation Drawer spec
-- **In code:** `Style="{StaticResource NavDrawerSectionHeader}"` (sets 12sp Medium)
+Navigation drawer section headers use the theme's `Typo.overline` or `Typo.subtitle2`. Do not restyle them per page.
 
----
-
-## Filter Chip (MD3)
-
-**MD3 reference:** m3.material.io/components/chips/overview — Filter variant
-**DevExpress component:** `dxe:FilterChipGroup` (see `devexpress-patterns.md § FilterChipGroup`)
+## Filter Chip (MD3) → `MudChipSet` with filter chips
 
 ### When to use Filter Chips
+- Narrowing a list by a small fixed set of categories (2–6 options) that the user toggles.
+- Not for navigation, not for a single choice (use `MudSelect`), and not for free-text search (use the search field).
 
-- Toggling a list between discrete views or subsets (e.g. Authors / Performers)
-- Multiple filter chips can be selected simultaneously (non-exclusive by default)
-- Place directly below the TopAppBar / TitleView, above the list content
+### Layout pattern (filter row above the list)
+- `MudChipSet` with `Filter="true"` and `MultiSelection` as the spec requires, placed in the `FilterContent` slot of `CrudList` (`crud-listview.md`).
+- The filter row is hidden when the slot is empty.
+- Chip labels are pt-BR; selected chips use the primary colour with a check icon (not colour alone — accessibility).
 
-### Layout pattern (Filter Chip row above list)
-
-```xml
-<Grid>
-    <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />  <!-- chip row -->
-        <RowDefinition Height="*" />     <!-- list -->
-    </Grid.RowDefinitions>
-
-    <dxe:FilterChipGroup Grid.Row="0"
-                         SelectedItems="{Binding SelectedFilters, Mode=TwoWay}"
-                         Margin="16,4">
-        <dxe:FilterChipGroup.ItemsSource>
-            <x:Array Type="{x:Type x:String}">
-                <x:String>Label A</x:String>
-                <x:String>Label B</x:String>
-            </x:Array>
-        </dxe:FilterChipGroup.ItemsSource>
-    </dxe:FilterChipGroup>
-
-    <dxcv:DXCollectionView Grid.Row="1" ... />
-</Grid>
-```
-
-### ViewModel: chip selection → domain enum mapping
-
-```csharp
-partial void OnSelectedFiltersChanged(System.Collections.IList value)
-{
-    var selected = value?.Cast<string>().ToHashSet(StringComparer.Ordinal) ?? [];
-    Filter = (selected.Contains("Label A"), selected.Contains("Label B")) switch
-    {
-        (true, false) => MyFilter.AOnly,
-        (false, true) => MyFilter.BOnly,
-        _             => MyFilter.All
-    };
-}
-```
+### Chip selection → domain value mapping
+- Chip values are bound to a typed enum or id list in the page state; the enum/id to label mapping lives in the shared mapping, not inline strings.
+- The page sends the selected filter values to the API (server-side filtering). The UI never filters a full list in memory.
 
 ### MD3 terminology
+- "Filter chip" = toggle selection chip; "Assist chip" = single-action chip (`MudChip` with `OnClick`); "Input chip" = removable entity chip (`MudChip` with `OnClose`).
 
-| Term | Meaning |
-|------|---------|
-| Filter chip | Chip that filters a content set; can be selected/deselected |
-| Filter chip group | Row of filter chips (one or more active at a time) |
-| Selected state | Chip is highlighted; contributes to the active filter |
+---

@@ -1,4 +1,4 @@
-# Exception Registry — MyVocaList
+# Exception Registry — PROAME
 
 Approved exceptions to constitutional constraints. Review quarterly.
 

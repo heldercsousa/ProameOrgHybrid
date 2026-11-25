@@ -1,71 +1,40 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
-
 # Testing — Reference — Tester/Builder split + TDD workflow + running tests
 
-> Section file split from `testing-reference.md` on 2026-07-14 (token-scoped reads). Index + provenance: `testing-reference.md`. Never-miss rules: `.claude/rules/testing.md`.
+> Section file. Index: `testing-reference.md`. The never-miss rules (Builder must not modify tests) are in `rules/testing.md`.
 
 ## Tester/Builder Role Separation
 
-In a TDD cycle, the agent that writes tests (Tester) and the agent that writes implementation (Builder) must be kept conceptually separate. In practice with subagents, enforce this by dispatching test-writing and implementation-writing as distinct tasks.
-
 ### Why it matters
-When a single agent writes both tests and implementation simultaneously, it naturally writes tests that match the implementation rather than tests that verify the spec. The result is tests that pass but prove nothing.
+A test written by the same pass that writes the code tends to encode the code's behaviour rather than the acceptance criterion. Separating the two roles keeps the tests tied to the spec.
 
 ### Rules
+- **Tester** writes the failing test from the acceptance criterion (Red). Tester does not write production code.
+- **Builder** writes the minimal production code to pass (Green). Builder does not edit tests.
+- **Refactor** happens after Green with all tests passing; the tests are not changed to make a refactor easier.
+- Test-file changes after Red require a spec change first (`rules/testing.md`).
 
-1. **Tester writes tests first, then stops.** The Tester subagent writes all tests for a task, confirms they compile and fail (Red), commits, and exits. It does NOT write any implementation. (Note: in a single-agent session, apply one-at-a-time discipline per "One test at a time — Exception.")
-2. **Builder receives failing tests, makes them pass.** The Builder subagent reads the committed failing tests, writes only enough implementation to make them pass (Green), and exits. It does NOT modify tests.
-3. **Refactor is a third, optional pass.** After Green, a separate refactor pass may clean up implementation without changing test or behavior.
-4. **In a single-agent session:** apply the same discipline mentally — write all tests, run them to confirm failure, then switch to implementation mode.
-
-### Dispatch pattern (from workflow.md)
-
-```
-Wave A: Tester subagent
-  Input: spec (requirements.md, design.md), task description
-  Output: committed failing tests, task-log status = "Red — tests written"
-
-Wave B: Builder subagent
-  Input: failing tests from Wave A, spec files
-  Output: committed passing implementation, task-log status = "To Review"
-```
-
----
+### Dispatch pattern (from `workflow.md`)
+- One Tester subagent and one Builder subagent, in sequence, never in parallel on the same feature.
+- The task-log records which role wrote which change.
 
 ## TDD Workflow (Red → Green → Refactor)
 
-Starting from AutocompleteField + Person CRUD (Step 4+):
-
-1. **Write the test first** — it fails (Red).
-2. **Run `dotnet test`** — confirm failure message matches expected behavior.
-3. **Write only enough implementation to make it pass** (Green).
-4. **Run `dotnet test`** — confirm all pass.
-5. **Refactor if needed** — no new tests fail.
-
-**Never write implementation before the test.** If you write implementation first, you are not doing TDD.
+1. **Red** — write one test for one AC; run it; confirm it fails for the right reason (not a compile error or a missing setup).
+2. **Green** — write the minimal production code; run the test; confirm it passes; run the whole test project.
+3. **Refactor** — clean up with the tests green; run again.
 
 ### Regression tests
-When fixing a bug, write the failing test FIRST, confirm it fails, then fix, then confirm it passes. The regression test proves the bug existed and the fix works.
+Bug fix: write the failing regression test first, confirm the failure, fix, confirm the pass (`bug-tracking.md`).
 
 ### One test at a time
-
-Write and run **one test** before proceeding to the next. Do not write all tests for a service method in one batch, then run them together.
-
-**Rationale:** Batching test writes delays the Red confirmation. A test that was never seen failing may have been written incorrectly (wrong assertion, wrong setup). Each test must be seen to fail before the implementation that makes it pass is written.
-
-**Incremental TDD cycle per test:**
-1. Write one test → run → confirm Red
-2. Write minimal implementation → run → confirm Green
-3. Write next test → run → confirm Red (existing tests still Green)
-4. Extend implementation → run → confirm all Green
-5. Repeat
-
-**Exception:** When the Tester/Builder split is used (separate subagents), the Tester writes all tests for a task together and confirms all fail, because the Builder has not yet run. The one-at-a-time discipline applies within a single-agent session.
-
----
+Single-agent sessions add one test, make it pass, then add the next. Batching tests hides which change made which test pass.
 
 ## Running Tests
 
-Test project path: `PROAME.Tests/PROAME.Tests.csproj` — e.g. `dotnet test PROAME.Tests/PROAME.Tests.csproj`. Filter/verbosity/coverage command variants → **`maui-unit-testing` skill § Running Tests**.
+- Whole solution: `dotnet test Proame.sln`
+- One project: `dotnet test tests/Proame.Api.Tests/Proame.Api.Tests.csproj`
+- One test: `dotnet test --filter "FullyQualifiedName~VenueServiceTests"`
+- Testcontainers tests need a running Docker engine; they are not skipped silently. A missing Docker engine is a blocked environment, not a pass.
+- Coverage and mutation testing are periodic (`mutation-testing-stryker.md`), not per commit.
 
 ---

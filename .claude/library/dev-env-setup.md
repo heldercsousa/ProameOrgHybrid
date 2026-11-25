@@ -1,60 +1,44 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
+# Developer Environment Setup
 
-# Team Environment Setup (moved from CLAUDE.md 2026-07-14 — token-scoped context)
+> On-demand reference. Exact tool versions come from `global.json`, `Directory.Packages.props` and the `.csproj` files, never from this file.
 
-> One-time developer-onboarding procedure. Moved out of the always-loaded CLAUDE.md because it is read once per developer ever, yet was paid on every agent dispatch. CLAUDE.md keeps a one-line pointer.
+## Required Tools
 
-Environment variables for MCP integrations (Playwright token, Context7 API key) are stored in `.env.local` (gitignored, team-shared).
+| Tool | Used for | Notes |
+|------|----------|-------|
+| .NET 10 SDK | Build and test every project | Pin with `global.json` once created |
+| .NET MAUI workloads (`dotnet workload install maui`) | `Proame.App` (Android, iOS, Windows, macOS heads) | Android SDK via the MAUI workload; iOS/macOS builds need a Mac host |
+| Docker Desktop (or Docker Engine) | `docker compose` for PostgreSQL and Azurite; Testcontainers | Required for repository and endpoint tests |
+| Android emulator (Android Studio) | Device checks for the Hybrid head | Clean-build rule in `rules/workflow.md` (E2E gate) |
+| Azure CLI | Azure resources and deployment (App Service, PostgreSQL Flexible Server, Blob Storage) | Under PROAME's own accounts |
+| `gh` CLI | GitHub pull requests and issues | |
+| Node.js (optional) | Playwright MCP / browser checks for the web head | Version from the MCP configuration |
 
-**First-time setup (each developer, once):**
-1. Copy `.env.local.example` to `.env.local`
-2. Fill in your API keys (Playwright MCP token, Context7 API key)
-3. Run `. .\.claude\scripts\load-env.ps1` **once** to persist vars to User scope (no admin needed — User scope writes go to HKCU)
-4. **Close ALL terminal windows completely** (not just the tab — the terminal host process itself, and VS Code / Visual Studio if Claude Code is launched from there), then open a fresh terminal from the Start menu / taskbar
-5. Verify with `$env:CONTEXT7_API_KEY` (should print the key), then start Claude Code
+## Solution Bootstrap
 
-> **Why step 4 matters:** Windows processes get an environment *snapshot* from their parent at launch. The script only updates the registry — already-running processes (including an open Windows Terminal host that spawns "new" tabs/windows) keep the stale snapshot, so Claude Code launched from them won't see the keys and `/mcp` will warn the key is missing. Restarting Claude Code inside the same stale terminal does NOT help.
+1. Clone the repository and check out `develop`.
+2. `dotnet restore Proame.sln`
+3. `docker compose up -d` (PostgreSQL + Azurite)
+4. Copy `.env.local.example` to `.env.local` and fill in the keys you need (git-ignored).
+5. `dotnet build Proame.sln` — expect 0 errors.
+6. `dotnet test Proame.sln` — requires Docker for the Testcontainers suites.
 
-After step 4, env vars are **automatically available** to Claude Code on every restart — no further action needed.
+## Environment Variables and Secrets
 
-**If keys change:** update `.env.local`, then re-run the script and repeat step 4. Env vars are only read from `.env.local` during script execution; afterward they live in the registry.
+- Keys are listed in `.env.local.example`; values live in `.env.local` or user secrets, never in source or `appsettings*.json`.
+- Load them into a PowerShell session with `. .\.claude\scripts\load-env.ps1`.
+- Azure secrets reach production through App Service configuration or Key Vault references.
 
-> **Design note:** `.env.local` is the source of truth for key rotation across the team. Each dev maintains their own `.env.local` (never committed). The script is a one-time bridge to the registry.
+## Android Release Signing
 
-## Syncfusion license key (Release builds)
+- Release builds for Android need a keystore. The keystore path, alias and passwords are supplied through environment variables or CI secrets, referenced from the `Proame.App` project's Release configuration — never committed.
+- The keystore file itself is stored outside the repository (secure backup owned by Helder).
+- Deployment command names are in `.claude/commands/`; the Google Play or sideload distribution route is decided in the release spec.
 
-Full procedure: `Docs/DevEnv/devenv-setup.md § 2a`. Summary:
+## Troubleshooting
 
-- Variable: `SYNCFUSION_LICENSE_KEY` (user environment variable; never write the real key in any tracked file).
-- Helder gets the key from his Syncfusion Community License account.
-- Windows: `setx SYNCFUSION_LICENSE_KEY "<key>"`, then restart VS or the shell.
-- MSBuild reads it and generates `$(IntermediateOutputPath)SyncfusionLicense.g.cs`. **Release builds fail without it** (`SYNCFUSION_LICENSE_KEY is not set — required for Release builds.`); Debug builds work and show the trial notice.
+- `Docker engine is not running` in tests → start Docker Desktop; Testcontainers tests do not skip silently.
+- MAUI Android build fails after a branch switch with resource errors → delete the Android `obj/` and `bin/` output for `Proame.App` and rebuild (the clean-build rule in `rules/workflow.md`).
+- `dotnet ef` cannot connect → check the connection string keys in `.env.local` and that the container is healthy (`docker compose ps`).
 
-## Android Release Signing (`/sln-deploy-googledrive`)
-
-Required to build a signed APK and upload it to Google Drive.
-
-**One-time per machine:**
-1. Create a keystore (once per developer — keep it outside the repo):
-   ```powershell
-   keytool -genkey -v -keystore C:\Users\<you>\keystrokes\proame-release.jks -alias proame -keyalg RSA -keysize 2048 -validity 10000
-   ```
-2. Configure rclone with Google Drive (remote name must be `googledrive`):
-   ```powershell
-   rclone config   # new remote → drive → blank client_id/secret → use auto config
-   ```
-3. Add your passwords to `.env.local` (copy from `.env.local.example`) and run `load-env.ps1`:
-   ```
-   ANDROID_KEYSTORE_PASS=<keystore password>
-   ANDROID_KEY_PASS=<key password>   # same as keystore password if you pressed Enter
-   ```
-   Then: `. .\.claude\scripts\load-env.ps1` and restart terminals.
-
-**Variables registered by this setup:**
-
-| Variable | Purpose |
-|---|---|
-| `ANDROID_KEYSTORE_PASS` | Keystore file password (read by MSBuild at publish time) |
-| `ANDROID_KEY_PASS` | Key entry password (same value if not set separately) |
-
-The keystore path and alias are hardcoded in `PROAME/PROAME.csproj` (Release Android PropertyGroup). If the keystore moves, update both the `.csproj` and this file.
+---

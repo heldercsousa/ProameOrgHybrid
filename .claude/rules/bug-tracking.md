@@ -15,7 +15,7 @@ A fix is not complete until its regression test has been seen to FAIL before and
 | Severity | Regression test |
 |----------|-----------------|
 | **Critical** | MANDATORY — failing test first (Red), then fix (Green). No exceptions. |
-| **Major** | MANDATORY where testable (Service/ViewModel/Repository); UI-only → document manual E2E in task-log. |
+| **Major** | MANDATORY where testable (Service/API endpoint/Repository/component with logic); UI-only → document manual E2E in task-log. |
 | **Minor** | Optional — only if likely to recur or the fix is non-obvious. |
 
 Task-log entry: Critical/Major = required (Changed files + Verification evidence); Minor = commit message only.

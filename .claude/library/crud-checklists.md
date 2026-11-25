@@ -1,64 +1,80 @@
-# CRUD Page Design Laws — ViewModel + Code-Behind checklists (list page)
+# CRUD Page Design Laws — Component + Code-Behind checklists (list page)
 
-> Section file split from `crud-pages.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `crud-pages.md`.
+> Section file. Index + never-miss rules: `crud-pages.md`.
 
-## ViewModel Checklist (list page)
+## Component Checklist (list page)
 
-Every list ViewModel shall have:
+Every list page's state holder (the `.razor.cs` code-behind of the page, or a state class it owns) shall have:
 
-| Property / Command | Purpose |
-|--------------------|---------|
-| `ObservableRangeCollection<TDto> Items` | The list data |
-| `ObservableRangeCollection<TDto> SelectedItems` | Selected rows |
-| `IList SelectedItemsRaw` | Non-generic wrapper for DXCollectionView binding |
-| `bool IsInitialLoading` | Drives `ShimmerView` |
-| `bool IsRefreshing` | Drives pull-to-refresh |
-| `bool HasMoreItems` | Drives load-more |
-| `string SearchText` | Bound to `SearchAppBar` (if search is present) |
-| `bool IsSearchMode` | Controls SmallAppBar ↔ SearchAppBar swap (if search is present) |
-| `bool IsScrolled` | Drives `IsElevated` on both app bars |
-| `int SelectedCount` | Updated by `OnSelectionChanged` in code-behind |
-| `string AppBarTitle` | Derived: entity name or "N selected" |
-| `bool IsSelectionMode` | `SelectedCount > 0` — inherited from `CrudListViewModelBase` (drives DX `SelectionMode` + toolbar visibility) |
+| Member | Purpose |
+|--------|---------|
+| `GridData<TDto>` / list of items | The rows on the current page (paging comes from the API) |
+| `IReadOnlyList<TDto> SelectedItems` | Selected rows (checkbox selection in `CrudList`) |
+| `bool _isLoading` | Drives the skeleton (only for screens that are not `CrudList`) |
+| `string _searchText` | Bound to the `CrudList` search field |
+| `int SelectedCount` | Derived from `SelectedItems` |
+| `string AppBarTitle` | Derived: entity name, or "N selecionados" when rows are selected |
 | `bool CanDeleteSelected` | `SelectedCount > 0` (if delete is supported) |
-| `BottomSheetState ConfirmSheetState` | Drives `ConfirmSheet` component (if destructive action exists) |
-| `RefreshCommand`, `LoadMoreCommand`, `AddCommand` | Standard list commands |
-| `DeleteSelectedCommand`, `SelectAllCommand` | Toolbar commands (inherited) |
-| `ItemTapCommand`, `ItemLongPressCommand`, `ToggleItemSelectionCommand`, `EditItemCommand`, `DeleteItemCommand` | Gesture / item-actions commands (inherited; page only implements `NavigateToEditAsync`, `ExecuteDeleteAsync`, `BuildDeleteConfirmMessage`) |
-| `OpenSearchCommand`, `CloseSearchCommand` | Search commands (omit if no search) |
+| Add / edit / delete callbacks | `OnAdd`, `OnEdit`, `OnDelete` parameters passed to `CrudList` |
 
-> **CrudListView binding notes:**
-> - `bool IsEmptyNoResults` is part of `ICrudListViewModel` — CrudListView binds to it directly via BindingContext; no BindableProperty on the page is needed.
-> - `bool IsEmptyNoItems` is **not** on the interface — it must be passed from the page via `CrudListView.IsEmptyNoItems` BindableProperty because the property name differs per entity (`IsEmptyNoVenues`, `IsEmptyNoArtists`, etc.).
+> **CrudList binding notes:**
+> - The empty-state flags for "no results" are owned by `CrudList`.
+> - The "no items" flag is supplied by the page, because the wording differs per entity.
+> - Page state changes go through the component's own `StateHasChanged` or `InvokeAsync`; never mutate state from a background thread without `InvokeAsync`.
 
 ---
 
 ## Code-Behind Checklist (list page)
 
-Every list page code-behind shall have:
+Every list page code-behind shall:
+- Declare the page with `@page` and the `[Authorize]` attribute the feature design requires (no anonymous access to admin routes).
+- Inject the API client and the navigation wrapper through `[Inject]`; no static service locators.
+- Implement only the data callback (`Query`), the navigation callbacks (`OnAdd`, `OnEdit`) and the delete callback (`OnDelete`).
+- Dispose its pending work in `DisposeAsync` (cancel the `CancellationTokenSource`).
+
+```razor
+@* Venues.razor — markup only *@
+@page "/admin/venues"
+@attribute [Authorize]
+@implements IAsyncDisposable
+
+<CrudList TItem="VenueListItemDto"
+          Query="LoadPageAsync"
+          OnAdd="NavigateToAdd"
+          OnEdit="NavigateToEdit"
+          OnDelete="DeleteAsync"
+          EmptyTitle="Nenhum local cadastrado"
+          SearchPlaceholder="Buscar locais…">
+    <ColumnTemplate>
+        <PropertyColumn Property="x => x.Name" Title="Nome" />
+    </ColumnTemplate>
+</CrudList>
+```
 
 ```csharp
-public partial class MyEntityPage : CrudListPageBase
+// Venues.razor.cs — code-behind
+public partial class Venues : IAsyncDisposable
 {
-    private readonly MyEntityViewModel _viewModel;
+    [Inject] private IVenueClient Client { get; set; } = default!;
+    [Inject] private INavigator Navigator { get; set; } = default!;
 
-    /// <summary>Exposed for compiled bindings inside DataTemplates.</summary>
-    public MyEntityViewModel ViewModel => _viewModel;
+    private Task<GridData<VenueListItemDto>> LoadPageAsync(GridState<VenueListItemDto> state, CancellationToken ct)
+        => Client.ListAsync(state.Page, state.PageSize, state.SortDefinitions, ct);
 
-    protected override ICrudListViewModel ListViewModel => _viewModel;
+    private void NavigateToAdd() => Navigator.To("/admin/venues/new");
+    private void NavigateToEdit(VenueListItemDto item) => Navigator.To($"/admin/venues/{item.Id}");
 
-    public MyEntityPage(MyEntityViewModel viewModel)
+    private async Task<bool> DeleteAsync(IReadOnlyList<VenueListItemDto> items)
     {
-        InitializeComponent();
-        _viewModel = viewModel;
-        BindingContext = _viewModel;
-        AttachViewModel();   // subscribe PropertyChanged for OnBackButtonPressed logic
+        // API call; returns the (success) flag the list uses to reload
+        return true;
     }
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
 ```
 
-`OnCollectionViewScrolled`, `OnSelectionChanged`, `OnConfirmSheetStateChanged`, and the SelectedItems wire-up are all handled internally by `CrudListView`. Do not add them to the page code-behind.
-
-`OnAppearing` and `OnBackButtonPressed` are handled by `CrudListPageBase` — do not override them unless adding page-specific logic on top.
+- The sample is a shape reference, not a template to copy verbatim. Business rules stay in the API.
+- Do not add row-tap, selection or search handlers to the page; `CrudList` owns them.
 
 ---

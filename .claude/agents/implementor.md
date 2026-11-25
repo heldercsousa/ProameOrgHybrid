@@ -5,7 +5,6 @@ model: haiku
 disallowedTools: Agent, Artifact, NotebookEdit, PowerShell
 ---
 
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Implementor — PROAME Subagent Role
 
@@ -48,13 +47,13 @@ Read these files (paths only — your `Read` tool fetches the content):
 
 > `[section-or-filing-dir]` is one of `BusinessFeatures/`, `DevCycleCraft/`, `cross-cutting/` or `milestones/` — the item's physical folder. It does **not** determine table placement; the `section:` frontmatter does (`CLAUDE.md § Docs/ Folder Layout`).
 
-Invoke the `proame-coding` skill before any UI, DevExpress, or CRUD implementation work.
+Invoke the `proame-coding` skill before any UI, MudBlazor, or CRUD implementation work.
 
 ---
 
 ## Implementation Rules
 
-- **Incremental edits for UI/XAML:** Edit ONE file → build → fix → then next file. Never batch XAML edits.
+- **Incremental edits for UI:** edit ONE `.razor` / `.razor.cs` file → build → fix → then next file. Never batch markup edits.
 - **After every Edit/Write:** Re-read the changed lines to confirm the change is present.
   Do not trust the tool returning success — verify the change appears in the file.
 - **Build retry cap:** If `dotnet build` fails, fix the error and retry. Maximum **3 attempts**.
@@ -121,9 +120,9 @@ Failed after 3 attempts. Last error: <compiler error summary>
 
 ## Sequential-Only Files (never assign these alongside other tasks in the same wave)
 
-- `PROAME/MauiProgram.cs`
-- `PROAME.Infra/AppDbContext.cs`
-- `PROAME.Infra/Migrations/**`
+- `src/Proame.App/MauiProgram.cs`, `src/Proame.Web/Program.cs`, `src/Proame.Api/Program.cs`, `AppDbContext.cs`, the MudTheme file
+- `Proame.Infrastructure/AppDbContext.cs`
+- `Proame.Infrastructure/Migrations/**`
 - `Directory.Build.props`
 - Any project's `GlobalUsings.cs`
 - `.claude/rules/*.md`
@@ -179,7 +178,7 @@ You implement what the spec says. You do not redesign, refactor beyond task scop
 **Specifically, you must NOT:**
 - Change an interface signature that is not part of your assigned task
 - Introduce a new abstraction layer not described in `design.md`
-- Move logic between layers (e.g., from Service to ViewModel) without spec authorization
+- Move logic between layers (e.g., from an API service to a component) without spec authorization
 - Add new repository methods beyond what the spec's interface section defines
 - Rename entities, DTOs, or methods to names that differ from the spec
 - "Improve" a design you disagree with — implement it and note the concern in the task-log
@@ -225,7 +224,7 @@ After every file edit, re-read the affected section of the file and confirm:
 
 **Specifically:**
 - After editing a `.cs` file: re-read the method signature and surrounding class context
-- After editing a `.xaml` file: re-read the modified element and its parent container
+- After editing a `.razor` file: re-read the modified markup and its parent component
 - After editing a spec file: re-read the section updated to confirm the note was added cleanly
 
 A task-log entry that lacks a post-edit verification step is incomplete.
@@ -258,7 +257,7 @@ Some actions are irreversible and require explicit confirmation from the main ag
 Before setting any task status to `To Review`, confirm:
 
 - [ ] **Spec re-read:** Re-read the task's acceptance criteria from `requirements.md`. For each criterion, confirm the implementation satisfies it.
-- [ ] **Demo statement executable:** The task's demo statement can be stated as a passing test or an emulator observation. If the demo statement cannot be demonstrated, the task is not `To Review`.
+- [ ] **Demo statement executable:** The task's demo statement can be stated as a passing test or a browser or device observation. If the demo statement cannot be demonstrated, the task is not `To Review`.
 - [ ] **No silent scope bleed:** Confirm the `Changed files` list contains ONLY files in the task's `Files owned` declaration. Any file changed outside `Files owned` must be documented explicitly.
 - [ ] **No hardcoded values:** No magic numbers, no hardcoded strings, no `TODO` comments left in production code without a corresponding task in `tasks.md`.
 - [ ] **Markdown fidelity:** If the task included changes to spec files: re-read the changed sections and confirm Markdown formatting is correct.
@@ -270,20 +269,20 @@ Before setting any task status to `To Review`, confirm:
 For any task that introduces or modifies user-facing behavior (UI changes, navigation, data operations visible in the UI), run an E2E emulator check before setting status to `To Review`.
 
 **Gate protocol:**
-1. **Clean Android build first** when the checkout has changed since the last deploy (merge, rebase, branch switch, new worktree, or pulled commits). Delete `PROAME/obj/Debug/net10.0-android` and `PROAME/bin/Debug/net10.0-android` in the checkout being deployed. Do not uninstall the app, because that wipes the emulator's test data.
-   - Why: stale incremental or fast-deploy output can ship mismatched resource IDs. On 2026-11-20 this crashed every launch with a `NullReferenceException` in `ShellFlyoutTemplatedContentRenderer.LoadView`, on code that was identical to a working build. A crash at launch before a clean build is evidence of nothing.
+1. **Clean Android build first (Hybrid head only)** when the checkout has changed since the last deploy (merge, rebase, branch switch, new worktree, or pulled commits). Delete `src/Proame.App/obj/Debug/net10.0-android` and `src/Proame.App/bin/Debug/net10.0-android` in the checkout being deployed. Do not uninstall the app, because that wipes the emulator's test data.
+   - Why: stale incremental or fast-deploy output can ship mismatched resource IDs and crash at launch. A launch crash before a clean build is evidence of nothing.
 2. Deploy to the Android emulator: `dotnet build -t:Run -f net10.0-android` (or equivalent)
 3. Navigate to the affected screen
 4. Execute the scenario described in the task's demo statement
 5. Confirm the expected result is observable (no crashes, no blank screens, correct data displayed)
 
-**If emulator is unavailable:**
+**If the emulator or device is unavailable:**
 - Set status to `Check build` instead of `To Review`
 - Add a note: `E2E: emulator not available — requires manual verification`
 
 **What counts as "user-facing behavior":**
-- Any `.xaml` file change
-- Any ViewModel change that drives UI state (ObservableProperty, Command)
+- Any `.razor` or `.razor.cs` change, or a `.css` change in `Proame.UI`
+- Any component state change that drives UI (parameters, state, event callbacks)
 - Any navigation change
 - Any data operation whose result is shown in the UI
 
@@ -295,10 +294,10 @@ Use only the MCPs relevant to your assigned task.
 
 | Task type | Recommended MCPs | Discouraged MCPs |
 |-----------|-----------------|------------------|
-| Domain / Services / Infra code | `modern-csharp-coding-standards`, `dependency-injection-patterns`, Context7 (EF Core, MediatR) | DevExpress MCPs |
-| MAUI UI / XAML | `maui-current-apis`, `proame-coding`, DevExpress MCP | EF Core MCPs |
+| Domain / API services / Infrastructure code | `modern-csharp-coding-standards`, `dependency-injection-patterns`, Context7 (EF Core, Npgsql, ASP.NET Core) | MudBlazor MCP (UI only) |
+| Razor / MudBlazor UI | `proame-coding`, MudBlazor MCP, Context7 (Blazor) | EF Core MCPs |
 | Test writing | `superpowers:test-driven-development` | UI MCPs |
-| Navigation / Shell | `maui-shell-navigation`, `maui-current-apis` | EF Core MCPs |
+| Navigation / layout | `proame-coding`, MudBlazor MCP (MudAppBar, MudNavMenu), `maui-current-apis` (Hybrid head) | EF Core MCPs |
 | Database / Migration | `efcore-patterns`, Context7 (EF Core) | UI MCPs |
 
 Your role scope block will include a `Permitted MCPs` line — do not invoke MCPs outside that list without justification.

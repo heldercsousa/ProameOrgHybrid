@@ -1,68 +1,64 @@
-# CRUD Page Design Laws — Confirm-Delete BottomSheet, Shimmer, DI Registration, Empty State
+# CRUD Page Design Laws — Confirm-Delete Dialog, Skeleton, DI Registration, Empty State
 
-> Section file split from `crud-pages.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `crud-pages.md`.
+> Section file. Index + never-miss rules: `crud-pages.md`.
 
-## Confirm-Delete BottomSheet
+## Confirm-Delete Dialog
 
-> **Note:** As of Step 7, the confirm BottomSheet lives inside `CrudListView`. Do not add a
-> `dx:BottomSheet` to page XAML. The ViewModel properties `ConfirmSheetState`, `ConfirmMessage`,
-> `ConfirmActionText`, `ConfirmActionCommand`, and `DismissConfirmCommand` are still required on
-> the ViewModel — CrudListView binds them in its internal XAML directly via `BindingContext`
-> (runtime binding — these are NOT on `ICrudListViewModel`; they resolve through the concrete VM).
+> **Note:** the confirmation lives inside `CrudList` (`crud-listview.md`). Do not add a dialog to page markup for the standard delete. The page supplies the delete callback (`OnDelete`); `CrudList` shows the confirmation first.
 
-Use the standard confirm BottomSheet for any destructive action. `HalfExpandedRatio=0.28` for single-message confirmations.
+Use `MudMessageBox` (static `Show`) for any destructive action — never a native browser dialog and never a bottom sheet:
 
-The VM holds `ConfirmSheetState`, `ConfirmMessage`, `ConfirmActionText`, `ConfirmActionCommand`, `DismissConfirmCommand`. CrudListView observes `ConfirmSheetState` via `ICrudListViewModel.PropertyChanged` to open/close the sheet internally — do not wire this in the page code-behind. The remaining four properties (`ConfirmMessage`, etc.) are bound by CrudListView's internal XAML via BindingContext and do not require the interface.
+```csharp
+bool? confirmed = await Dialog.ShowMessageBox(
+    title: "Excluir registro",
+    markupMessage: new MarkupString("Esta ação não pode ser desfeita."),
+    yesText: "Excluir",
+    cancelText: "Cancelar");
+```
 
-See `dialogs-validation.md` for the XAML snippet (internal to CrudListView — do not copy to page XAML).
+- Titles, messages and button labels are pt-BR and come from the resource/localization layer (`theme-locale.md`), not hard-coded in several places.
+- The primary destructive button uses the error colour from the MudTheme tokens; the cancel button is the default focus.
+- Deleting several rows states the count in the message ("3 registros") computed by the caller.
 
 ---
 
-## Shimmer Skeleton
+## Skeleton (Loading State)
 
-> **Note:** As of Step 7, the shimmer skeleton is internal to `CrudListView`. Do not add
-> `ShimmerView` or `SkeletonBone` elements to page XAML. The ViewModel `IsInitialLoading`
-> property is still required — CrudListView binds it directly in its internal XAML via
-> `BindingContext` (runtime binding — `IsInitialLoading` is NOT on `ICrudListViewModel`;
-> it resolves through the concrete VM type at runtime).
+> **Note:** the skeleton is internal to `CrudList`. Do not add `MudSkeleton` placeholders to page markup for list rows. The component state `_isLoading` (or the grid's `Loading` binding) is still required on the page only for non-list screens.
 
-Skeleton bones match the `ListItem` height: `HeightRequest="56"`, `CornerRadius="0"`, `Margin="0,1"` (1dp separator gap). Use 6 bones. Apply the `SkeletonBone` named style — no inline props needed (internal reference):
-
-```xml
-<dx:DXBorder Style="{StaticResource SkeletonBone}" />
-```
-
-Always `await Task.Yield()` before the first data fetch in `InitializeAsync()` so the shimmer renders before the load begins.
+- Row skeletons use `MudSkeleton` with `Animation="Animation.Wave"` and match the row height of the list (`Height` equal to the row height in the MudTheme density setting).
+- Show six placeholder rows on the first load.
+- The skeleton is rendered before the request starts: set the loading flag, call `StateHasChanged()`, then await the data call.
+- Reduced motion: skeleton animation is disabled when the user prefers reduced motion (`prefers-reduced-motion` in the shared CSS).
 
 ---
 
 ## DI Registration
 
+Registration rules (lifetimes and extension-method composition) are in `code-style-reference.md § DI Registration Conventions`. Summary for CRUD pieces:
+
 | Type | Lifetime | Reason |
 |------|----------|--------|
-| List page | `AddTransient` | Fresh instance per navigation |
-| Form page | `AddTransient` | Fresh instance per navigation |
-| List ViewModel | `AddTransient` | Fresh instance per navigation |
-| Form ViewModel | `AddTransient` | Fresh instance per navigation |
-| Service | `AddScoped` | Per-lifetime scope |
-| Repository | `AddScoped` | Per-lifetime scope |
+| Razor page / component | Not registered (Blazor creates them) | Components are resolved by the router |
+| Page-level state holder (if any) | `AddScoped` (per circuit) or `AddTransient` | Fresh state per navigation in Blazor Web/Hybrid |
+| API client (`IVenueClient`-style) | `AddScoped` (Blazor) / typed `HttpClient` | Per-circuit in the UI; typed client in the API host |
+| Service (API) | `AddScoped` | Per request |
+| Repository (API) | `AddScoped` | Per request, shares the request's `DbContext` |
 
 ---
 
 ## Empty State
 
-Use the `EmptyState` component for all empty/no-results states:
+Use the shared empty-state component (`EmptyState` in `Proame.UI`) for all empty and no-results states. It shows an icon (`MudBlazor` `Icons.Material.Outlined.*`), a pt-BR headline, and an optional action button:
 
-```xml
-<states:EmptyState
-    Illustration="nightlife_outlined"
-    Headline="No items registered"
-    IsVisible="{Binding IsEmptyNoItems}"
-    Margin="32,32,32,80" />
+```razor
+<EmptyState Icon="@Icons.Material.Outlined.Place"
+            Headline="Nenhum local cadastrado"
+            Visible="@(_isEmptyNoItems)" />
 ```
 
-Namespace: `xmlns:states="clr-namespace:MyVocaList.UI.Components.States"`
+Two standard states drive visibility:
+- **No items** — no records exist at all (the page offers the add action).
+- **No results** — the search or filter returned no matches (the page offers "limpar busca").
 
-Two standard ViewModel properties drive visibility:
-- `IsEmptyNoItems` — no records exist at all
-- `IsEmptyNoResults` — search returned no matches
+The empty-state component is a governed component once two pages consume it (`component-safety-gate.md`).

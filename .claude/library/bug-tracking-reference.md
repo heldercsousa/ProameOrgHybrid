@@ -1,6 +1,6 @@
 # Bug Tracking — Reference
 
-> Extracted from `.claude/rules/bug-tracking.md` (2026-07-05, rules-file-refactoring Task 03). The rule file is now a routing table; this file holds the full detail. Discovered via the `myvocalist-coding` skill map or the rule's routing table.
+> Extracted from `.claude/rules/bug-tracking.md` (2026-07-05, rules-file-refactoring Task 03). The rule file is now a routing table; this file holds the full detail. Discovered via the `proame-coding` skill map or the rule's routing table.
 > Language rule: English only — see `CLAUDE.md § Constitutional Constraints`.
 
 `workflow.md § Bug Fix Pattern` defines how to *commit* a bug fix (commit message as spec). This file defines how bugs are *tracked* before and during that fix: where they live in BACKLOG, when they earn a task-log entry, how they are classified by severity, and what regression test each class requires.
@@ -64,7 +64,7 @@ A bug fix is not complete until its regression test exists, has been seen to FAI
 | Severity | Regression test |
 |----------|-----------------|
 | **Critical** | MANDATORY. Write the failing test first (Red), then fix (Green). No exceptions — a Critical fix without a regression test is incomplete. |
-| **Major** | MANDATORY where the bug lives in a testable layer (Service, ViewModel, Repository). UI-only Major bugs not unit-testable: document the manual E2E verification step in the task-log instead. |
+| **Major** | MANDATORY where the bug lives in a testable layer (service, API endpoint, repository, component with logic). UI-only Major bugs not unit-testable: document the manual E2E verification step in the task-log instead. |
 | **Minor** | Optional. Add a regression test only if the bug is likely to recur or the fix is non-obvious. |
 
 > Rationale: Critical/Major bugs by definition slipped past existing tests — a regression test is the only proof the same defect cannot return silently.

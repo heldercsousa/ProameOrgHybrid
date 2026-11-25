@@ -1,151 +1,106 @@
-# CRUD Page Design Laws — App Bar, List Layout, FloatingToolbar — laws and variants
+# CRUD Page Design Laws — App Bar, List Layout, Selection Toolbar — laws and variants
 
-> Section file split from `crud-pages.md` on 2026-07-14 (token-scoped reads). Index + never-miss rules: `crud-pages.md`.
+> Section file split from `crud-pages.md` (token-scoped reads). Index + never-miss rules: `crud-pages.md`.
+> Component names below are MudBlazor (`MudAppBar`, `MudDataGrid`, `MudFab`, `MudPaper`). Material 3 intent is mapped to the MudBlazor component that implements it in `m3-appbars.md`, `m3-lists.md` and `m3-floating-toolbar.md`.
 
 ## App Bar — Laws and Variants
 
 ### Law
-Every list page uses `SmallAppBar` as the sole `Shell.TitleView` occupant (no search-mode toggle, no wrapper `Grid`). Search is a persistent `SearchBar` (MD3 "Search bar", standalone/docked) docked at Row 0 of `CrudListView` — always visible, never replacing the app bar. `SearchAppBar` (Shell.TitleView bar-swap) is retired for CRUD list pages; it remains in use only by the 4 picker pages (`SongPickerPage`, `ArtistPickerPage`, `QueueSongPickerPage`, `YouTubeSearchPage`) pending their own migration (BACKLOG follow-up).
+Every list page sits under the single application top bar (`MudAppBar` in the shared layout of `Proame.UI`). The page adds **one** title and at most three trailing actions to it; search is a persistent `MudTextField` docked above the grid inside `CrudList` — always visible, never a bar-swap or a search mode toggle.
 
-### Standard configuration (Venues reference)
-```xml
-<Shell.TitleView>
-    <appbars:SmallAppBar
-        Title="{Binding AppBarTitle}"
-        IsElevated="{Binding IsScrolled}" />
-</Shell.TitleView>
-...
-<views:CrudListView
-    ItemsSource="{Binding Venues}"
-    SearchText="{Binding SearchText, Mode=TwoWay}"
-    SearchPlaceholder="Search venues..."
-    ... />
-```
-`CrudListView` owns the `SearchBar` internally (Row 0 of its root Grid) and propagates `SearchText`/`SearchPlaceholder` to it. Pages never place a `SearchBar` element directly in page XAML.
+### Standard configuration
+- Page title: set through the layout's title state (`PageTitle` / shared title service) so the app bar and the browser/document title agree.
+- Search: rendered by `CrudList` (`SearchPlaceholder` parameter), debounced, pt-BR placeholder.
+- Trailing actions: `MudIconButton` in the app bar only for page-wide actions (for example filter or export); row and selection actions live in the grid and the selection bar.
 
 ### Variants — allowed adaptations
 
 | Scenario | Adaptation |
 |----------|-----------|
-| Additional trailing actions (e.g. filter, sort) | Add `Action2Icon`/`Action2Command` (and `Action3` if needed) to `SmallAppBar` |
-| No search on this page | Omit `SearchAppBar` entirely; omit `Action1` search icon |
-| Complex filter (not simple text search) | Keep `SmallAppBar` with a filter icon that opens a bottom sheet or navigates to a filter page; **do not** embed a filter form in the app bar |
-| Selection count in title | `AppBarTitle` derived property — "EntityName" when 0 selected, "N selected" when N ≥ 1. Always via `SmallAppBar.Title` binding, never a separate contextual bar. |
-| Root tab page (no back button) | Omit `NavigationIcon` on `SmallAppBar` |
-| Secondary page (has back) | Set `NavigationIcon="arrow_back_outlined"` + `NavigationCommand` |
+| Additional trailing actions (e.g. filter, sort) | Add up to three `MudIconButton`s with `aria-label` in pt-BR |
+| No search on this page | Omit the search field from `CrudList` (`SearchPlaceholder` unset) |
+| Complex filter (not simple text search) | Filter icon opens a `MudDialog` or a side panel (`MudDrawer`); **do not** embed a filter form in the app bar |
+| Selection count in title | Title shows the entity name when 0 rows are selected and "N selecionados" when N ≥ 1, bound to the selection state |
+| Root page (no back button) | No back icon in the app bar |
+| Secondary page (has back) | Back `MudIconButton` (`ArrowBack`) calling the navigation wrapper |
 
 ### Never
-- Do not build a custom title bar Grid in `Shell.TitleView` as a replacement for `SmallAppBar`. The old multi-select contextual bar pattern (5-column Grid) is retired.
-- Do not add `SearchAppBar`, `IsSearchMode`, or a TitleView `Grid`+toggle to a CRUD list page. Search is the persistent `SearchBar` inside `CrudListView` — see the Law above.
+- Do not build a custom title bar in the page as a replacement for `MudAppBar`.
+- Do not add a second search bar or a search-mode toggle to a CRUD list page. Search is the persistent field inside `CrudList`.
 
 ---
 
 ## List Layout — Laws and Variants
 
-> **Note:** Writing `DXCollectionView` directly in page XAML is the old pattern. As of Step 7, use
-> `<views:CrudListView>` instead and pass entity-specific DataTemplates via `ItemTemplate` and
-> `SelectedItemTemplate`. The standard configuration below is now internal to `CrudListView` — it is
-> shown here as reference only.
+> **Note:** Writing a `MudDataGrid` (or `MudTable`) directly in page markup, with its own skeleton, empty state and selection logic, is the old pattern. Use `CrudList` (`crud-listview.md`); pass entity-specific columns or row templates.
 
 ### Law
-All list rows use the `ListItem` component. No card layouts, no custom `DXBorder`-wrapped rows. `DXCollectionView` is always the container.
+All list rows are rendered by the grid component (`MudDataGrid` for tables, `MudList` / `MudListItem` for card-style lists on narrow screens). No hand-built card layouts per page. Row layout is the same on Android, iOS and Web heads — responsive behaviour is a `Proame.UI` concern, not a head concern.
 
 ### Standard configuration
-```xml
-<dxcv:DXCollectionView
-    SelectionMode="None"                     <!-- switched to Multiple by CrudListView in selection mode -->
-    Tap="OnItemTap" LongPress="OnItemLongPress"
-    IndicatorColor="{StaticResource Primary}"
-    Margin="0,0,0,88"
-    Scrolled="OnCollectionViewScrolled"
-    SelectionChanged="OnSelectionChanged"
-    ...>
-    <dxcv:DXCollectionView.ItemTemplate>
-        <DataTemplate x:DataType="dto:MyDto">
-            <lists:ListItem Headline="{Binding Name}" IsSelected="False">
-                <!-- LeadingContent and TrailingContent adapt per page -->
-            </lists:ListItem>
-        </DataTemplate>
-    </dxcv:DXCollectionView.ItemTemplate>
-    <dxcv:DXCollectionView.SelectedItemTemplate>
-        <DataTemplate x:DataType="dto:MyDto">
-            <lists:ListItem Headline="{Binding Name}" IsSelected="True">
-                <!-- Same structure, <lists:ListItemCheckbox IsChecked="True" /> -->
-            </lists:ListItem>
-        </DataTemplate>
-    </dxcv:DXCollectionView.SelectedItemTemplate>
-</dxcv:DXCollectionView>
-```
+- `Dense` and `Hover` on desktop; touch target at least 48 px on touch heads.
+- Row actions in a trailing `MudIconButton` column (edit) with `aria-label` in pt-BR.
+- Empty and loading states supplied by `CrudList` (`crud-listview.md`).
 
 ### Variants — allowed adaptations
 
 | Slot | Options | Notes |
 |------|---------|-------|
-| `LeadingContent` | `ListItemLeadingIcon` / `ListItemLeadingAvatar` / `ListItemLeadingImage` / omitted | Pick the M3 preset that matches the entity type |
-| `Headline` | Any string binding | Required — always populated |
-| `SupportingText` | Optional — add when a second line of info helps the user | Drives 2-line or 3-line list item height |
-| `Overline` | Optional — label above headline | Use sparingly; reserved for category/type labels |
-| `TrailingContent` (or `LeadingContent`) | `ListItemCheckbox` (MD3 trailing selection control) / independent action button / metadata label / omitted | Multi-action: use a `DXButton` with its own `Command` |
-| Selection | Owned by `CrudListView` + `CrudListViewModelBase` (see Gestures below) | Pages add no selection or gesture logic |
+| Leading content | `MudAvatar` / `MudIcon` / omitted | Pick the M3 preset that matches the entity type |
+| Headline | Any string binding | Required — always populated |
+| Supporting text | Optional second line (`MudText` `Typo.body2`) | Use when a second line of info helps the user |
+| Overline | Optional label above headline (`Typo.overline`) | Reserved for category/type labels |
+| Trailing content | Status `MudChip`, metadata text, or an independent action button | Multi-action: each action is its own `MudIconButton` |
+| Selection | Owned by `CrudList` (see Gestures below) | Pages add no selection logic |
 
-### Gestures — law (since 2026-11-11, `crud-list-deduplication/changes/2026-11-11-crud-list-selection-gestures/`)
-| Mode | Tap item | Long-press item | Tap `ListItemCheckbox` |
+### Gestures — selection law
+
+Selection is driven by an explicit **checkbox column** (`MudDataGrid` `MultiSelection`), not by long-press. Reason: long-press is not reliably available across Blazor Hybrid and web input, and a visible checkbox is the accessible pattern.
+
+| Mode | Row click | Checkbox | Row action (edit icon) |
 |---|---|---|---|
-| Browse (0 selected; DX `SelectionMode=None`) | open edit form | select item → selection mode | select item → selection mode |
-| Selection (≥1; DX `SelectionMode=Multiple`) | toggle item | item actions sheet (modal bottom sheet: Edit / Delete for that item) | toggle item |
+| Browse (0 selected) | Opens the row's detail or edit page if the page sets `OnRowClick`; otherwise no effect | Selects the row → selection mode | Opens edit |
+| Selection (≥1 selected) | Toggles the row | Toggles the row | Opens edit |
 
-The mode switch is a `CrudListView` concern driven by VM `IsSelectionMode`, never a page concern. Back in selection mode clears the selection (`HandleBack()`).
+- Selection mode is a `CrudList` concern, never a page concern.
+- Clearing the selection happens after any reload that replaces rows.
+- Keyboard: `Space` toggles the checkbox, arrow keys move focus, `Enter` opens the row action — verify with the keyboard in the web head.
 
 ### Never
-- Do not wrap list rows in `SwipeContainer` for delete. Delete is through the `FloatingToolbar` (selection) or the item actions sheet (single item).
-- Do not set `SelectionMode` or handle `Tap`/`LongPress` in a page — `CrudListView` owns them.
-- Do not use a raw `dx:CheckEdit` as the row selection control — use `ListItemCheckbox` (it toggles on tap and consumes the touch).
-- Do not add a per-row overflow/menu button for item actions — MD3 multi-select list items "can't have secondary nested actions"; use the item actions sheet (press-and-hold).
+- Do not wrap rows in swipe containers for delete. Delete goes through the selection bar (selection) or the row's delete action inside a confirmation `MudMessageBox`.
+- Do not handle row clicks or selection in the page markup — `CrudList` owns them.
+- Do not hide actions behind a per-row overflow menu when the entity has at most two actions; the icon button is the rule.
 
 ---
 
-## FloatingToolbar — Laws and Variants
+## Selection Toolbar — Laws and Variants
 
-> **Note:** Writing `FloatingToolbar` + FAB directly in page XAML is the old pattern. As of Step 7,
-> CrudListView owns the toolbar and FAB. The standard slot assignments (Action1=Select all,
-> Action2=Delete) are hardcoded in CrudListView. For pages with different action
-> needs, this section will be expanded when CrudListView gains configurable toolbar slots.
+> **Note:** MudBlazor has no Material 3 "floating toolbar" component. The selection toolbar is a `MudPaper` (elevated, rounded) with `MudButton`/`MudIconButton` actions, positioned bottom-centre and shown only in selection mode. It is a **shared component** in `Proame.UI` once two pages use it, and then it is a governed component (`component-safety-gate.md`).
 
 ### Law
-Every list page that has selection actions uses `FloatingToolbar` (MD3: "best used for contextual actions"), centered at the bottom with `Margin="0,0,0,16"` and paired with the FAB (MD3 "Floating toolbar with FAB"). On CRUD list pages the toolbar is **visible only in selection mode** (`IsVisible="{Binding IsSelectionMode}"`); in browse mode only the FAB shows. MD3 sets no minimum action count — two actions + FAB is compliant (verified on m3.material.io 2026-11-11).
+Every list page that has selection actions shows the selection toolbar centred at the bottom, paired with the primary FAB (`MudFab`, the one `Color.Primary` action). In browse mode only the FAB shows. The toolbar is visible only while rows are selected.
 
-### Standard slot assignments (Venues reference)
-| Slot | Action | CanExecute |
-|------|--------|-----------|
-| Action1 | Select all (toggle; clears when all selected) | Always enabled |
-| Action2 | Delete selected | `SelectedCount > 0` |
+### Standard slot assignments
+| Slot | Action | Enabled when |
+|------|--------|--------------|
+| 1 | Select all visible rows (toggle; clears when all are selected) | Always |
+| 2 | Delete selected | At least one row selected |
 
-Editing is tap-to-edit (browse mode) or the item actions sheet (selection mode) — there is no toolbar Edit action.
+Editing is row-click or the row edit action — there is no toolbar Edit action.
 
 ### Variants — allowed adaptations
 
 | Scenario | Adaptation |
 |----------|-----------|
-| Different actions | Assign the slots that make sense for the entity. Slots 1–5 are available. |
-| No edit (e.g. participation log) | Omit Edit slot; use remaining slots for other actions |
-| Extra actions (share, archive, export) | Add Action4 / Action5 — still `FloatingToolbar`, same component |
-| Read-only list | Omit `FloatingToolbar` entirely if there are no page-level actions |
-| Select All not needed | Replace slot 1 with the most common action for this entity |
+| Different actions | Assign the slots that make sense for the entity (up to three actions plus the FAB) |
+| No edit | Omit the edit action; use remaining slots for other actions |
+| Extra actions (share, archive, export) | Add up to three actions, same component |
+| Read-only list | Omit the selection toolbar entirely if there are no page-level actions |
 
-### IsSelected visual feedback
-`ActionNIsSelected` is for **toggle** actions only (e.g. `Action1IsSelected="{Binding IsAllSelected}"`); its selected state is MD3 vibrant "toggle tonal" (`SurfaceContainer` / `OnSurface`). Never wire it to a `CanExecute` property — enablement comes from `CanExecute`, and MD3 says "Don't emphasize multiple buttons with bold, primary colors, such as a button and FAB together" (the FAB is the one `Primary` action).
+### Enablement
+Enablement comes from the selection state (`Disabled` binding), never from a visual toggle state. Do not emphasise several buttons with the primary colour; the FAB is the single primary action.
 
-### FAB coexistence
-FAB is placed to the RIGHT of `FloatingToolbar` inside a shared `HorizontalStackLayout`:
-```xml
-<HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="End"
-                       Margin="0,0,0,16" Spacing="8">
-    <toolbars:FloatingToolbar VerticalOptions="Center" ... />
-    <dx:DXButton Style="{StaticResource Fab}" Icon="add_outlined"
-                 VerticalOptions="Center" Command="{Binding AddCommand}" />
-</HorizontalStackLayout>
-```
-`DXCollectionView` bottom margin = `88` (max(toolbar 64, FAB 56) + 16 margin + 8 breathing).
-Do NOT use separate overlays with Margin formulas — that was the old pattern.
+### Layout
+The FAB and the selection toolbar sit in one bottom-centred flex row (CSS, using `env(safe-area-inset-bottom)` on the Hybrid head). The grid's bottom padding must clear the toolbar height plus the FAB offset, so no row is hidden behind it.
 
 ---

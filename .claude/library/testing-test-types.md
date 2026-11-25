@@ -1,173 +1,94 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
+# Testing — Reference — Test types — service, endpoint, repository, component + database fixture
 
-# Testing — Reference — Test types — Service, ViewModel, Repository + TestDbContextFactory
-
-> Section file split from `testing-reference.md` on 2026-07-14 (token-scoped reads). Index + provenance: `testing-reference.md`. Never-miss rules: `.claude/rules/testing.md`.
+> Section file. Index: `testing-reference.md`. Level guidance by risk: `rules/testing.md § TDD Level Guidance by Risk`.
 
 ## Test Types
 
-### 1. Unit Tests — Services
+### 1. Unit Tests — Services (Moq)
 
-**What:** Business logic in `PROAME.Services`. Mock all repository interfaces.
-**Scope:** Validation, tuple return values (success/message), entity mapping.
-**Do NOT:** Spin up EF Core, connect to SQLite, or test the repository implementation here.
+**What:** business logic in `Proame.Api` services (or the service layer behind the API). Mock every repository interface.
+
+**Do NOT:** start EF Core, connect to PostgreSQL, or test repository implementation here.
 
 ```csharp
-public class VenueServiceTests
+public sealed class VenueServiceTests
 {
-    private readonly Mock<IVenueRepository> _repoMock = new();
-    private readonly Mock<ILogger<VenueService>> _loggerMock = new();
-
-    private VenueService CreateSut() => new(_repoMock.Object, _loggerMock.Object);
+    private readonly Mock<IVenueRepository> _repo = new();
+    private VenueService CreateSut() => new(_repo.Object);
 
     [Fact]
-    public async Task CreateVenueAsync_NameTooLong_ReturnsFalse()
+    // [AC] REQ-VENUE-03: a duplicate name is rejected with a message
+    public async Task CreateVenueAsync_DuplicateName_ReturnsFailure()
     {
-        var sut = CreateSut();
-        var name = new string('x', 31); // exceeds 30-char limit
+        _repo.Setup(r => r.ExistsByNameAsync("Centro", It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
-        var (success, message, venue) = await sut.CreateVenueAsync(name);
+        var (success, message, venue) = await CreateSut().CreateVenueAsync("Centro", CancellationToken.None);
 
         Assert.False(success);
-        Assert.NotEmpty(message);
         Assert.Null(venue);
-        _repoMock.Verify(r => r.AddAsync(It.IsAny<Venue>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task CreateVenueAsync_DuplicateName_ReturnsFalse()
-    {
-        _repoMock.Setup(r => r.ExistsByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(true);
-        var sut = CreateSut();
-
-        var (success, message, _) = await sut.CreateVenueAsync("Existing Venue");
-
-        Assert.False(success);
-        Assert.Contains("already", message, StringComparison.OrdinalIgnoreCase);
-    }
-
-    [Fact]
-    public async Task CreateVenueAsync_ValidName_ReturnsSuccessAndEntity()
-    {
-        _repoMock.Setup(r => r.ExistsByNameAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(false);
-        _repoMock.Setup(r => r.AddAsync(It.IsAny<Venue>(), It.IsAny<CancellationToken>()))
-                 .Returns(Task.CompletedTask);
-        var sut = CreateSut();
-
-        var (success, message, venue) = await sut.CreateVenueAsync("New Venue");
-
-        Assert.True(success);
-        Assert.NotNull(venue);
-        Assert.Equal("New Venue", venue.Name);
+        Assert.NotEmpty(message);
     }
 }
 ```
 
-### 2. Unit Tests — ViewModels
+### 2. Component Tests — bUnit
 
-**What:** ViewModel commands, state transitions, notification of derived properties.
-**Scope:** Commands (`ExecuteAsync`, `CanExecute`), ObservableProperty chains, empty-state flags.
-**Do NOT:** Test XAML bindings, Shell navigation directly (mock via interface), or DX control behavior.
+**What:** rendered state and user interactions of a Razor component in `Proame.UI`, with its dependencies replaced by fakes.
 
-Generic scaffolding (mock fields + `CreateSut()` factory, `[Fact]`/`[Theory]`, command-execution pattern, mocking MAUI services table) → **`maui-unit-testing` skill § ViewModel Testing Pattern**. Project-specific test targets for PROAME list ViewModels:
-
-- `InitializeAsync` with an empty service result must set `IsEmptyNoVenues` true, `IsEmptyNoResults` false, `IsInitialLoading` false (empty-state flag family — every CRUD list VM has the equivalent trio).
-- `OnSelectionChanged(n)` drives the derived-state family: `CanDeleteSelected`/`IsSelectionMode` gates and `AppBarTitle` ("1 selected" at n=1; the page title, e.g. "Venues", at n=0).
-- Service mocks return the project's paged-tuple shape, e.g. `.ReturnsAsync((Enumerable.Empty<VenueListItemDto>(), 0))`.
-
-**ViewModel test constraints:**
-- `Shell.Current` must NOT be called from tested methods. Commands that navigate must be excluded from unit tests unless `Shell.Current` is mocked (impractical). Test state transitions only; navigation commands are integration-tested via emulator.
-- `Task.Yield()` inside `InitializeAsync` is fine — `await task` in tests resolves it correctly.
-
-### 3. Integration Tests — Repositories
-
-**What:** Real EF Core + SQLite temp DB. Verifies queries, indexes, collation, and entity configurations.
-**Scope:** CRUD, search queries, pagination, unique constraint violations, cascade behavior.
-**Do NOT:** Mock the DbContext or repository. The whole point is to test the real implementation.
+**Setup:** `TestContext` with MudBlazor services registered (`Services.AddMudServices()`), API clients replaced by fakes that return controlled results, navigation replaced by a fake of the navigation wrapper.
 
 ```csharp
-public class VenueRepositoryTests : IAsyncLifetime
+[Fact]
+// [AC] REQ-VENUE-07: the list shows a skeleton until the first page is loaded
+public void Venues_WhileLoading_ShowsSkeleton()
 {
-    private AppDbContext _db;
-    private VenueRepository _repo;
+    using var ctx = new TestContext();
+    ctx.Services.AddMudServices();
+    ctx.Services.AddSingleton<IVenueClient>(new FakeVenueClient(delay: true));
 
-    public async Task InitializeAsync()
-    {
-        _db = TestDbContextFactory.Create();
-        await _db.Database.EnsureCreatedAsync();
-        _repo = new VenueRepository(_db);
-    }
+    var cut = ctx.Render<VenuesPage>();
 
-    public async Task DisposeAsync()
-    {
-        await _db.Database.EnsureDeletedAsync();
-        await _db.DisposeAsync();
-    }
-
-    [Fact]
-    public async Task AddAsync_ValidVenue_PersistedAndReturnedById()
-    {
-        var venue = new Venue { Name = "Jazz Club" };
-        await _repo.AddAsync(venue, CancellationToken.None);
-        await _db.SaveChangesAsync();
-
-        var found = await _repo.GetByIdAsync(venue.Id, CancellationToken.None);
-
-        Assert.NotNull(found);
-        Assert.Equal("Jazz Club", found.Name);
-    }
-
-    [Fact]
-    public async Task SearchAsync_CaseInsensitive_FindsMatch()
-    {
-        _db.Venues.AddRange(
-            new Venue { Name = "Rock Arena" },
-            new Venue { Name = "Jazz Club" });
-        await _db.SaveChangesAsync();
-
-        var (results, count) = await _repo.GetPagedAsync(1, 20, "rock");
-
-        Assert.Equal(1, count);
-        Assert.Equal("Rock Arena", results.First().Name);
-    }
-
-    [Fact]
-    public async Task AddAsync_DuplicateName_ThrowsDbUpdateException()
-    {
-        _db.Venues.Add(new Venue { Name = "Unique" });
-        await _db.SaveChangesAsync();
-
-        _db.Venues.Add(new Venue { Name = "unique" }); // case variant
-
-        await Assert.ThrowsAsync<Microsoft.EntityFrameworkCore.DbUpdateException>(
-            () => _db.SaveChangesAsync());
-    }
+    Assert.NotEmpty(cut.FindComponents<MudSkeleton>());
 }
 ```
 
-### Infrastructure: `TestDbContextFactory`
+**Do NOT:** test MudBlazor internals, CSS, or call `NavigationManager` directly. Wait for asynchronous state with `WaitForState` / `WaitForAssertion`, never `Task.Delay`.
+
+### 3. Integration Tests — Repositories (Testcontainers PostgreSQL)
+
+**What:** real EF Core + Npgsql against a PostgreSQL container. Verifies queries, indexes, collation/`citext`/`unaccent` behaviour, unique constraints, and entity configuration.
 
 ```csharp
-public static class TestDbContextFactory
+public sealed class VenueRepositoryTests(PostgresFixture db) : IClassFixture<PostgresFixture>
 {
-    /// <summary>Creates a fresh in-memory SQLite AppDbContext for each test.</summary>
-    public static AppDbContext Create()
+    [Fact]
+    // [AC] REQ-VENUE-12: search ignores case and accents
+    public async Task Search_IsCaseAndAccentInsensitive()
     {
-        // Use a unique file name per test run to ensure isolation
-        var dbPath = Path.Combine(Path.GetTempPath(), $"proame_test_{Guid.NewGuid():N}.db");
+        await using var context = db.CreateContext();
+        var repo = new VenueRepository(context);
+        context.Venues.Add(new Venue { Name = "Ação Social" });
+        await context.SaveChangesAsync();
 
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseSqlite($"Data Source={dbPath}")
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-            .Options;
+        var results = await repo.SearchAsync("acao social", CancellationToken.None);
 
-        return new AppDbContext(options);
+        Assert.Single(results);
     }
 }
 ```
 
-> **Why real SQLite and not in-memory provider?** SQLite has LIKE collation quirks (`EF.Functions.Collate`) that in-memory EF doesn't replicate. Repository tests must use real SQLite to catch collation bugs.
+**Why real PostgreSQL and not EF InMemory:** the in-memory provider does not replicate `ILIKE`, `citext`, `unaccent`, or transaction and constraint behaviour. Repository tests must run against PostgreSQL to catch those bugs.
+
+### Infrastructure: `PostgresFixture`
+
+- Starts one PostgreSQL container per test collection (Testcontainers), applies the EF Core migrations, and hands out a `DbContext` per test.
+- Each test runs inside a transaction or on a freshly truncated schema, so tests do not depend on each other's data.
+- Fixture code is infra: exempt from AC traceability.
+- Never mock `DbContext`.
+
+### Endpoint Tests — `WebApplicationFactory`
+
+- Runs the API pipeline in memory with the PostgreSQL fixture as the database.
+- Asserts status codes, `ProblemDetails` shape, authorization (anonymous and non-admin callers), and that private fields never appear on public endpoints.
 
 ---

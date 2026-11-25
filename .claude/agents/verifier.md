@@ -5,7 +5,6 @@ model: haiku
 tools: Read, Grep, Glob, Bash
 ---
 
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Verifier — PROAME Subagent Role
 
@@ -55,11 +54,11 @@ Work through this list in order. For each item, record Pass, Fail, or N/A with o
 - [ ] All acceptance criteria in `requirements.md` have a corresponding implementation path or unit test
 
 ### 2. Non-Negotiable Compliance
-- [ ] No `DisplayAlert`, `DisplayActionSheet`, or `DisplayPromptAsync` calls added
-- [ ] No business logic in ViewModels or pages (Services only)
-- [ ] Repository interfaces are in Domain; implementations are in Infra
-- [ ] Services do not depend on Infra types directly
-- [ ] Every new `ContentPage` has `SafeAreaEdges="Container"` set
+- [ ] No `DisplayAlert`, `DisplayActionSheet`, `DisplayPromptAsync`, `window.alert` or `window.confirm` calls added
+- [ ] No business logic in components or pages (API services only)
+- [ ] Repository interfaces are in Domain; implementations are in Infrastructure
+- [ ] API services do not depend on Infrastructure types directly
+- [ ] New pages and components live in `Proame.UI`; no UI or logic added to a head
 - [ ] No new `#pragma warning disable` or `[SuppressMessage]` without a justification comment
 
 ### 3. Drift Detection

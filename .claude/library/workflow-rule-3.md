@@ -1,4 +1,3 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
 
 # Development Workflow — Reference — Rule 3 — Commit After Every Task (full detail)
 
@@ -25,13 +24,13 @@ Before checking the box and committing:
 If the task has a demo statement, confirm it can be executed. A task whose demo statement cannot be verified is NOT complete.
 
 **2. DI registration check**
-If the task introduces a new service, repository, ViewModel, or page, confirm that it is registered in `MauiProgram.cs`. An unregistered type will compile but fail at runtime.
+If the task introduces a new service, repository, API endpoint, or component, confirm that it is registered in the relevant `AddProameServices()` / `AddProameUi()` extension (or the head's `Program.cs` / `MauiProgram.cs` if it is a head-level registration). An unregistered type will compile but fail at runtime.
 
 **3. Acceptance criteria check**
 For every acceptance criterion the task was supposed to satisfy: confirm it is satisfied. Record evidence in the task-log's AC traceability matrix.
 
 **4. Solution item registration check — BLOCKING**
-For **every file created, moved, or deleted** in `Docs/` or `.claude/`: confirm the change is reflected in `PROAME.sln`. Do not skip this even if no other file was changed. An unregistered file is invisible in VS IDE — Helder cannot see or navigate to it. See `constraints-registry.md § Visual Studio Solution (.sln)` for the exact edit pattern (new folder, NestedProjects entry, GUID sequence).
+For **every file created, moved, or deleted** in `Docs/` or `.claude/`: confirm the change is reflected in `Proame.sln`. Do not skip this even if no other file was changed. An unregistered file is invisible in VS IDE — Helder cannot see or navigate to it. See `constraints-registry.md § Visual Studio Solution (.sln)` for the exact edit pattern (new folder, NestedProjects entry, GUID sequence).
 
 ### Session-End Spec Update Ritual
 
@@ -60,7 +59,7 @@ When an item's last gate passes and its status moves to ✅ Done, in the same co
 2. **spec-changelog.md:** every post-approval edit to `requirements.md` / `design.md` has an entry. Check with `git log --oneline -- <folder>/requirements.md <folder>/design.md` against the entries.
 3. **tasks.md:** every box is `[x]` or `[CANCELLED: reason]`, and the result of the final gate run is recorded, like the earlier runs.
 4. **task-log.md:** no task section still says `To Review` or `Check build`; each says Done with its merge SHA. No "pending" left in traceability rows. Every open question is answered or marked declined.
-5. **LEDGER:** the item's row moves to Completed (`/sln-ledger`).
+5. **LEDGER:** the item's row moves to Completed (`/pro-ledger`).
 6. **Follow-ups:** each one is registered (`backlog_gen.py register`) or marked declined. None is left as "register if Helder wants".
 
 ---

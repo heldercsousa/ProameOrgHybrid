@@ -1,8 +1,6 @@
-> **PROAME note:** inherited from MyVocaList governance. Stack-specific passages (.NET MAUI, DevExpress, Syncfusion, XAML, EF Core/SQLite, Android device steps) apply ONLY if the chosen stack is .NET; otherwise apply the stack-neutral principle and ignore the specifics. Chosen stack: see `Docs/Benchmark/benchmark.md`.
-
 # Testing Rules — Routing Table
 
-> Full detail (structure, patterns, naming, Tester/Builder split, running tests, quality-audit, anti-patterns) lives in `.claude/library/testing-reference.md`; periodic techniques in `library/mutation-testing-stryker.md` and `library/property-based-testing-fscheck.md`. The project-core never-miss rules stay inline. TDD applies to all new/modified Services, ViewModels, Repositories. Generic xUnit/Moq/ViewModel setup: `maui-unit-testing` skill. (`superpowers:test-driven-development` is deliberately NOT enabled — see the authority note below.)
+> Full detail (structure, patterns, naming, Tester/Builder split, running tests, quality-audit, anti-patterns) lives in `.claude/library/testing-reference.md`; periodic techniques in `library/mutation-testing-stryker.md` and `library/property-based-testing-fscheck.md`. The project-core never-miss rules stay inline. TDD applies to all new/modified services, API endpoints, repositories and Razor components with behaviour. Generic xUnit/Moq/bUnit setup: `library/testing-structure.md`. (`superpowers:test-driven-development` is deliberately NOT enabled — see the authority note below.)
 
 ## TDD within SDD (never-miss)
 
@@ -12,16 +10,16 @@ Every acceptance criterion → at least one test. Do not write a test with no AC
 
 Every test covering user-facing behavior traces to an AC in `requirements.md`.
 - **Format:** first line of the test's doc/inline comment: `// [AC] REQ-VENUE-03: <criterion>`.
-- **Rules:** every AC → ≥1 test; one test → one AC (split if more); AC IDs come from the spec (don't invent); infra tests (`TestDbContextFactory`, builders) are exempt.
+- **Rules:** every AC → ≥1 test; one test → one AC (split if more); AC IDs come from the spec (don't invent); infra tests (test database fixtures, builders) are exempt.
 - **Traceability matrix** (AC ID | Criterion | Implementation location | Test method) goes in the task-log at code review (template: `workflow.md` Rule 5). Missing rows = missing tests = incomplete feature.
 
 ## TDD Level Guidance by Risk (never-miss — project calibration)
 
 | Level | Risk | Test requirement |
 |-------|------|------------------|
-| **A** | High — business logic, validation, state mutation, user-facing failure | Full TDD (Red→Green→Refactor); unit + property-based; all branches |
-| **B** | Medium — query logic, mapping, pagination, EF config | Example tests for happy path + key edges; integration tests for queries |
-| **C** | Low — pure plumbing, DI registration, DTO records, trivial getters | No mandatory test; document the no-test decision in the task-log if the task has ACs |
+| **A** | High — business logic, validation, state mutation, user-facing failure, LGPD-sensitive data handling | Full TDD (Red→Green→Refactor); unit + property-based; all branches |
+| **B** | Medium — query logic, mapping, pagination, EF configuration | Example tests for happy path + key edges; integration tests against real PostgreSQL for queries |
+| **C** | Low — pure plumbing, DI registration, DTO records, trivial getters, markup-only components | No mandatory test; document the no-test decision in the task-log if the task has ACs |
 
 Escalation: a Level-C method that later causes a production bug is reclassified A/B with a regression test before fixing.
 
@@ -37,9 +35,10 @@ During Green, the Builder edits **production code only**. Never edit a test to p
 
 ## Project anti-patterns (never-miss)
 
-- **Repository tests use real SQLite** (temp file), never the in-memory EF provider — it doesn't replicate SQLite collation quirks (`EF.Functions.Collate`).
+- **Repository and integration tests use real PostgreSQL** via Testcontainers (a throwaway container per test run/fixture), never the EF Core InMemory provider — it does not replicate PostgreSQL behaviour (collation, `ILIKE`, `unaccent`, `pg_trgm`, transactions).
 - **Never mock the DbContext** in repository tests — EF query translation only runs against a real provider.
-- **Service tests use Moq** (no real DB); **never call `Shell.Current`** in ViewModel tests (null in test context — wrap navigation behind an interface).
+- **Service tests use Moq** (no real DB, no HTTP); **Razor component tests use bUnit** with the MudBlazor services registered (`AddMudServices()` in the test context); **never call `NavigationManager` or JS interop directly in component tests** — wrap navigation and browser APIs behind an interface and fake it.
+- **Never test the heads**: `Proame.App` and `Proame.Web` contain no logic; their startup is covered by the UI and API tests.
 
 ## Routing
 

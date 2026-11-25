@@ -1,8 +1,8 @@
-# Ledger Command (`/sln-ledger`)
+# Ledger Command (`/pro-ledger`)
 
 Maintain `Docs/Management/LEDGER.md` — the develop-branch tracker of WHERE every in-flight task/bug lives (branch, worktree, phase, status). See the ledger's own header for row lifecycle and status vocabulary.
 
-**Invocation:** `/sln-ledger [update | resume | audit]` (default: `update`).
+**Invocation:** `/pro-ledger [update | resume | audit]` (default: `update`).
 
 ## When this runs (mandatory touchpoints — also without explicit invocation)
 
