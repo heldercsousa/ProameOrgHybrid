@@ -1,4 +1,4 @@
-"""PostToolUse (Write) hook: list a new `Docs/` file in MyVocaList.sln.
+"""PostToolUse (Write) hook: list a new `Docs/` file in Proame.sln.
 
 The file is placed under the solution folder that mirrors its physical folder (`sln_nest.place`),
 so Visual Studio shows the disk tree. Only the main checkout's `Docs/` is handled: a file written
@@ -30,7 +30,7 @@ def rel_docs_path(file_path: str, project: str):
 
 
 def register(project: str, rel: str) -> bool:
-    path = os.path.join(project, "MyVocaList.sln")
+    path = os.path.join(project, "Proame.sln")
     raw = open(path, "rb").read()
     bom = raw.startswith(BOM)
     text = raw[len(BOM):].decode("utf-8") if bom else raw.decode("utf-8")

@@ -1,6 +1,6 @@
 """Place `Docs/` solution items in the solution folder that mirrors their physical folder.
 
-In `MyVocaList.sln` a file is listed under a Solution Folder. The logical tree must equal the
+In `Proame.sln` a file is listed under a Solution Folder. The logical tree must equal the
 physical one: `Docs\\Management\\X\\feat\\changes\\slug\\plan.md` belongs to the solution folder
 chain Docs > Management > X > feat > changes > slug. Missing folders are created.
 
@@ -40,7 +40,7 @@ class Sln(object):
         self.head, self.tail = lines[:first], lines[g:]
         # Tolerant block parse. A `Project(` line met while a block is still open closes that
         # block (its `EndProject` was lost), and an `EndProject` with no open block is dropped.
-        # Both defects existed in MyVocaList.sln before 2026-11-15; `repairs` counts them.
+        # Both defects existed in Proame.sln before 2026-11-15; `repairs` counts them.
         self.blocks, cur, self.repairs = [], None, 0
         for l in lines[first:g]:
             if l.startswith("Project("):
@@ -235,7 +235,7 @@ def docs_entries(text):
 
 
 def main(argv):
-    path = os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", "."), "MyVocaList.sln")
+    path = os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", "."), "Proame.sln")
     raw = open(path, "rb").read()
     bom = raw.startswith(b"\xef\xbb\xbf")
     text = raw[3:].decode("utf-8") if bom else raw.decode("utf-8")
@@ -260,7 +260,7 @@ def main(argv):
         print("sln_nest: nothing written.")
         return 0
     open(path, "wb").write((b"\xef\xbb\xbf" if bom else b"") + new.encode("utf-8"))
-    print("sln_nest: MyVocaList.sln rewritten.")
+    print("sln_nest: Proame.sln rewritten.")
     return 0
 
 

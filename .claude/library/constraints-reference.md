@@ -1,0 +1,77 @@
+# Constraint Registry — Reference
+
+> Extracted from `.claude/rules/constraints-registry.md` (2026-07-05, rules-file-refactoring Task 05). The rule file is now a routing table; this file holds the full detail. Discovered via the `myvocalist-coding` skill map or the rule's routing table.
+> Discovered during implementation. Supersedes documented best practices where listed. Review before implementing features in the indicated area.
+
+---
+
+## .NET MAUI
+
+- **SafeAreaEdges default:** `.NET MAUI 10` breaking change — `ContentPage` defaults to `SafeAreaEdges="None"`. Every `ContentPage` must declare `SafeAreaEdges="Container"`, or `"All"` on pages with text input, or content renders behind the status bar / notch (and, without SoftInput, under the keyboard). `All` = system bars + notch + keyboard (Microsoft Learn, "Safe area layout", .NET MAUI 10). Enforced by `process_checks.py`. (CLAUDE.md)
+- **Incremental XAML edits:** Edit one XAML file → build → fix before editing the next. Rationale: XAML parser errors cascade across files, making the error source ambiguous when batching changes. (CLAUDE.md Constitutional Constraints)
+
+---
+
+## EF Core / SQLite
+
+- **MigrationsLock:** The `__EFMigrationsLock` row must be cleared before each `MigrateAsync()` call (SQLite single-user workaround). Omitting this causes a hang on second launch.
+- **CollationInterceptor:** Must be applied globally for case-insensitive search (`LIKE`) to work correctly. Without it, `ExistsByNameAsync` and search queries are case-sensitive.
+- **First-run table absence:** `DELETE FROM __EFMigrationsLock` will throw on first run (table does not exist). Wrap in a bare `catch { }` — see code-principles.md exception patterns.
+- **Microsoft.Data.Sqlite executes async methods synchronously — no real async I/O (provider limitation):** Any EF Core "async" query awaited on the UI thread runs entirely ON the UI thread and freezes the app (symptom: shimmer loading containers never animate; page appears frozen — Page-load-frozen fix, 2026-06-10). Workaround: `Task.Run` offload of fetches + a static app-wide DB load gate in `CrudListViewModelBase` (UI layer). **SQLite-temporary / REVERT marker (Helder, 2026-06-10):** SQLite will be replaced by a minimal MSSQL variant in a new Infra-layer project (`INFRA_MSSQL`-like) beside the SQLite `Infra` project. Both workarounds live OUTSIDE Infra and are SQLite-driven: when SQLite goes out of usage, the static load gate MUST be removed and the `Task.Run` offload re-evaluated. Any future code that works around SQLite-specific behavior outside the Infra project must be added to this entry. (`Docs/Management/DevCycleCraft/page-load-frozen/plan.md § SQLite-Temporary Addendum`)
+- **No C#-side string normalization for search/deduplication — HARD RULE (all relational DBs):** Never call `ToLowerInvariant()`, `ToUpperInvariant()`, `RemoveDiacritics()`, or any equivalent C#-side normalization in services, repositories, or entity constructors for the purpose of search, duplicate detection, or uniqueness. Never add `*Normalized` shadow columns (properties or DB columns whose sole purpose is storing a lowercased/accent-stripped variant of another column). This rule applies to any relational database, not just SQLite. Two reasons: (1) correctness — `ToLowerInvariant()` handles case only; "café" ≠ "cafe", so accent-insensitive matching silently fails; (2) performance — normalizing strings in C# forces a full table scan on every query because the DB cannot use an index on a computed value it never sees. The correct pattern: configure the appropriate case- and accent-insensitive collation on searchable/unique columns in EF entity configurations; use `EF.Functions.Collate()` in LINQ queries; let the DB engine handle normalization at query time using its own indexes. For SQLite specifically: declare `.UseCollation(CollationConstants.Default)` in entity config and use `EF.Functions.Collate(column, CollationConstants.Default)` in queries, where `CollationConstants` lives in that Infra layer; there is no shared cross-Infra collation abstraction.
+
+---
+- **FTS5 sync triggers must survive table rebuilds (SFT M3, 2026-11-04):** `SongSearch`/`ArtistSearch` are kept in step by 7 triggers (`SongSearch_ai/_au/_ad/_artist_au`, `ArtistSearch_ai/_au/_ad`, migration `20261104161213_AddSearchIndexes`). Any migration that rebuilds `Songs` or `Artists` (SQLite table rebuild: dropped/altered columns, changed constraints) drops their triggers and **must recreate these triggers in the same migration**. Guarded by `SongMigrationTests.FullMigrate_AllSevenFtsTriggersExist`. Because of the triggers, both tables use `ToTable(..., tb => tb.UseSqlReturningClause(false))`.
+
+## Visual Studio Solution (.sln)
+
+- **Solution item registration — HARD GATE:** Any file created, moved, or deleted in `Docs/` or `.claude/` **must** be reflected in `MyVocaList.sln` in the same commit. Missing entries make files invisible in VS Solution Explorer. This is not optional and is checked in the subagent exit checklist.
+
+  **Logical folder = physical folder (Helder ruling 2026-11-15):** a `Docs\` file is listed under the Solution Folder chain that mirrors its directory (`Docs > Management > <section> > <feature> > changes > <slug>`). `.claude/scripts/sln_nest.py` holds the placement logic: `backlog_gen.py register` and the `PostToolUse` `Write` hook (`sln-register-doc.py`) call it, and `python .claude/scripts/sln_nest.py [--dry-run]` repairs every misplaced entry (it creates missing folders with path-derived GUIDs). Prefer the script to hand edits.
+
+  **When to act:**
+  - **Create** a file → add `RelativePath\file = RelativePath\file` to the matching Solution Folder's `ProjectSection(SolutionItems)`. If no folder exists for the feature yet, create one with a new GUID.
+  - **Move** a file → remove the old path entry, add the new path entry.
+  - **Delete** a file → remove its entry from the `.sln`.
+
+  **New Solution Folder pattern** (copy when adding a folder for a new feature):
+  \\\${nl}  Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "feature-name", "feature-name", "{NEW-GUID}"
+  	ProjectSection(SolutionItems) = preProject
+  		Docs\Management\[Path]\file.md = Docs\Management\[Path]\file.md
+  	EndProjectSection
+  EndProject
+  \\\${nl}  Then add a `NestedProjects` entry in `GlobalSection(NestedProjects)`:
+  - Under `BusinessFeatures` → parent `{8AB01C9F-E0FD-49D5-AE2C-E27AD8C8F05D}`
+  - Under `DevCycleCraft` → parent `{0C4BA720-519E-4818-BD9B-34AC19E4FCD7}`
+  - Under `Management` root → parent `{15F1DA03-2180-47BF-BC40-1BB457C97F9E}`
+
+  **GUIDs — single source of truth for the counter (do not restate the number elsewhere):**
+  The final GUID segment is **exactly 12 hex characters**. Use `{FA1234BC-0001-4000-8000-0000000000XX}` — ten zeros followed by a two-hex-digit counter. Highest value in use is `D4`, so the next free is `D5`.
+
+  > **Never hand-count.** Derive the next value from the `.sln` itself:
+  > `python -c "import re;print(max(re.findall(r'FA1234BC-0001-4000-8000-0000000000(..)',open('MyVocaList.sln',encoding='utf-8-sig').read())))"`
+
+  `backlog_gen.py register` allocates GUIDs itself — this counter is documentation for **hand-made** folders only.
+
+  **Trap (caused three malformed GUIDs, fixed 2026-07-30):** appending the counter to a full twelve-zero block yields `{FA1234BC-0001-4000-8000-000000000000D1}` — a **14-character** final segment and an invalid GUID. Replace the last two zeros; do not append.
+
+  **Note (rules-file-refactoring, 2026-07-04):** `.claude/library/*` and `.claude/rules/*` files are NOT `.sln`-registered in practice (the HARD GATE is applied to `Docs/` files). New library files created by the refactor do not need `.sln` entries; only `Docs/` artifacts do.
+
+---
+
+## Design / Prototyping Tools
+
+- **Stitch MCP — generates CSS/HTML/Tailwind, NOT MudBlazor:** Stitch converts designs to pure CSS + HTML or Tailwind — no MudBlazor Code Connect integration. Do NOT use Stitch to generate MudBlazor components. Use MudMCP (`mudblazor` server key) for component docs and generation. Stitch's only value in this project is design-token export (palette, typography) → manual mapping to `MudTheme`. Evaluated 2026-06-02.
+- **Figma MCP — no MudBlazor Code Connect; $15/month minimum:** Figma MCP requires a paid plan ($15/month Professional) for useful call volume. No MudBlazor Code Connect plugin exists. Not suitable for MudBlazor code generation from designs. Evaluated 2026-06-02.
+
+---
+
+## How to add entries
+
+When a session discovers a new constraint — a DevExpress behavior, an EF Core migration limit, a MAUI platform quirk, a SQLite performance requirement — add an entry here before ending the session:
+
+1. Place it under the appropriate section header (create one if needed).
+2. One bullet per constraint. Include the symptom, the rule, and a reference file in parentheses if one exists.
+3. Commit the update as part of the task commit (Rule 3).
+
+Signs a constraint was discovered: "I found that…", "turns out…", "this fails because…", "we need to avoid…" appearing before a build fix.

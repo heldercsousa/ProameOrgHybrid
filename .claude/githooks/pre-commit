@@ -119,7 +119,7 @@ fi
 
 # --- Process checks (sln drift, SafeAreaEdges, task-log Changed files) ---
 # Deterministic checks over the staged state for rules that were prose-only:
-# Docs/ <-> MyVocaList.sln registration (incl. moves/deletes), ContentPage
+# Docs/ <-> Proame.sln registration (incl. moves/deletes), ContentPage
 # SafeAreaEdges="Container", and 'To Review' task-log entries without
 # '### Changed files'. Details: .claude/scripts/process_checks.py.
 if printf '%s

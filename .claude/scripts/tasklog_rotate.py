@@ -17,7 +17,7 @@ An entry STAYS (item not closed) when any of these is true:
 
 Ready entries are appended, text unchanged, to `task-log-archive-YYYY-MM.md` in the same folder
 (month = first date in the heading, else the current month). A new archive file is registered in
-MyVocaList.sln next to the task log's own entry.
+Proame.sln next to the task log's own entry.
 """
 import datetime
 import io
@@ -97,9 +97,9 @@ def _month(entry, today):
 
 
 def _register_in_sln(log_path, archive_path):
-    sln = "MyVocaList.sln"
+    sln = "Proame.sln"
     if not os.path.isfile(sln):
-        return "MyVocaList.sln not found - register the archive file by hand."
+        return "Proame.sln not found - register the archive file by hand."
     to_win = lambda p: os.path.relpath(p).replace("/", "\\")
     log_rel, arc_rel = to_win(log_path), to_win(archive_path)
     text = _read(sln)
@@ -112,7 +112,7 @@ def _register_in_sln(log_path, archive_path):
             lines.insert(i + 1, l.replace(log_rel, arc_rel))
             _write(sln, nl.join(lines))
             return None
-    return f"{log_rel} has no MyVocaList.sln entry - register {arc_rel} by hand."
+    return f"{log_rel} has no Proame.sln entry - register {arc_rel} by hand."
 
 
 def rotate(log_path, dry_run=False, today=None):

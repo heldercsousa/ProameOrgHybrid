@@ -45,7 +45,7 @@ def _write(path, text):
 
 
 def _read_sln(path):
-    """Read MyVocaList.sln byte-preservingly: BOM state and CRLF are kept.
+    """Read Proame.sln byte-preservingly: BOM state and CRLF are kept.
 
     The markdown path (_read/_write) normalises both, which is right for
     generated docs but wrong here: Visual Studio writes the .sln as UTF-8 with
@@ -502,18 +502,18 @@ def cmd_register(root, section, parent, kind, severity, title, goal, gate,
             sys.stderr.write("  - {0}\n".format(err))
         return 2
 
-    sln_path = os.path.join(root, "MyVocaList.sln")
+    sln_path = os.path.join(root, "Proame.sln")
     staged = {readme_path: _readme_text(keys, body)}
     staged_sln = None
     if os.path.exists(sln_path):
         sln_text, sln_bom = _read_sln(sln_path)
         updated = sln_add_entry(sln_text, rel_readme)
         if updated == sln_text and rel_readme.replace("/", "\\") not in sln_text:
-            _warn_sln(rel_readme, "no SolutionItems section found in MyVocaList.sln")
+            _warn_sln(rel_readme, "no SolutionItems section found in Proame.sln")
         else:
             staged_sln = (updated, sln_bom)
     else:
-        _warn_sln(rel_readme, "MyVocaList.sln not found at {0}".format(sln_path))
+        _warn_sln(rel_readme, "Proame.sln not found at {0}".format(sln_path))
 
     for path, text in staged.items():
         _write(path, text)

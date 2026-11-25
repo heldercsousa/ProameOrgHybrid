@@ -129,7 +129,7 @@ class PlaceTests(unittest.TestCase):
         self.assertEqual(sn.docs_entries(out), sn.docs_entries(text))
 
     def test_malformed_blocks_are_repaired(self):
-        # The shape found in MyVocaList.sln: a block lost its EndProject (the next Project
+        # The shape found in Proame.sln: a block lost its EndProject (the next Project
         # line starts while it is open) and a stray EndProject follows a later block.
         other = ('Project("' + FT + '") = "Other", "Other", "{00000000-0000-0000-0000-0000000000D2}"\n'
                  "EndProject\nEndProject\n")

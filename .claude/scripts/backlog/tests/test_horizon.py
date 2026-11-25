@@ -28,7 +28,7 @@ class HorizonTests(unittest.TestCase):
         self.backlog = os.path.join(self.mgmt, "BACKLOG.md")
         self.post = os.path.join(self.mgmt, backlog_gen.POST_MVP_FILE)
         write(self.backlog, BACKLOG_SKELETON)
-        write(os.path.join(self.root, "MyVocaList.sln"), SLN_FIXTURE)
+        write(os.path.join(self.root, "Proame.sln"), SLN_FIXTURE)
         self._item("now", id="NOW", title="Ship now")
         self._item("later", id="LATER", title="Ship later", horizon="post-mvp")
 

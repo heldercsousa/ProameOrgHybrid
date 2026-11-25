@@ -60,8 +60,8 @@
     ],
 
     projectTypes: [
-      { id: 'curso', name: 'Curso', color: '#1f5fa8' },
-      { id: 'esporte', name: 'Esporte / dança', color: '#f28c28' }
+      { id: 'curso', name: 'Curso', color: '#386663' },
+      { id: 'esporte', name: 'Esporte / dança', color: '#8a5100' }
     ],
 
     baseFields: BASE_FIELDS,
@@ -79,8 +79,8 @@
         signupOpen: true,
         status: 'published',
         photos: [
-          { id: 'ph-1a', color: '#1f5fa8', caption: 'Turma de informática' },
-          { id: 'ph-1b', color: '#f28c28', caption: 'Aula prática' }
+          { id: 'ph-1a', color: '#386663', caption: 'Turma de informática' },
+          { id: 'ph-1b', color: '#8a5100', caption: 'Aula prática' }
         ],
         fields: BASE_FIELDS.concat([
           field('escolaridade', 'Escolaridade', 'select', true, '', ['Fundamental incompleto', 'Fundamental completo', 'Médio incompleto', 'Médio completo', 'Superior']),
@@ -101,7 +101,7 @@
         signupOpen: true,
         status: 'published',
         photos: [
-          { id: 'ph-2a', color: '#f28c28', caption: 'Ensaio de dança esportiva' }
+          { id: 'ph-2a', color: '#8a5100', caption: 'Ensaio de dança esportiva' }
         ],
         fields: BASE_FIELDS.concat([
           field('data_nascimento', 'Data de nascimento', 'date', true, '', []),

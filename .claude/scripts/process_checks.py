@@ -4,7 +4,7 @@
 Three deterministic checks over the STAGED state (the git index), run from
 `.claude/githooks/pre-commit` as `python .claude/scripts/process_checks.py --staged`:
 
-1. sln      -- every git-tracked `Docs/` file is registered in MyVocaList.sln and every
+1. sln      -- every git-tracked `Docs/` file is registered in Proame.sln and every
                registered `Docs/` entry still exists (catches moves and deletes; the
                PostToolUse hook only auto-registers new files written via `Write`).
                Rule: constraints-registry.md § Visual Studio Solution (HARD GATE).
@@ -45,10 +45,10 @@ def check_sln(tracked_docs, sln_text):
     tracked = set(tracked_docs)
     problems = []
     for f in sorted(tracked - registered):
-        problems.append(f"sln: '{f}' is tracked but not registered in MyVocaList.sln "
+        problems.append(f"sln: '{f}' is tracked but not registered in Proame.sln "
                         "(add it to the matching Solution Folder).")
     for f in sorted(registered - tracked):
-        problems.append(f"sln: MyVocaList.sln still lists '{f}' but the file no longer exists "
+        problems.append(f"sln: Proame.sln still lists '{f}' but the file no longer exists "
                         "(moved or deleted - update the entry).")
     return problems
 
@@ -150,9 +150,9 @@ def _added_lines(path):
 def run_staged():
     staged = [p for p in _git("diff", "--cached", "--name-only", "--diff-filter=ACMRD").splitlines() if p]
     problems = []
-    if any(p.startswith("Docs/") or p == "MyVocaList.sln" for p in staged):
+    if any(p.startswith("Docs/") or p == "Proame.sln" for p in staged):
         tracked = [p for p in _git("ls-files", "Docs").splitlines() if p]
-        sln = _git("show", ":MyVocaList.sln").lstrip("﻿")
+        sln = _git("show", ":Proame.sln").lstrip("﻿")
         problems += check_sln(tracked, sln)
     live = {p for p in _git("diff", "--cached", "--name-only", "--diff-filter=ACM").splitlines() if p}
     for p in sorted(live):

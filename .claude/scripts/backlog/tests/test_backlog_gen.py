@@ -9,7 +9,7 @@ from contextlib import contextmanager
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import backlog_gen  # noqa: E402
 
-# UTF-8 BOM -- Visual Studio writes MyVocaList.sln with one.
+# UTF-8 BOM -- Visual Studio writes Proame.sln with one.
 BOM = b"\xef\xbb\xbf"
 
 PENDING = "\U0001F4A1 Pending"
@@ -269,7 +269,7 @@ class RegisterTests(unittest.TestCase):
         self.mgmt = os.path.join(self.root, "Docs", "Management")
         write(os.path.join(self.mgmt, "BACKLOG.md"), BACKLOG_SKELETON)
         write(os.path.join(self.mgmt, "BusinessFeatures", "feat", "README.md"), readme())
-        write(os.path.join(self.root, "MyVocaList.sln"), SLN_FIXTURE)
+        write(os.path.join(self.root, "Proame.sln"), SLN_FIXTURE)
 
     def tearDown(self):
         shutil.rmtree(self.root, ignore_errors=True)
@@ -346,7 +346,7 @@ class RegisterTests(unittest.TestCase):
         backlog_gen.cmd_register(
             self.root, section=None, parent="F-1", kind="bug", severity="Major",
             title="Some bug", goal="Fix it.", gate=None, today="2026-07-22")
-        with open(os.path.join(self.root, "MyVocaList.sln"), encoding="utf-8") as fh:
+        with open(os.path.join(self.root, "Proame.sln"), encoding="utf-8") as fh:
             self.assertIn("2026-07-22-BUG-001-some-bug", fh.read())
 
     def test_register_rejects_minor_severity(self):
@@ -384,21 +384,21 @@ class RegisterTests(unittest.TestCase):
     def test_register_adds_the_sln_entry_to_a_crlf_solution_file(self):
         # A VS-written .sln uses CRLF, so the EndProjectSection marker must be
         # matched newline-agnostically or the HARD GATE is silently unmet.
-        with open(os.path.join(self.root, "MyVocaList.sln"), "w",
+        with open(os.path.join(self.root, "Proame.sln"), "w",
                   encoding="utf-8", newline="") as fh:
             fh.write(SLN_FIXTURE.replace("\n", "\r\n"))
         backlog_gen.cmd_register(
             self.root, section=None, parent="F-1", kind="bug", severity="Major",
             title="Crlf bug", goal="Fix it.", gate=None, today="2026-07-22")
-        with open(os.path.join(self.root, "MyVocaList.sln"), encoding="utf-8") as fh:
+        with open(os.path.join(self.root, "Proame.sln"), encoding="utf-8") as fh:
             self.assertIn("2026-07-22-BUG-001-crlf-bug", fh.read())
 
     def _write_sln_bytes(self, data):
-        with open(os.path.join(self.root, "MyVocaList.sln"), "wb") as fh:
+        with open(os.path.join(self.root, "Proame.sln"), "wb") as fh:
             fh.write(data)
 
     def _sln_bytes(self):
-        with open(os.path.join(self.root, "MyVocaList.sln"), "rb") as fh:
+        with open(os.path.join(self.root, "Proame.sln"), "rb") as fh:
             return fh.read()
 
     def _register(self, title):
@@ -434,7 +434,7 @@ class RegisterTests(unittest.TestCase):
         self.assertIn(b"2026-07-22-BUG-001-lf-bug", data)
 
     def test_register_warns_loudly_when_the_sln_is_absent(self):
-        os.remove(os.path.join(self.root, "MyVocaList.sln"))
+        os.remove(os.path.join(self.root, "Proame.sln"))
         with captured_stderr() as err:
             rc = backlog_gen.cmd_register(
                 self.root, section=None, parent="F-1", kind="bug", severity="Major",

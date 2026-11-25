@@ -7,7 +7,7 @@
   var MAX_PDF_BYTES = 2 * 1024 * 1024;
   var MAX_PHOTO_BYTES = 1024 * 1024;
   var BASE_KEYS = ['nome', 'endereco', 'telefone', 'cad_unico'];
-  var PALETTE = ['#1f5fa8', '#f28c28', '#2e8b57', '#8a4bb4', '#c0392b', '#0f766e'];
+  var PALETTE = ['#4c6707', '#386663', '#8a5100', '#6750a4', '#ba1a1a', '#00639b'];
   var FIELD_TYPES = [
     { value: 'text', label: 'Texto curto' },
     { value: 'textarea', label: 'Texto longo' },
@@ -70,8 +70,10 @@
   function saveState() {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      return true;
     } catch (err) {
       toast('Não foi possível salvar: o armazenamento do navegador está cheio.');
+      return false;
     }
   }
 
@@ -98,7 +100,7 @@
   }
 
   function typeOf(id) {
-    return findById(state.projectTypes, id) || { name: 'Sem tipo', color: '#5b6473' };
+    return findById(state.projectTypes, id) || { name: 'Sem tipo', color: '#5d6052' };
   }
 
   function projectTitle(id) {
@@ -232,7 +234,7 @@
     if (photo && photo.dataUrl) {
       return '<img class="media' + extra + '" src="' + esc(photo.dataUrl) + '" alt="' + esc(photo.caption || 'Foto do projeto') + '" loading="lazy">';
     }
-    var color = photo && photo.color ? photo.color : '#1f5fa8';
+    var color = photo && photo.color ? photo.color : '#4c6707';
     var caption = photo && photo.caption ? photo.caption : '';
     var label = caption ? 'Imagem ilustrativa: ' + caption : 'Imagem ilustrativa';
     return '<div class="media placeholder' + extra + '" style="--ph:' + esc(color) + '" role="img" aria-label="' + esc(label) + '"><span>' + esc(caption) + '</span></div>';
@@ -480,7 +482,7 @@
     }
     return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
       '<header class="site-header"><div class="container bar">' +
-      '<a class="brand" href="#/home"><span class="logo" aria-hidden="true">P</span><span>PROAME<small>Projeto Amor e Esperança</small></span></a>' +
+      '<a class="brand" href="#/home"><img class="logo-img" src="assets/proame-logo.png" alt="PROAME" width="120" height="40"><small class="brand-sub">Projeto Amor<br>e Esperança</small></a>' +
       '<button type="button" class="burger" data-action="toggle-nav" aria-expanded="' + navOpen + '" aria-controls="site-nav">' +
       '<span class="sr-only">' + (navOpen ? 'Fechar menu' : 'Abrir menu') + '</span><span class="bars" aria-hidden="true"></span></button>' +
       '<nav id="site-nav" class="site-nav' + (navOpen ? ' open' : '') + '" aria-label="' + (isAdmin ? 'Área do admin' : 'Principal') + '">' +
@@ -970,7 +972,7 @@
     var reader = new FileReader();
     reader.onload = function () {
       captureMeta();
-      draft.photos.push({ id: uid('ph'), dataUrl: reader.result, caption: file.name.replace(/\.[^.]+$/, ''), color: '#1f5fa8' });
+      draft.photos.push({ id: uid('ph'), dataUrl: reader.result, caption: file.name.replace(/\.[^.]+$/, ''), color: '#4c6707' });
       route();
     };
     reader.onerror = function () { toast('Não foi possível ler a foto.'); };
@@ -1093,8 +1095,10 @@
     if (!file) { toast('Selecione o arquivo PDF.'); return; }
     if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') { toast('Envie um arquivo PDF.'); return; }
     if (!number || !title || !date) { toast('Preencha número, título e data.'); return; }
-    if (file.size > MAX_PDF_BYTES &&
-      !window.confirm('O arquivo tem mais de 2 MB e pode ocupar muito espaço no navegador. Continuar?')) {
+    if (file.size > MAX_PDF_BYTES) {
+      // Product decision: hard size cap (configurable by the admin in production).
+      toast('O PDF tem ' + (file.size / 1048576).toFixed(1) + ' MB. O limite é ' +
+        (MAX_PDF_BYTES / 1048576) + ' MB. Reduza o arquivo e tente novamente.');
       return;
     }
     var reader = new FileReader();
@@ -1103,7 +1107,7 @@
         id: uid('ed'), number: number, title: title, date: date, deadline: deadline,
         status: status, fileName: file.name, dataUrl: reader.result
       });
-      saveState();
+      if (!saveState()) { state.editais.pop(); return; }
       toast('Edital salvo.');
       route();
     };

@@ -1,19 +1,35 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Protótipo navegável do site do PROAME – Projeto Amor e Esperança, Gama (DF).">
-  <meta name="theme-color" content="#1f5fa8">
+  <meta name="description" content="Protótipo navegável do app do PROAME – Projeto Amor e Esperança, Gama (DF).">
+  <meta name="theme-color" content="#1b2a07">
   <title>PROAME – Protótipo</title>
+  <link rel="icon" href="assets/proame-logo.png">
+  <!-- Roboto = MudBlazor default typeface. Falls back to system fonts offline. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply the saved/OS colour scheme before first paint (MD3 light + dark schemes).
+    (function () {
+      var t = localStorage.getItem('proame-theme') ||
+        (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
   <div id="app">
     <noscript><p class="container section">Este protótipo precisa de JavaScript habilitado.</p></noscript>
   </div>
 
-  <button type="button" class="device-toggle" data-action="toggle-phone" aria-pressed="false">Celular / Desktop</button>
+  <div class="fab-dock">
+    <button type="button" class="device-toggle theme-toggle" aria-label="Alternar tema claro/escuro"
+      onclick="var r=document.documentElement,n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);localStorage.setItem('proame-theme',n);">◐ Tema</button>
+    <button type="button" class="device-toggle" data-action="toggle-phone" aria-pressed="false">Celular / Desktop</button>
+  </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="data.js"></script>

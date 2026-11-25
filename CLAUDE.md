@@ -1,6 +1,6 @@
 # CLAUDE.md - PROAME
 
-> Adapted from MyVocaList governance. Rationale and lookup tables: `.claude/library/project-governance-reference.md` (inherited; .NET-specific parts apply only if a .NET stack is chosen). Rules in `.claude/rules/` load automatically: `code-principles` · `testing` · `bug-tracking` · `workflow`.
+> Adapted from MyVocaList governance. Rationale and lookup tables: `.claude/library/project-governance-reference.md`. Rules in `.claude/rules/` load automatically: `code-principles` · `testing` · `bug-tracking` · `workflow`.
 
 ## App
 Institutional + operational app for **PROAME** (NGO in Gama, Distrito Federal, Brasil — https://proame.org/). Public area: Home, Quem somos, O que realizamos (serviços), O que temos (projetos: cursos, esportes/dança etc., with photos, dates and a **dynamic signup form** for *beneficiários*), Como posso colaborar (collaborator offer form: Financeiro / Cesta básica / Mão de obra-Serviço / Formação + observação), Transparência (Editais PDFs, downloadable). Admin area: the NGO admin must be **autonomous** — edit pages, create projects and their form fields (label + type), review signups/offers, upload/publish Editais. An API stores public and private data. Hosting under consideration: GoDaddy.
@@ -8,14 +8,17 @@ Institutional + operational app for **PROAME** (NGO in Gama, Distrito Federal, B
 Requirements source: `Docs/Chats/202611181100 initial business chat.txt`.
 
 **Targets:** Android · iOS · Web (Desktop = nice-to-have only).
-**Stack:** TBD — decided by `Docs/Benchmark/benchmark.md` and Helder's approval. Exact versions always come from the project manifest (`package.json` / `pubspec.yaml` / `.csproj`), never from this file.
+**Stack (decided by Helder 2026-11-25):** .NET 10 · **.NET MAUI Blazor Hybrid** + **Blazor Web App** sharing ONE Razor Class Library for all UI · **MudBlazor** (Material Design 3 theme seeded from the PROAME logo green `#A8CF45` — palette reference: `Docs/Benchmark/prototype/styles.css`) · **ASP.NET Core API** (services layer) · **PostgreSQL** via EF Core + Npgsql · Hosting: **Azure** (App Service, Azure Database for PostgreSQL Flexible Server, Blob Storage) under PROAME's own accounts · **Docker** for local dev (Postgres + Azurite via docker compose). WordPress (proame.org) will be replaced by this app. Exact versions always come from `.csproj` / `Directory.Packages.props`, never from this file.
+
+**Solution layout:** `src/Proame.Domain` · `src/Proame.Contracts` (DTOs) · `src/Proame.Infrastructure` (EF Core, storage) · `src/Proame.Api` · `src/Proame.UI` (RCL — every page/component) · `src/Proame.App` (MAUI head: Android, iOS, Windows, macOS) · `src/Proame.Web` (web head: static SSR for public/SEO pages, interactive for admin) · `tests/*`. Heads stay thin — no UI or logic in them.
 
 ## MCP & Skills
 - **Context7** when generating code against any library — use the exact manifest version, never "latest"; report version mismatches before coding.
 - **Playwright MCP** for web UI verification (prototype and web build). GitHub → `gh` CLI.
 - **MCP Availability Gate:** if a required MCP server is unavailable at task start, fail explicitly and wait for Helder — distinguish "returned empty" from "unavailable".
 - **MCP governance:** `.claude/library/mcp-governance.md` — read before adding any MCP server. Env keys onboarding: `.env.local.example` + `. .\.claude\scripts\load-env.ps1`.
-- Vendored .NET/MAUI skills in `.claude/skills/` are off by default; enable only if the chosen stack is .NET.
+- **MudBlazor MCP** for every MudBlazor component API question (version = the package version in the manifest). **Microsoft Learn MCP** for .NET/MAUI/Blazor/Azure docs.
+- Vendored .NET/MAUI skills in `.claude/skills/`: Blazor-Hybrid-relevant ones are on (`skillOverrides` in settings.json); XAML-only ones stay off. Project patterns: `proame-coding` skill.
 - After brainstorming → fresh `spec-reviewer`; after writing-plans → fresh `plan-reviewer`; both before Helder's gate.
 
 ## Development Methodology
@@ -39,6 +42,9 @@ Project commands in `.claude/commands/` carry the `pro-` prefix (`/pro-commit`, 
 - **Language** — code, comments, logs: English. **User-facing UI text: Brazilian Portuguese (pt-BR).**
 - **Privacy (LGPD)** `[Unamendable]` — beneficiary data (name, address, phone, CadÚnico) is personal data: private API only, admin-authenticated, consent captured at signup, never exposed in public endpoints or logs.
 - **Admin autonomy** — any content the NGO changes routinely (pages, projects, form fields, editais) must be editable from the admin area, never hard-coded.
+- **Single UI codebase** — pages and components live only in `Proame.UI` (RCL); MudBlazor components only (no second component library); colours only from the MudTheme tokens (no hard-coded hex in components); WCAG AA contrast (brand `#A8CF45` is a fill with dark ink, never text on light surfaces).
+- **Dialogs** — `MudDialog` / `MudMessageBox` only; never native MAUI dialogs (`DisplayAlert` etc.) — hook-enforced.
+- **Uploads** — Editais PDFs have an admin-configurable size cap; the stored file is byte-identical to the uploaded one (SHA-256 recorded); no lossy conversion.
 - **Incremental edits** — UI: edit one file → build → fix → next.
 
 ## Amending These Rules

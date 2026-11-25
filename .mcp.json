@@ -14,10 +14,29 @@
     },
     "playwright": {
       "command": "cmd",
-      "args": [ "/c", "npx", "-y", "@playwright/mcp@0.0.78", "--extension" ],
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@playwright/mcp@0.0.78",
+        "--extension"
+      ],
       "env": {
         "PLAYWRIGHT_MCP_EXTENSION_TOKEN": "${PLAYWRIGHT_MCP_EXTENSION_TOKEN}"
       }
+    },
+    "mudblazor": {
+      "command": "dotnet",
+      "args": [
+        "run",
+        "--project",
+        "C:/Users/helde/.claude/tools/MudMCP/src/MudBlazor.Mcp/MudBlazor.Mcp.csproj",
+        "--",
+        "--stdio",
+        "--version",
+        "9.5.0"
+      ],
+      "_comment": "MudBlazor component docs MCP — community project mcbodge/MudMCP. Used during Blazor Hybrid spike and migration. Version 9.0.0 = MudBlazor package version queried."
     }
   }
 }
