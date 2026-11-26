@@ -44,7 +44,7 @@ public sealed class ProjectService : IProjectService
 ```
 
 ## Nullable Reference Types
-> **OPEN — Helder to confirm before the first project is created.** The inherited governance policy was lenient nullable analysis (per-project overrides with suppressed warnings). PROAME has no code yet, so no policy is recorded as decided. Until confirmed, follow the `<Nullable>` setting in `Directory.Build.props` and do not add suppressions to hide nullable warnings.
+> **Decided by Helder, 2026-11-26 (D9)** — nullable warnings OFF; projects use `<Nullable>annotations</Nullable>` (set in `Directory.Build.props`). The `?` syntax is allowed and documents intent, but the compiler emits no nullable warnings.
 
 - Do not add `= string.Empty` initializers or null guards whose only purpose is to silence the analyzer (real null guards for real nulls are fine).
 - Do not change the nullable setting or its suppressed-warning set without an architecture decision.

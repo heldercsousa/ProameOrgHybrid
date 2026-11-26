@@ -16,7 +16,19 @@
 - List: `dotnet ef migrations list --project src/Proame.Infrastructure --startup-project src/Proame.Api`
 - Never edit an applied migration; add a new one. Never hand-write DDL against a shared database.
 - Migrations that enable PostgreSQL extensions (`citext`, `unaccent`, `pg_trgm`) are explicit `migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS ...")` steps, reviewed in the feature design.
-- The app does not run migrations on start-up in production; the deployment step applies them (decision recorded in the infra spec — confirm before first deploy).
+- **Decided by Helder, 2026-11-26 (D10):** EF Core migrations are applied automatically at API start-up, in `src/Proame.Api/Program.cs`, before `app.Run()`. Never run them from the MAUI or Web heads.
+
+  ```csharp
+  // src/Proame.Api/Program.cs — before app.Run()
+  await using (var scope = app.Services.CreateAsyncScope())
+  {
+      var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+      await db.Database.MigrateAsync();
+  }
+  app.Run();
+  ```
+
+- With more than one API instance, migrations must not run concurrently. Keep a single instance during deploy, or move migrations to a deploy step (that would be a new decision).
 
 ## Startup Project
 

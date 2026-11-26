@@ -159,16 +159,6 @@
         ]
       },
       {
-        "matcher": "Bash|PowerShell",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/scripts/hook-bash-filter.py\" \"\\bdotnet\\s+ef\\s+database\\s+update\\b\" -- pwsh -NoProfile -NonInteractive -File \"$CLAUDE_PROJECT_DIR/.claude/scripts/sync-mcp-db.ps1\" 2>/dev/null || true",
-            "statusMessage": "Syncing SQLite MCP database schema..."
-          }
-        ]
-      },
-      {
         "matcher": "Edit|Write",
         "hooks": [
           {

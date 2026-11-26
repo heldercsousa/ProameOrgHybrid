@@ -60,7 +60,8 @@ _JS_DIALOG = re.compile(
 _ITF_MARKER = ".itf-active"
 _ITF_MAX_LINES = 5           # C1 -- workflow.md Rule 2, ITF lane
 _ITF_EXPIRY = timedelta(minutes=30)   # AC-ITF-11
-_ITF_BLOCKED_SUFFIXES = (".xaml", ".xaml.cs")   # C3
+_ITF_BLOCKED_SUFFIXES = (".xaml", ".xaml.cs",
+                         ".razor", ".razor.cs", ".razor.css")   # C3 (D13, 2026-11-26)
 
 # C4 -- governed components. KEEP IN SYNC WITH
 # `.claude/library/component-safety-gate.md` (Scope -- what is a "governed
@@ -83,8 +84,9 @@ _ITF_GOVERNED_COMPONENTS = {
 # the orchestrator, see `/pro-itf`); the HARD set (plus any `Migrations/` file)
 # never is. AppShell.xaml(.cs) stay listed here although C3 already blocks them.
 # MauiProgram.cs is the MAUI head's composition root; Program.cs (Web, Api) is
-# the equivalent for the other heads. The MudTheme definition file has no fixed
-# file name, so it cannot be matched by name here (open gap, reported to Helder).
+# the equivalent for the other heads. The MudTheme definition file is fixed at
+# src/Proame.UI/Theme/ProameTheme.cs (D11, 2026-11-26) and is HARD per
+# workflow-rule-2 § Sequential-only file registry.
 _ITF_SEQUENTIAL_SOFT = {
     "MauiProgram.cs",
     "Program.cs",
@@ -96,6 +98,7 @@ _ITF_SEQUENTIAL_HARD = {
     "AppShell.xaml",
     "AppShell.xaml.cs",
     "AppDbContext.cs",
+    "ProameTheme.cs",
     "tasks.md",
 }
 _ITF_SEQUENTIAL_FILES = _ITF_SEQUENTIAL_SOFT | _ITF_SEQUENTIAL_HARD

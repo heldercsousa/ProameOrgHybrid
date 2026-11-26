@@ -58,14 +58,14 @@ Some files must never be edited by more than one agent at a time:
 | File | Reason |
 |------|--------|
 | `src/Proame.App/MauiProgram.cs`, `src/Proame.Web/Program.cs`, `src/Proame.Api/Program.cs` | DI and host composition — ordering matters; parallel edits produce conflicts |
-| The MudTheme definition file in `Proame.UI` | Single palette and component-defaults source — parallel edits produce divergent tokens |
+| The MudTheme definition file `src/Proame.UI/Theme/ProameTheme.cs` (`Proame.UI`, D11 2026-11-26) | Single palette and component-defaults source — parallel edits produce divergent tokens |
 | `AppDbContext.cs` (`Proame.Infrastructure`) | EF Core model config — entity set definitions must be coherent |
 | Any file under a `Migrations/` folder | EF migrations are sequential by design. Match on the folder, not on a `*Migration.cs` name pattern — EF generates `20260407190608_PersonConfigFixes.cs`, which no name-suffix rule catches (corrected 2026-07-21) |
 | `GlobalUsings.cs` (any project) | Global using declarations — merge conflicts produce duplicate errors |
 | `Directory.Build.props`, `Directory.Packages.props` | Shared MSBuild and central package versions — parallel edits produce conflicts |
 | `tasks.md` (any spec) | Task status tracking — parallel checkbox edits produce divergent state |
 
-**ITF soft / hard split `[added 2026-11-03]`:** for the ITF lane only (condition C5), the three composition roots, `GlobalUsings.cs`, `Directory.Build.props` and `Directory.Packages.props` are the **soft** set — eligible when the declaration carries `"sole_writer": true` after the sole-writer check (`/pro-itf` step 2). The MudTheme file, `AppDbContext.cs`, `tasks.md` and anything under `Migrations/` are the **hard** set — never ITF-eligible. (Guard 3 constants in the ITF scripts still carry the inherited MAUI file names and must be updated to this list by a scripts task.) The split does not relax wave planning: two tasks owning the same registry file are still serialized. Guard 3 mirrors this split in `_ITF_SEQUENTIAL_SOFT` / `_ITF_SEQUENTIAL_HARD`.
+**ITF soft / hard split `[added 2026-11-03]`:** for the ITF lane only (condition C5), the three composition roots, `GlobalUsings.cs`, `Directory.Build.props` and `Directory.Packages.props` are the **soft** set — eligible when the declaration carries `"sole_writer": true` after the sole-writer check (`/pro-itf` step 2). `ProameTheme.cs` (the MudTheme file), `AppDbContext.cs`, `tasks.md` and anything under `Migrations/` are the **hard** set — never ITF-eligible. Guard 3 constants updated to this list (D11/D13, 2026-11-26). The split does not relax wave planning: two tasks owning the same registry file are still serialized. Guard 3 mirrors this split in `_ITF_SEQUENTIAL_SOFT` / `_ITF_SEQUENTIAL_HARD`.
 
 **How to add entries:** If a session discovers a new hotspot file, add it to this registry before ending the session — and to the hard set in `constitutional-guard.py` unless Helder places it in the soft set.
 
@@ -180,7 +180,7 @@ implementor; there is no partial qualification.
 | C0 | A **declaration** exists in the worktree where the edit occurs, naming this file |
 | C1 | Exactly **1 file**, **≤ 5 changed lines** (guard's upper-bound count) |
 | C2 | Fix **fully diagnosed** — root cause, exact file and exact line recorded before the edit. The diagnosis may come from a stack trace, a subagent report, or the **read lane** (grep + ≤ 2 source files, `orchestrator.md § Orchestrator Read-Scope`); if it needs more than that, it is not fully diagnosed *(amended 2026-11-03)* |
-| C3 | Target is **not** a `.razor` / `.razor.cs` file (multi-file UI changes go through the subagent lane) |
+| C3 | Target is **not** a `.razor` / `.razor.cs` / `.razor.css` file, nor a `.xaml` / `.xaml.cs` file (multi-file UI changes go through the subagent lane; D13 2026-11-26 aligned the hook to this text) |
 | C4 | Target is **not** a governed component (`component-change-governance.md`) |
 | C5 | Target is **not** in the hard sequential-only set; a **soft-set** file (the composition roots, `GlobalUsings.cs`, `Directory.Build.props`, `Directory.Packages.props`) qualifies only with `"sole_writer": true` in the declaration after the sole-writer check (`§ Sequential-only file registry`, `/pro-itf` step 2) *(amended 2026-11-03)* |
 | C6 | Severity ≤ Major **and** no regression test is mandatory per `bug-tracking.md`. In practice: Critical always dispatches; Major dispatches wherever testable. The lane's population is Minor bugs, UI-only Major bugs verified by manual E2E, and non-bug trivia |

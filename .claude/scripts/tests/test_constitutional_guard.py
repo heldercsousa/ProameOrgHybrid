@@ -176,6 +176,15 @@ class TestItfBounds(ItfGuardTestBase):
         _declare(self.root, "UI/Pages/SongFormPage.xaml")
         self.assertEqual(self.run_guard(target, EDIT_3_LINES), 2)
 
+    # Coverage (no AC: workflow-rule-2 C3 razor exclusion, decision D13 2026-11-26)
+    def test_razor_target_blocks(self):
+        for rel in ("UI/Pages/SongFormPage.razor", "UI/Pages/SongFormPage.razor.cs",
+                    "UI/Pages/SongFormPage.razor.css"):
+            with self.subTest(rel=rel):
+                target = _touch(self.root, rel)
+                _declare(self.root, rel)
+                self.assertEqual(self.run_guard(target, EDIT_3_LINES), 2)
+
     # [AC] AC-ITF-05: governed component -> block, C4
     def test_governed_component_blocks(self):
         target = _touch(self.root, "UI/Components/CrudListView.cs")
@@ -493,6 +502,7 @@ class TestItfSoftSetPortedNames(ItfGuardTestBase):
     def test_maui_program_still_listed_as_sequential(self):
         self.assertIn("MauiProgram.cs", guard._ITF_SEQUENTIAL_SOFT)
         self.assertIn("AppDbContext.cs", guard._ITF_SEQUENTIAL_HARD)
+        self.assertIn("ProameTheme.cs", guard._ITF_SEQUENTIAL_HARD)  # D11
 
 
 if __name__ == "__main__":

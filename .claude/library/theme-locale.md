@@ -4,7 +4,7 @@
 
 ## Theme Setup
 
-- One `MudTheme` is defined in `Proame.UI` (a single definition file, sequential-only per `rules/workflow.md`) and applied once in the shared layout (`MudThemeProvider`).
+- One `MudTheme` is defined in `Proame.UI` at `src/Proame.UI/Theme/ProameTheme.cs` (D11, 2026-11-26; a single definition file, sequential-only per `rules/workflow.md`) and applied once in the shared layout (`MudThemeProvider`).
 - Both heads use the same theme: the MAUI Blazor Hybrid head (`Proame.App`) and the Blazor Web head (`Proame.Web`) render the same `Proame.UI` layout.
 - Light and dark schemes: `PaletteLight` and `PaletteDark`, both defined in the same theme file. The user's choice follows the system setting by default; the admin and public areas use the same scheme logic.
 - Typography and shape come from the theme's `Typography` and `LayoutProperties` (`DefaultBorderRadius`), not from per-component overrides.

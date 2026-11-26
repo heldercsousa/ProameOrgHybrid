@@ -110,7 +110,7 @@ def splice(text, region_name, new_body):
     return "{0}\n{1}\n{2}".format(head, new_body, tail)
 
 
-POST_MVP_TEMPLATE = """# MyVocaList — Post-MVP Backlog
+POST_MVP_TEMPLATE = """# PROAME — Post-MVP Backlog
 
 > Generated view of the active items marked `horizon: post-mvp` in their `README.md` frontmatter. Read it only when planning beyond the MVP. Same rules as `BACKLOG.md`: never hand-edit a row. Agents: `python .claude/scripts/backlog/backlog_gen.py query --horizon post-mvp`.
 

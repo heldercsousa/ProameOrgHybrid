@@ -60,3 +60,32 @@ MudBlazor with an MD3 theme seeded from the logo green **#A8CF45**:
 - Light and dark schemes; WCAG AA.
 Reference implementation: `prototype/styles.css`.
 Google Stitch MCP: *optional*. It needs a Google Cloud login/API key from PROAME's account; it is not required for the MudBlazor build.
+
+## D9 — Nullable reference types
+Decided by Helder on 2026-11-26.
+- Nullable **warnings are OFF**. Projects use `<Nullable>annotations</Nullable>`, set in `Directory.Build.props` when that file is created.
+- The `?` annotation syntax is allowed and documents intent; the compiler emits no nullable warnings.
+- No suppressions or `= string.Empty` initializers to hide nullable warnings. Recorded in `.claude/library/code-style-reference.md § Nullable Reference Types`.
+
+## D10 — EF Core migrations applied at API start-up
+Decided by Helder on 2026-11-26.
+- Migrations run automatically at API start-up: `await db.Database.MigrateAsync()` in a scoped block in `src/Proame.Api/Program.cs`, before `app.Run()`.
+- The MAUI and Web heads never run migrations.
+- With more than one API instance, migrations must not run concurrently. Keep a single instance during deploy, or move migrations to a deploy step (a new decision).
+- Recorded in `.claude/library/database-setup.md § Migrations`.
+
+## D11 — MudTheme file location
+Decided by Helder on 2026-11-26.
+- The MudTheme is a single file: `src/Proame.UI/Theme/ProameTheme.cs`.
+- It is sequential-only. ITF split classification: HARD, following the existing `workflow-rule-2.md § Sequential-only file registry` (which lists the MudTheme file as hard). *Helder to confirm: the decision request said "soft".*
+- Recorded in `rules/workflow.md`, `library/workflow-rule-2.md`, `library/theme-locale.md` and the Guard 3 constants.
+
+## D12 — MyVocaList-only governance tools retired
+Decided by Helder on 2026-11-26.
+- Retired and deleted: `.claude/scripts/migration/` (including `check_dx.py` and its tests) and `.claude/scripts/sync-mcp-db.ps1`, along with their hooks.
+- Recoverable from MyVocaList git history if ever needed.
+
+## D13 — ITF lane C3 covers Razor sources
+Decided by Helder on 2026-11-26.
+- ITF condition C3 blocks `.razor`, `.razor.cs` and `.razor.css` targets, as well as `.xaml` and `.xaml.cs`.
+- The hook `.claude/scripts/constitutional-guard.py` Guard 3 now matches the written rule (`workflow-rule-2.md` C3).
