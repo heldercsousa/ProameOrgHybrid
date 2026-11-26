@@ -167,8 +167,101 @@
     a.remove();
   }
 
-  function waLink() {
-    return 'https://wa.me/' + String(state.contact.whatsapp).replace(/\D/g, '');
+  /* ---------- contact links (shared by footer, contact block, admin "Testar") ---------- */
+
+  function digits(v) { return String(v || '').replace(/\D/g, ''); }
+  function withDdi(v) { var d = digits(v); return d.length <= 11 ? '55' + d : d; }
+
+  // wa.me opens the WhatsApp app on phones and WhatsApp Web (new tab) on desktop.
+  var LINKS = {
+    phone: function (v) { return 'tel:+' + withDdi(v); },
+    whatsapp: function (v) { return 'https://wa.me/' + withDdi(v); },
+    email: function (v) { return 'mailto:' + String(v || '').trim(); },
+    instagram: function (v) {
+      v = String(v || '').trim();
+      return /^https?:\/\//.test(v) ? v : 'https://www.instagram.com/' + v.replace(/^@/, '') + '/';
+    },
+    youtube: function (v) {
+      v = String(v || '').trim();
+      return /^https?:\/\//.test(v) ? v : 'https://www.youtube.com/@' + v.replace(/^@/, '');
+    }
+  };
+
+  function waLink() { return LINKS.whatsapp(state.contact.whatsapp); }
+
+  function fmtWhatsapp(v) {
+    var d = withDdi(v);
+    var m = d.match(/^(\d{2})(\d{2})(\d{4,5})(\d{4})$/);
+    return m ? '+' + m[1] + ' (' + m[2] + ') ' + m[3] + '-' + m[4] : '+' + d;
+  }
+
+  var ICONS = {
+    phone: 'M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2a1 1 0 0 1 1-.25c1.1.37 2.3.57 3.6.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1z',
+    whatsapp: 'M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1-1.7-.8c-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1 2.7.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2l-.6-.2z',
+    email: 'M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z',
+    instagram: 'M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.5a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5zM17.5 5.5a1 1 0 1 1 0 2 1 1 0 0 1 0-2z',
+    youtube: 'M21.6 7.2a2.5 2.5 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4a2.5 2.5 0 0 0-1.8 1.8A26 26 0 0 0 2 12a26 26 0 0 0 .4 4.8 2.5 2.5 0 0 0 1.8 1.8c1.6.4 7.8.4 7.8.4s6.2 0 7.8-.4a2.5 2.5 0 0 0 1.8-1.8A26 26 0 0 0 22 12a26 26 0 0 0-.4-4.8zM10 15V9l5.2 3-5.2 3z',
+    copy: 'M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z',
+    open: 'M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.6l-9.8 9.8 1.4 1.4L19 6.4V10h2V3h-7z'
+  };
+
+  function icon(name) {
+    return '<svg class="icon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="' + ICONS[name] + '"/></svg>';
+  }
+
+  // One entry per public contact channel; label = accessible name, text = what is shown and copied.
+  function contactChannels() {
+    var c = state.contact;
+    var list = [
+      { kind: 'phone', label: 'Telefone', text: c.phone, href: LINKS.phone(c.phone), copy: c.phone },
+      { kind: 'whatsapp', label: 'WhatsApp', text: fmtWhatsapp(c.whatsapp), href: LINKS.whatsapp(c.whatsapp), copy: fmtWhatsapp(c.whatsapp), external: true },
+      { kind: 'email', label: 'E-mail', text: c.email, href: LINKS.email(c.email), copy: c.email },
+      { kind: 'instagram', label: 'Instagram', text: c.instagram, href: LINKS.instagram(c.instagram), copy: LINKS.instagram(c.instagram), external: true },
+      { kind: 'youtube', label: 'YouTube', text: c.youtube, href: LINKS.youtube(c.youtube), copy: LINKS.youtube(c.youtube), external: true }
+    ];
+    return list.filter(function (ch) { return String(ch.text || '').trim(); });
+  }
+
+  function contactList() {
+    return '<ul class="contact-list">' + contactChannels().map(function (ch) {
+      return '<li><a class="contact-link" href="' + esc(ch.href) + '"' +
+        (ch.external ? ' target="_blank" rel="noopener"' : '') +
+        ' aria-label="' + esc(ch.label + ': ' + ch.text) + (ch.external ? ' (abre em nova aba)' : '') + '">' +
+        icon(ch.kind) + '<span><span class="contact-kind">' + esc(ch.label) + '</span>' + esc(ch.text) + '</span></a>' +
+        '<button type="button" class="icon-btn" data-action="copy" data-copy="' + esc(ch.copy) + '" data-label="' + esc(ch.label) + '"' +
+        ' aria-label="Copiar ' + esc(ch.label) + '" title="Copiar">' + icon('copy') + '</button></li>';
+    }).join('') + '</ul>';
+  }
+
+  function copyText(text, label) {
+    var done = function () { toast(label + ' copiado.'); };
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(done, function () { if (legacyCopy(text)) { done(); } });
+    } else if (legacyCopy(text)) { done(); }
+  }
+
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    ta.remove();
+    if (!ok) { toast('Não foi possível copiar. Selecione o texto manualmente.'); }
+    return ok;
+  }
+
+  function openLink(url) {
+    var a = document.createElement('a');
+    a.href = url;
+    if (/^https?:/.test(url)) { a.target = '_blank'; a.rel = 'noopener'; }
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   function publishedProjects() {
@@ -268,14 +361,8 @@
   function contactBlock() {
     var c = state.contact;
     return '<section class="card" aria-labelledby="contato-titulo"><h2 id="contato-titulo">Entre em contato</h2>' +
-      '<dl class="info">' +
-      '<dt>Endereço</dt><dd>' + esc(c.address) + '</dd>' +
-      '<dt>Telefone</dt><dd><a href="tel:+' + esc(String(c.whatsapp).replace(/\D/g, '')) + '">' + esc(c.phone) + '</a></dd>' +
-      '<dt>WhatsApp</dt><dd><a href="' + esc(waLink()) + '" target="_blank" rel="noopener">Chamar no WhatsApp</a></dd>' +
-      '<dt>E-mail</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd>' +
-      '<dt>Instagram</dt><dd>' + esc(c.instagram) + '</dd>' +
-      '<dt>YouTube</dt><dd>' + esc(c.youtube) + '</dd>' +
-      '</dl></section>';
+      '<dl class="info"><dt>Endereço</dt><dd>' + esc(c.address) + '</dd></dl>' +
+      contactList() + '</section>';
   }
 
   function adminPage(title, body) {
@@ -493,9 +580,7 @@
     var c = state.contact;
     return '<footer class="footer"><div class="container grid cols-2">' +
       '<div><h2>PROAME</h2><p>Projeto Amor e Esperança · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
-      '<div><p>Telefone/WhatsApp: <a href="' + esc(waLink()) + '" target="_blank" rel="noopener">' + esc(c.phone) + '</a></p>' +
-      '<p>E-mail: <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></p>' +
-      '<p>Instagram: ' + esc(c.instagram) + ' · YouTube: ' + esc(c.youtube) + '</p>' +
+      '<div><h2>Contato</h2>' + contactList() +
       '<p><a href="#/admin/login">Área do admin</a></p>' +
       '<p class="note">Protótipo navegável: os dados ficam salvos apenas neste navegador.</p></div>' +
       '</div></footer>';
@@ -710,10 +795,16 @@
 
   /* ---------- admin: pages & contact ---------- */
 
-  function textField(name, label, value, type) {
+  // testKind (optional): adds a "Testar" button that opens the link built from the typed (unsaved) value.
+  function textField(name, label, value, type, testKind) {
     var id = 'pg-' + name.replace(/\./g, '-');
-    return '<div class="field"><label for="' + id + '">' + esc(label) + '</label>' +
-      '<input id="' + id + '" name="' + esc(name) + '" type="' + (type || 'text') + '" value="' + esc(value) + '"></div>';
+    var input = '<input id="' + id + '" name="' + esc(name) + '" type="' + (type || 'text') + '" value="' + esc(value) + '">';
+    if (testKind) {
+      input = '<div class="field-row">' + input +
+        '<button type="button" class="btn btn-ghost btn-small" data-action="test-link" data-kind="' + testKind + '" data-for="' + id + '"' +
+        ' aria-label="Testar ' + esc(label) + '">' + icon('open') + 'Testar</button></div>';
+    }
+    return '<div class="field"><label for="' + id + '">' + esc(label) + '</label>' + input + '</div>';
   }
 
   function areaField(name, label, value, rows) {
@@ -733,11 +824,12 @@
       '<fieldset><legend>Quem somos</legend>' +
       areaField('quemSomos.body', 'Texto (separe os parágrafos com uma linha em branco)', q.body, 8) + '</fieldset>' +
       '<fieldset><legend>Contato</legend>' + textField('contact.address', 'Endereço', c.address) +
-      textField('contact.phone', 'Telefone', c.phone) +
-      textField('contact.whatsapp', 'WhatsApp (somente dígitos, com DDI)', c.whatsapp) +
-      textField('contact.email', 'E-mail', c.email, 'email') +
-      textField('contact.instagram', 'Instagram', c.instagram) +
-      textField('contact.youtube', 'YouTube', c.youtube) + '</fieldset>' +
+      '<p class="note">Use “Testar” para conferir cada link antes de salvar e publicar.</p>' +
+      textField('contact.phone', 'Telefone', c.phone, 'tel', 'phone') +
+      textField('contact.whatsapp', 'WhatsApp (somente dígitos, com DDI)', c.whatsapp, 'tel', 'whatsapp') +
+      textField('contact.email', 'E-mail', c.email, 'email', 'email') +
+      textField('contact.instagram', 'Instagram (@perfil ou link)', c.instagram, 'text', 'instagram') +
+      textField('contact.youtube', 'YouTube (@canal ou link)', c.youtube, 'text', 'youtube') + '</fieldset>' +
       '<fieldset><legend>Consentimento LGPD</legend>' +
       areaField('consentText', 'Texto do consentimento exibido nos formulários', state.consentText, 3) + '</fieldset>' +
       '<div class="form-actions"><button class="btn" type="submit">Salvar alterações</button></div></form>');
@@ -1192,6 +1284,14 @@
         break;
       case 'download-edital':
         downloadEdital(id);
+        break;
+      case 'copy':
+        copyText(el.getAttribute('data-copy'), el.getAttribute('data-label'));
+        break;
+      case 'test-link':
+        var tv = document.getElementById(el.getAttribute('data-for')).value.trim();
+        if (!tv) { toast('Preencha o campo antes de testar.'); break; }
+        openLink(LINKS[el.getAttribute('data-kind')](tv));
         break;
       case 'logout':
         state.session = false;
