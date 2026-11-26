@@ -55,3 +55,4 @@ Changing `CLAUDE.md` or `.claude/rules/`: state what is wrong and why, note comp
 - **Claude Code** — Implementation Specialist: codes, debugs, documents; never makes architectural decisions unilaterally.
 - **Orchestrator read-scope** `[HARD RULE]`: the main/orchestrator agent does not explore source code — delegate to Explore/Plan subagents. Details: `.claude/agents/orchestrator.md § Orchestrator Read-Scope`.
 - **Subagent discipline:** one subagent at a time (coder, then reviewer); subagents default to `model: haiku`.
+- **Token economy** (Helder, 2026-11-26): every practice that saves tokens is adopted. Tiny, already-diagnosed changes (ITF lane: 1 file, ≤ 5 lines) are done inline — never spawn a subagent for them. Subagents are for multi-file or non-trivial work. Keep briefs and reports short, and read files in targeted slices.

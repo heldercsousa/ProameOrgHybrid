@@ -77,7 +77,7 @@ Decided by Helder on 2026-11-26.
 ## D11 — MudTheme file location
 Decided by Helder on 2026-11-26.
 - The MudTheme is a single file: `src/Proame.UI/Theme/ProameTheme.cs`.
-- It is sequential-only. ITF split classification: HARD, following the existing `workflow-rule-2.md § Sequential-only file registry` (which lists the MudTheme file as hard). *Helder to confirm: the decision request said "soft".*
+- It is sequential-only. ITF split classification: HARD, following the existing `workflow-rule-2.md § Sequential-only file registry` (which lists the MudTheme file as hard). (The earlier "soft" in the brief was the agent's guess, not Helder's; HARD is final.)
 - Recorded in `rules/workflow.md`, `library/workflow-rule-2.md`, `library/theme-locale.md` and the Guard 3 constants.
 
 ## D12 — MyVocaList-only governance tools retired
@@ -87,5 +87,6 @@ Decided by Helder on 2026-11-26.
 
 ## D13 — ITF lane C3 covers Razor sources
 Decided by Helder on 2026-11-26.
-- ITF condition C3 blocks `.razor`, `.razor.cs` and `.razor.css` targets, as well as `.xaml` and `.xaml.cs`.
-- The hook `.claude/scripts/constitutional-guard.py` Guard 3 now matches the written rule (`workflow-rule-2.md` C3).
+- First version: ITF condition C3 blocks `.razor`, `.razor.cs` and `.razor.css` targets, as well as `.xaml` and `.xaml.cs` (commit 297b4f6).
+- **Revised by Helder, 2026-11-26 (token economy):** tiny changes avoid subagents. `.razor`, `.razor.cs` and `.razor.css` files SHOULD qualify for ITF (1 file, ≤ 5 lines). `.xaml` stays excluded. CLAUDE.md § Roles has the token-economy rule.
+- **Pending:** the hook (`constitutional-guard.py` Guard 3, its test and the `workflow-rule-2.md` C3 row) still blocks Razor. Loosening a safety hook needs Helder to apply or approve it outside auto mode. Until then, tiny Razor fixes still go through a subagent.
