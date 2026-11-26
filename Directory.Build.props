@@ -1,0 +1,20 @@
+<Project>
+
+  <!-- Shared MSBuild defaults for every project in Proame.sln.
+       Proame.App (the MAUI head) sets its own TargetFrameworks and is excluded from the default below. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Proame.App'">
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- D9: nullable annotations only; nullable warnings stay off. -->
+    <Nullable>annotations</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+</Project>

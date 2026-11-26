@@ -8,3 +8,8 @@ Authoritative: `CLAUDE.md` § App (Stack, Solution layout) and `Docs/Benchmark/d
 - **Config:** `ConnectionStrings:Proame` in `appsettings.Development.json` points to the compose Postgres (`Host=localhost;Port=5432;Database=proame;Username=proame;Password=proame_dev`) — local-dev only; production via Azure App Service settings.
 - **Tests:** the `/health` test must not need a running database — the migrate-at-start step is skipped when the environment is `Testing` (documented in `Program.cs`).
 - **Out of scope:** entities, auth, admin pages, CI, Azure resources.
+
+> **Spec updated 2026-11-26:** `Directory.Build.props` sets `TargetFramework` net10.0 for every project except `Proame.App`, which sets its own `TargetFrameworks` (plural TFMs in the global props break `dotnet ef`).
+> **Spec updated 2026-11-26:** a local `dotnet-tools.json` pins `dotnet-ef` 10.0.15 for migration tooling; the initial migration is generated with `ASPNETCORE_ENVIRONMENT=Testing` so no database is needed.
+> **Spec updated 2026-11-26:** the Web head is static SSR, so MudBlazor providers render but are not interactive. MudBlazor docs require interactive mode for providers; revisit when the first interactive page lands.
+> **Spec updated 2026-11-26:** `AddProameUi()` lives in namespace `Proame.UI.DependencyInjection`. MAUI package versions are pinned to 10.0.20 to match the installed MAUI workload (manifest band 10.0.100).
