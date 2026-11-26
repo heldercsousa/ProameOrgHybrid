@@ -89,4 +89,4 @@ Decided by Helder on 2026-11-26.
 Decided by Helder on 2026-11-26.
 - First version: ITF condition C3 blocks `.razor`, `.razor.cs` and `.razor.css` targets, as well as `.xaml` and `.xaml.cs` (commit 297b4f6).
 - **Revised by Helder, 2026-11-26 (token economy):** tiny changes avoid subagents. `.razor`, `.razor.cs` and `.razor.css` files SHOULD qualify for ITF (1 file, ≤ 5 lines). `.xaml` stays excluded. CLAUDE.md § Roles has the token-economy rule.
-- **Pending:** the hook (`constitutional-guard.py` Guard 3, its test and the `workflow-rule-2.md` C3 row) still blocks Razor. Loosening a safety hook needs Helder to apply or approve it outside auto mode. Until then, tiny Razor fixes still go through a subagent.
+- Applied with Helder's explicit approval: Guard 3, its test and the `workflow-rule-2.md` C3 row now let Razor files through (still 1 file, ≤ 5 lines).

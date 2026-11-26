@@ -60,8 +60,7 @@ _JS_DIALOG = re.compile(
 _ITF_MARKER = ".itf-active"
 _ITF_MAX_LINES = 5           # C1 -- workflow.md Rule 2, ITF lane
 _ITF_EXPIRY = timedelta(minutes=30)   # AC-ITF-11
-_ITF_BLOCKED_SUFFIXES = (".xaml", ".xaml.cs",
-                         ".razor", ".razor.cs", ".razor.css")   # C3 (D13, 2026-11-26)
+_ITF_BLOCKED_SUFFIXES = (".xaml", ".xaml.cs")   # C3 - .razor allowed for tiny fixes (D13 revised 2026-11-26, token economy)
 
 # C4 -- governed components. KEEP IN SYNC WITH
 # `.claude/library/component-safety-gate.md` (Scope -- what is a "governed

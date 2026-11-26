@@ -180,7 +180,7 @@ implementor; there is no partial qualification.
 | C0 | A **declaration** exists in the worktree where the edit occurs, naming this file |
 | C1 | Exactly **1 file**, **≤ 5 changed lines** (guard's upper-bound count) |
 | C2 | Fix **fully diagnosed** — root cause, exact file and exact line recorded before the edit. The diagnosis may come from a stack trace, a subagent report, or the **read lane** (grep + ≤ 2 source files, `orchestrator.md § Orchestrator Read-Scope`); if it needs more than that, it is not fully diagnosed *(amended 2026-11-03)* |
-| C3 | Target is **not** a `.razor` / `.razor.cs` / `.razor.css` file, nor a `.xaml` / `.xaml.cs` file (multi-file UI changes go through the subagent lane; D13 2026-11-26 aligned the hook to this text) |
+| C3 | Target is **not** a `.xaml` / `.xaml.cs` file. `.razor` / `.razor.cs` / `.razor.css` files qualify (token economy, D13 revised 2026-11-26); multi-file UI changes still go through the subagent lane via C1 |
 | C4 | Target is **not** a governed component (`component-change-governance.md`) |
 | C5 | Target is **not** in the hard sequential-only set; a **soft-set** file (the composition roots, `GlobalUsings.cs`, `Directory.Build.props`, `Directory.Packages.props`) qualifies only with `"sole_writer": true` in the declaration after the sole-writer check (`§ Sequential-only file registry`, `/pro-itf` step 2) *(amended 2026-11-03)* |
 | C6 | Severity ≤ Major **and** no regression test is mandatory per `bug-tracking.md`. In practice: Critical always dispatches; Major dispatches wherever testable. The lane's population is Minor bugs, UI-only Major bugs verified by manual E2E, and non-bug trivia |
