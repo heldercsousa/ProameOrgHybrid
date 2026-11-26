@@ -73,6 +73,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proame.Api.Tests", "tests\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Proame.UI.Tests", "tests\Proame.UI.Tests\Proame.UI.Tests.csproj", "{7DE14061-2462-458F-9DEE-3949D4238EAF}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backlog-archive", "backlog-archive", "{92064A96-E690-5A3F-AEB1-1DD409DF4E4B}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\backlog-archive\BACKLOG-ARCHIVE-2026-11.md = Docs\Management\backlog-archive\BACKLOG-ARCHIVE-2026-11.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -225,5 +230,6 @@ Global
 		{0F390448-0675-460E-A48C-8320DAD2168D} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{18FB4AFF-57A6-4F47-AA7D-74BFDCF531EF} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{7DE14061-2462-458F-9DEE-3949D4238EAF} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{92064A96-E690-5A3F-AEB1-1DD409DF4E4B} = {A95E1B2B-E267-52AA-9C49-628C692360C0}
 	EndGlobalSection
 EndGlobal

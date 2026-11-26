@@ -3,7 +3,7 @@
 ---
 ## Task: solution-scaffold (T1–T7)
 **Plan:** Docs/Management/cross-cutting/solution-scaffold/tasks.md
-**Status:** To Review
+**Status:** Done (verifier PASS 2026-11-26; merged `44f2402`)
 **Started:** 2026-11-26
 **Completed:** 2026-11-26
 
@@ -25,7 +25,7 @@
 Removed from the template: Counter, Weather, NavMenu, Bootstrap assets, ReconnectModal, interactive render modes (static SSR per design).
 
 ### Build notes
-Build: passed (0 errors) — `dotnet build Proame.sln` (11 projects, 0 errors; NU1507 DevExpress source warning comes from the machine-level NuGet config, not the repo) | Android: `dotnet build src/Proame.App/Proame.App.csproj -f net10.0-android` 0 errors (CS1591 XML-doc warnings only) | Tests: 2 passed, 0 failed (UI 1, API 1; Domain 0 tests) | `docker compose config` valid, no containers started | Commit SHA: see git log on `task/solution-scaffold`
+Build: passed (0 errors) — `dotnet build Proame.sln` (11 projects, 0 errors; NU1507 DevExpress source warning comes from the machine-level NuGet config, not the repo) | Android: `dotnet build src/Proame.App/Proame.App.csproj -f net10.0-android` 0 errors (CS1591 XML-doc warnings only) | Tests: 2 passed, 0 failed (UI 1, API 1; Domain 0 tests) | `docker compose config` valid, no containers started | Commit SHA: `fa99674` (merge `44f2402`)
 
 Pinned versions (Directory.Packages.props): Microsoft.Maui.Controls 10.0.20 (matches installed maui workload 10.0.20), Microsoft.AspNetCore.Components.WebView.Maui 10.0.20, MudBlazor 9.14.0, Npgsql.EntityFrameworkCore.PostgreSQL 10.0.4, Microsoft.EntityFrameworkCore(.Design) 10.0.15, Microsoft.AspNetCore.Components.Web 10.0.15, Microsoft.Extensions.Logging.Debug 10.0.15, bunit 2.15.2, Microsoft.AspNetCore.Mvc.Testing 10.0.15, xunit 2.9.3, xunit.runner.visualstudio 4.0.1, Microsoft.NET.Test.Sdk 18.12.0, Moq 4.21.0. Docker: postgres:17, azurite:3.22.0.
 
@@ -45,6 +45,14 @@ Files written and re-read: `Proame.App/MauiProgram.cs`, `Proame.App/wwwroot/inde
 | REQ-SCF-08 | docker-compose: Postgres 17 + Azurite; credentials only as local-dev defaults | `docker-compose.yml`, `appsettings.Development.json` | `docker compose config` valid; containers not started |
 | REQ-SCF-09 | Tests: bUnit home page "Início"; API /health 200 | `tests/Proame.UI.Tests/HomePageTests.cs`, `tests/Proame.Api.Tests/HealthEndpointTests.cs` | `dotnet test Proame.sln`: 2 passed, 0 failed |
 | REQ-SCF-10 | Android head builds with 0 errors | `src/Proame.App/Proame.App.csproj` | `dotnet build src/Proame.App -f net10.0-android`: 0 errors |
+
+### Test level decision
+- REQ-SCF-01..08 and 10 are Level C (plumbing, configuration, DI, build): no automated test; evidence is build, inspection or a manual run, as recorded above (testing.md risk table).
+
+### Follow-ups
+- Interactive render mode for the Web head before the first interactive page (see Design concern).
+- App icon, splash and `colors.xml` still use the template purple `#512BD4`; replace with PROAME branding.
+- Live check of migrate-at-start against the compose PostgreSQL; App head on an Android emulator.
 
 ### Design concern
 - Design §Web render modes (static SSR) vs MudBlazor docs: MudBlazor providers (`MudThemeProvider`, `MudPopoverProvider`, etc.) are documented as needing an interactive render mode. The scaffold renders them statically; this is not a failure today but interactivity must be added before the first interactive page (admin). For Helder's review.

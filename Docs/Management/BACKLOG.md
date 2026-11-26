@@ -12,5 +12,4 @@
 <!-- BACKLOG:GENERATED:BEGIN dev-cycle-craft -->
 | Target | Activity | Status |
 |--------|----------|--------|
-| 2026-11 | Solution scaffold (.NET 10 MAUI Blazor Hybrid + Web + API + PostgreSQL) | 🟢 Ready |
 <!-- BACKLOG:GENERATED:END dev-cycle-craft -->
