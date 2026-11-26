@@ -33,6 +33,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chats", "Chats", "{C908356F
 		Docs\Chats\202611181100 initial business chat.txt = Docs\Chats\202611181100 initial business chat.txt
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Management", "Management", "{A95E1B2B-E267-52AA-9C49-628C692360C0}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\BACKLOG.md = Docs\Management\BACKLOG.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cross-cutting", "cross-cutting", "{5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-scaffold", "solution-scaffold", "{DF7EA8FA-E907-5CAA-AC2A-2583E2C057AD}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\solution-scaffold\README.md = Docs\Management\cross-cutting\solution-scaffold\README.md
+		Docs\Management\cross-cutting\solution-scaffold\requirements.md = Docs\Management\cross-cutting\solution-scaffold\requirements.md
+		Docs\Management\cross-cutting\solution-scaffold\design.md = Docs\Management\cross-cutting\solution-scaffold\design.md
+		Docs\Management\cross-cutting\solution-scaffold\tasks.md = Docs\Management\cross-cutting\solution-scaffold\tasks.md
+		Docs\Management\cross-cutting\solution-scaffold\task-log.md = Docs\Management\cross-cutting\solution-scaffold\task-log.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,5 +62,8 @@ Global
 		{0089C472-6B5D-5EDE-85A4-60CD2B643050} = {58CBE2C8-BF4C-598F-BC1B-AA7759932C90}
 		{ECFC2D4C-0849-5128-AE24-D07FB00148A6} = {0089C472-6B5D-5EDE-85A4-60CD2B643050}
 		{C908356F-784D-543D-AB64-1A7AB34FFE76} = {98E5E174-41F0-50D8-BF73-E4B80302089C}
+		{A95E1B2B-E267-52AA-9C49-628C692360C0} = {98E5E174-41F0-50D8-BF73-E4B80302089C}
+		{5EEFAD58-9E3E-5678-91B1-5FEEA160E12D} = {A95E1B2B-E267-52AA-9C49-628C692360C0}
+		{DF7EA8FA-E907-5CAA-AC2A-2583E2C057AD} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 	EndGlobalSection
 EndGlobal
