@@ -1,0 +1,39 @@
+# Local development only: PostgreSQL 17 (API database) and Azurite (Azure Storage emulator).
+# Credentials below are the documented local-dev defaults (matching src/Proame.Api/appsettings.Development.json).
+# Production uses Azure App Service settings and user-secrets; never reuse these values there.
+#
+#   docker compose up -d        # start
+#   docker compose down         # stop (data kept in named volumes)
+
+name: proame
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: proame
+      POSTGRES_USER: proame
+      POSTGRES_PASSWORD: proame_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - proame-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proame -d proame"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.22.0
+    command: ["azurite", "--blobHost", "0.0.0.0", "--queueHost", "0.0.0.0", "--tableHost", "0.0.0.0", "--location", "/data", "--skipApiVersionCheck"]
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
+    volumes:
+      - proame-azurite:/data
+
+volumes:
+  proame-postgres:
+  proame-azurite:
