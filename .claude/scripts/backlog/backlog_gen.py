@@ -372,6 +372,9 @@ def next_bug_id(root):
 
 def _folder_for(root, items, parent_id, kind, today, item_id, title):
     """Absolute path of the new item folder."""
+    if kind == "feature":
+        # A feature is a top-level item: Docs/Management/<section>/<id>/.
+        return os.path.join(root, MANAGEMENT, parent_id, item_id)
     by_id = dict((i.id, i) for i in items if i.id)
     parent = by_id.get(parent_id)
     if parent is None:
@@ -440,10 +443,21 @@ def sln_add_entry(sln_text, rel_path):
 
 
 def cmd_register(root, section, parent, kind, severity, title, goal, gate,
-                 today=None, item_id=None, horizon=None):
-    """Create an item folder + README + .sln entry atomically, then regenerate."""
+                 today=None, item_id=None, horizon=None, target=None):
+    """Create an item folder + README + .sln entry atomically, then regenerate.
+
+    kind 'bug'/'change' nest under --parent; kind 'feature' is a top-level item
+    under --section (BusinessFeatures | cross-cutting) with a YYYY-MM target.
+    """
     import datetime
     today = today or datetime.date.today().isoformat()
+
+    if kind == "feature":
+        section = section or "cross-cutting"
+        target = target or today[:7]
+    elif not parent:
+        sys.stderr.write("--parent is required for kind '{0}'\n".format(kind))
+        return 2
 
     if kind == "bug" and severity == "Minor":
         sys.stderr.write("Minor bugs do not get a folder (REQ-SEV-03) -- "
@@ -465,7 +479,8 @@ def cmd_register(root, section, parent, kind, severity, title, goal, gate,
     elif not item_id:
         item_id = slugify(title)
 
-    folder = _folder_for(root, items, parent, kind, today, item_id, title)
+    folder = _folder_for(root, items, section if kind == "feature" else parent,
+                         kind, today, item_id, title)
     if folder is None:
         sys.stderr.write("parent '{0}' names no existing item\n".format(parent))
         return 2
@@ -474,7 +489,7 @@ def cmd_register(root, section, parent, kind, severity, title, goal, gate,
         return 2
 
     keys = {"id": item_id, "title": title, "status": "\U0001F4A1 Pending",
-            "target": today, "goal": goal, "kind": kind}
+            "target": target or today, "goal": goal, "kind": kind}
     if severity:
         keys["severity"] = severity
     if gate:
@@ -600,8 +615,9 @@ def build_parser():
 
     register = sub.add_parser("register", help="create a new item folder")
     register.add_argument("--section")
-    register.add_argument("--parent", required=True)
-    register.add_argument("--kind", choices=("bug", "change"), required=True)
+    register.add_argument("--parent", help="required for bug/change; not used for feature")
+    register.add_argument("--kind", choices=("bug", "change", "feature"), required=True)
+    register.add_argument("--target", help="YYYY-MM for a feature (default: current month)")
     register.add_argument("--severity", choices=("Critical", "Major", "Minor"))
     register.add_argument("--title", required=True)
     register.add_argument("--goal", required=True)
@@ -637,7 +653,7 @@ def main(argv=None):
     if args.verb == "register":
         return cmd_register(args.root, args.section, args.parent, args.kind,
                             args.severity, args.title, args.goal, args.gate,
-                            item_id=args.item_id, horizon=args.horizon)
+                            item_id=args.item_id, horizon=args.horizon, target=args.target)
     if args.verb == "renumber":
         return cmd_renumber(args.root, args.item_id)
     if args.verb == "status":

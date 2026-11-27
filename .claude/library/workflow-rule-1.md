@@ -84,15 +84,22 @@ python .claude/scripts/backlog/backlog_gen.py register \
     --title "…" --goal "…" [--gate "…"] [--section BusinessFeatures|cross-cutting]
 ```
 
-`--parent`, `--kind`, `--title` and `--goal` are required. `--kind` accepts **only `bug` or
-`change`**. The command creates the folder, its `README.md` frontmatter, the `.sln` entry, and
-regenerates the row.
+`--parent`, `--kind`, `--title` and `--goal` are required. The command creates the folder, its
+`README.md` frontmatter, the `.sln` entry, and regenerates the row.
 
-**Feature, activity, milestone or group** — `register` does **not** support these kinds. Create the
+**Feature** — `register` does it too (added 2026-11-27, so Claude Code appends backlog items itself):
+
+```bash
+python .claude/scripts/backlog/backlog_gen.py register --kind feature \
+    --section <BusinessFeatures|cross-cutting> --title "…" --goal "…" [--gate "…"] [--target YYYY-MM]
+```
+
+No `--parent`. The folder is `Docs/Management/<section>/<slug-of-title>/`; `--target` defaults to
+the current month; status starts at 💡 Pending (`backlog_gen.py status <ID> "<status>"` changes it).
+
+**Activity, milestone or group** — `register` does **not** support these kinds. Create the
 item folder and its `README.md` frontmatter by hand (schema: `spec-writing-guide.md § Item folder
-file set + frontmatter`), add the `.sln` entry, then run `backlog_gen.py regen`. Set `status:`
-directly in the frontmatter — `register` has no `--status` flag; `backlog_gen.py status <ID>
-"<status>"` changes it afterwards.
+file set + frontmatter`), add the `.sln` entry, then run `backlog_gen.py regen`.
 
 **Trigger questions** (ask at any point in a session):
 - "Does what I'm about to do have an item folder?" (`backlog_gen.py query` to check)

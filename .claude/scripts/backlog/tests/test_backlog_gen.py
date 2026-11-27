@@ -342,6 +342,36 @@ class RegisterTests(unittest.TestCase):
         with open(os.path.join(self.mgmt, "BACKLOG.md"), encoding="utf-8") as fh:
             self.assertIn("Artist field not locked", fh.read())
 
+    def test_register_feature_creates_top_level_folder_in_section(self):
+        rc = backlog_gen.cmd_register(
+            self.root, section="cross-cutting", parent=None, kind="feature", severity=None,
+            title="API foundation", goal="Shared API conventions.", gate=None,
+            today="2026-11-27", target="2026-12")
+        self.assertEqual(rc, 0)
+        readme = os.path.join(self.mgmt, "cross-cutting", "api-foundation", "README.md")
+        with open(readme, encoding="utf-8") as fh:
+            text = fh.read()
+        self.assertIn("kind: feature", text)
+        self.assertIn("target: 2026-12", text)
+        self.assertIn("section: cross-cutting", text)
+        with open(os.path.join(self.mgmt, "BACKLOG.md"), encoding="utf-8") as fh:
+            self.assertIn("API foundation", fh.read())
+
+    def test_register_feature_defaults_target_to_current_month(self):
+        rc = backlog_gen.cmd_register(
+            self.root, section="BusinessFeatures", parent=None, kind="feature", severity=None,
+            title="Transparencia", goal="Editais page.", gate=None, today="2026-11-27")
+        self.assertEqual(rc, 0)
+        readme = os.path.join(self.mgmt, "BusinessFeatures", "transparencia", "README.md")
+        with open(readme, encoding="utf-8") as fh:
+            self.assertIn("target: 2026-11", fh.read())
+
+    def test_register_bug_without_parent_is_rejected(self):
+        rc = backlog_gen.cmd_register(
+            self.root, section=None, parent=None, kind="bug", severity="Major",
+            title="No parent", goal="x.", gate=None, today="2026-11-27")
+        self.assertEqual(rc, 2)
+
     def test_register_adds_the_sln_entry(self):
         backlog_gen.cmd_register(
             self.root, section=None, parent="F-1", kind="bug", severity="Major",
