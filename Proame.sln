@@ -155,6 +155,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci-cd-deploy-homolog-produc
 		Docs\Management\cross-cutting\ci-cd-deploy-homolog-production\README.md = Docs\Management\cross-cutting\ci-cd-deploy-homolog-production\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cloudflare-edge-dns-waf-turnstile", "cloudflare-edge-dns-waf-turnstile", "{446738EA-A3D2-54CB-B27A-2DD6C9755049}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\cloudflare-edge-dns-waf-turnstile\README.md = Docs\Management\cross-cutting\cloudflare-edge-dns-waf-turnstile\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -323,5 +328,6 @@ Global
 		{C53D89A7-5D87-5287-89D6-7EB0BF0B43B1} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{6B74EDD4-BA28-5C4C-ACB6-24880F12A96B} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{45A1A798-1748-5587-9B4D-D5AD929AAAB6} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{446738EA-A3D2-54CB-B27A-2DD6C9755049} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 	EndGlobalSection
 EndGlobal
