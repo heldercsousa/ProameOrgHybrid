@@ -7,6 +7,7 @@
 <!-- BACKLOG:GENERATED:BEGIN business-features -->
 | Target | Feature | Status |
 |--------|---------|--------|
+| 2026-11 | White-label product for other NGOs | 💡 Pending |
 <!-- BACKLOG:GENERATED:END business-features -->
 
 ## Dev Cycle Craft

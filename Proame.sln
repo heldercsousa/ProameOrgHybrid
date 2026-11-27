@@ -165,6 +165,28 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app-attestation-firebase-ap
 		Docs\Management\cross-cutting\app-attestation-firebase-app-check\README.md = Docs\Management\cross-cutting\app-attestation-firebase-app-check\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BusinessFeatures", "BusinessFeatures", "{9101AE0E-6FE9-5E94-93A5-0A8B46B48861}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "admin-help-center-faq-user-guide", "admin-help-center-faq-user-guide", "{1E4294AB-4E1F-5B92-9C91-46EC20D8EDD9}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\BusinessFeatures\admin-help-center-faq-user-guide\README.md = Docs\Management\BusinessFeatures\admin-help-center-faq-user-guide\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "admin-guided-tutor", "admin-guided-tutor", "{A9FE12A3-2D47-5734-B355-3F47BE07A70B}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\BusinessFeatures\admin-guided-tutor\README.md = Docs\Management\BusinessFeatures\admin-guided-tutor\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "versioning-and-release-notes", "versioning-and-release-notes", "{2252E630-D6AE-575C-84E4-4756428AFDB7}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\versioning-and-release-notes\README.md = Docs\Management\cross-cutting\versioning-and-release-notes\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "white-label-product-for-other-ngos", "white-label-product-for-other-ngos", "{0A275DED-1C2B-5055-8334-49A71EF35BAF}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\BusinessFeatures\white-label-product-for-other-ngos\README.md = Docs\Management\BusinessFeatures\white-label-product-for-other-ngos\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -335,5 +357,10 @@ Global
 		{45A1A798-1748-5587-9B4D-D5AD929AAAB6} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{446738EA-A3D2-54CB-B27A-2DD6C9755049} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{04718264-DB71-536C-B76E-F5EF08B01A20} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{9101AE0E-6FE9-5E94-93A5-0A8B46B48861} = {A95E1B2B-E267-52AA-9C49-628C692360C0}
+		{1E4294AB-4E1F-5B92-9C91-46EC20D8EDD9} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
+		{A9FE12A3-2D47-5734-B355-3F47BE07A70B} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
+		{2252E630-D6AE-575C-84E4-4756428AFDB7} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{0A275DED-1C2B-5055-8334-49A71EF35BAF} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
 	EndGlobalSection
 EndGlobal

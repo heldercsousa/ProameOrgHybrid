@@ -29,3 +29,6 @@ Not specced yet. Write requirements, design and tasks before any code (Spec-Anch
 **Developer access (homolog / production)**
 - Homolog: developer IP allow-list + per-developer App Check debug tokens; Postman works.
 - Production: logs/monitoring first (`logging-observability`). Direct calls only through a Cloudflare Access-protected developer hostname (Google sign-in) + short-lived debug token; admin routes still need login + 2FA. Debug tokens never in the repo or app.
+- **Homolog holds fake seed data only** — never real beneficiary data (LGPD).
+- Secrets live in a password manager / user-secrets; debug tokens expire in hours or days.
+- "Lost laptop" checklist: revoke debug tokens, sign out Google/Cloudflare sessions, reset admin password + 2FA.

@@ -6,6 +6,8 @@
 <!-- BACKLOG:GENERATED:BEGIN business-features -->
 | Target | Feature | Status |
 |--------|---------|--------|
+| 2026-11 | Admin guided tutor | 💡 Pending |
+| 2026-11 | Admin help center (FAQ + user guide) | 💡 Pending |
 <!-- BACKLOG:GENERATED:END business-features -->
 
 ## Cross-cutting
@@ -15,6 +17,7 @@
 | 2026-11 | App attestation (Firebase App Check) | 💡 Pending |
 | 2026-11 | CI/CD deploy (homolog + production) | 💡 Pending |
 | 2026-11 | Cloudflare edge (DNS, WAF, Turnstile) | 💡 Pending |
+| 2026-11 | Versioning and release notes | 💡 Pending |
 | 2026-12 | Admin authentication and roles | 💡 Pending |
 | 2026-12 | API foundation (services layer conventions) | 💡 Pending |
 | 2026-12 | App branding (icon, splash, colors) | 💡 Pending |
