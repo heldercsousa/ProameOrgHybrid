@@ -33,3 +33,5 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+.claude/scripts/backlog/.session-marker
+*.stackdump

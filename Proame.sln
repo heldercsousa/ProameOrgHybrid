@@ -36,6 +36,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Management", "Management", "{A95E1B2B-E267-52AA-9C49-628C692360C0}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Management\BACKLOG.md = Docs\Management\BACKLOG.md
+		Docs\Management\handoff.md = Docs\Management\handoff.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cross-cutting", "cross-cutting", "{5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}"
