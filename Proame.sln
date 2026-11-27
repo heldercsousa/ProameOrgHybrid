@@ -26,6 +26,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{ECFC2D4C-0849-5128-AE24-D07FB00148A6}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Benchmark\prototype\assets\proame-logo.png = Docs\Benchmark\prototype\assets\proame-logo.png
+		Docs\Benchmark\prototype\assets\Logo-PROAME-2.png = Docs\Benchmark\prototype\assets\Logo-PROAME-2.png
+		Docs\Benchmark\prototype\assets\Logo-PROAME-2-original.png = Docs\Benchmark\prototype\assets\Logo-PROAME-2-original.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chats", "Chats", "{C908356F-784D-543D-AB64-1A7AB34FFE76}"
