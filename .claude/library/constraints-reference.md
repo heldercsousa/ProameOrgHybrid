@@ -9,6 +9,7 @@
 
 - **Single component library:** MudBlazor is the only UI component library. No second library, no hand-rolled replacements for components MudBlazor already provides (`MudDataGrid`, `MudTable`, `MudDialog`, `MudMessageBox`, `MudForm`, `MudAutocomplete`, `MudChip`, `MudAppBar`, `MudNavMenu`, `MudSkeleton`). Component API questions go to the MudBlazor MCP at the manifest version. (CLAUDE.md Constitutional Constraints)
 - **Colours only from MudTheme tokens:** no hard-coded hex in `.razor`, `.razor.cs` or component CSS. Palette seeded from `#A8CF45` and mapped in the MudTheme definition in `Proame.UI`; reference tokens: `Docs/Benchmark/prototype/styles.css`. (CLAUDE.md)
+- **Organisation identity from one source:** org name, logo path, contact details (address, phone, social links) and domain come from a single branding/organisation settings source — never typed literally into pages, components or layouts. Enables post-MVP `branding-settings-theme-logo-undo` and `white-label-product-for-other-ngos` without rewrites. (Helder, 2026-11-27)
 - **Brand green is a fill, never text:** `#A8CF45` on light surfaces fails WCAG AA for text; use dark ink on it. Verify contrast for every new colour pairing.
 - **Dialogs are MudBlazor only:** `MudDialog` / `MudMessageBox`. Native dialogs (`DisplayAlert`, JS `alert`/`confirm`) are forbidden — hook-enforced where the hook applies. (CLAUDE.md)
 - **Incremental edits:** edit one `.razor` / `.razor.cs` file → build → fix → next. Batched markup edits make the error source ambiguous.
