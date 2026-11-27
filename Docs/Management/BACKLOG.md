@@ -12,6 +12,7 @@
 <!-- BACKLOG:GENERATED:BEGIN dev-cycle-craft -->
 | Target | Activity | Status |
 |--------|----------|--------|
+| 2026-11 | CI/CD deploy (homolog + production) | 💡 Pending |
 | 2026-12 | Admin authentication and roles | 💡 Pending |
 | 2026-12 | API foundation (services layer conventions) | 💡 Pending |
 | 2026-12 | App branding (icon, splash, colors) | 💡 Pending |

@@ -12,3 +12,6 @@ gate: Helder review of the consent model
 # LGPD consent and audit foundation
 
 Not specced yet. Write requirements, design and tasks before any code (Spec-Anchored SDD).
+
+## Decision (Helder, 2026-11-27)
+The consent model is a **stakeholder decision**, supported by us. Before the stakeholder meeting, prepare a short options sheet: consent text, data retention, data controller contact, beneficiary rights (access, correction, deletion).

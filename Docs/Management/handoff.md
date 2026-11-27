@@ -15,12 +15,12 @@
 3. Prototype-independent, can be specced any time: `api-foundation`, `integration-test-foundation` (first two), then `web-interactive-render`, `logging-observability`, `file-storage-foundation`, `ci-build-test`.
 
 ## Open items / pending decisions
-- `admin-auth`: auth scheme (web cookie vs token for MAUI).
-- `lgpd-consent-foundation`: Helder review of the consent model.
-- `notifications-foundation`: free-tier e-mail and push providers.
-- `azure-environment`: PROAME Azure subscription access.
+- `admin-auth`: decided 2026-11-27 (Identity, Root/Admin, TOTP 2FA) — see its README; ready to spec.
+- `lgpd-consent-foundation`: stakeholder decides; prepare an options sheet.
+- `notifications-foundation`: preferences decided; free-tier e-mail and push providers still open.
+- `azure-environment`: only near first deploy (local Docker until then); homolog + production via `ci-cd-deploy-homolog-production`.
 - Scaffold follow-ups (in its task-log): live migrate-at-start against compose PostgreSQL; App on an Android emulator; MudBlazor needs interactive render mode before the first admin page.
-- Google Stitch MCP not set up (needs PROAME Google Cloud login or API key).
+- Post-MVP items: `Docs/Management/BACKLOG-POST-MVP.md` (`backlog_gen.py query --horizon post-mvp`).
 
 ## Context manifest for the next session
 `CLAUDE.md` · `Docs/Benchmark/decisions.md` · `Docs/Management/BACKLOG.md` · this file

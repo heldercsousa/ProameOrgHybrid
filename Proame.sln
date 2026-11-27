@@ -36,6 +36,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Management", "Management", "{A95E1B2B-E267-52AA-9C49-628C692360C0}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Management\BACKLOG.md = Docs\Management\BACKLOG.md
+		Docs\Management\BACKLOG-POST-MVP.md = Docs\Management\BACKLOG-POST-MVP.md
 		Docs\Management\handoff.md = Docs\Management\handoff.md
 	EndProjectSection
 EndProject
@@ -142,6 +143,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app-branding", "app-branding", "{C53D89A7-5D87-5287-89D6-7EB0BF0B43B1}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Management\cross-cutting\app-branding\README.md = Docs\Management\cross-cutting\app-branding\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "google-stitch-mcp", "google-stitch-mcp", "{6B74EDD4-BA28-5C4C-ACB6-24880F12A96B}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\google-stitch-mcp\README.md = Docs\Management\cross-cutting\google-stitch-mcp\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci-cd-deploy-homolog-production", "ci-cd-deploy-homolog-production", "{45A1A798-1748-5587-9B4D-D5AD929AAAB6}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\ci-cd-deploy-homolog-production\README.md = Docs\Management\cross-cutting\ci-cd-deploy-homolog-production\README.md
 	EndProjectSection
 EndProject
 Global
@@ -310,5 +321,7 @@ Global
 		{C0DDA329-26CA-5EBE-9FEF-ECC887D85CAB} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{7672936E-D3A1-5DA7-9088-7BF989067EBF} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{C53D89A7-5D87-5287-89D6-7EB0BF0B43B1} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{6B74EDD4-BA28-5C4C-ACB6-24880F12A96B} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{45A1A798-1748-5587-9B4D-D5AD929AAAB6} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 	EndGlobalSection
 EndGlobal
