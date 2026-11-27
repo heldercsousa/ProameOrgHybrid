@@ -559,6 +559,19 @@
     return '<a href="#' + path + '"' + (currentPath === path ? ' aria-current="page"' : '') + '>' + esc(label) + '</a>';
   }
 
+  /* Pre-sized logo files (1x/2x/3x, see tools/logo-gen.mjs). Narrow screens may use the symbol. */
+  function logoSrcset(base) {
+    return [1, 2, 3].map(function (n) { return base + '@' + n + 'x.png ' + n + 'x'; }).join(', ');
+  }
+
+  function logoPicture(imgClass, alt, useSymbolOnNarrow) {
+    var org = SEED.org;
+    var img = '<img class="' + imgClass + '" src="' + org.logoBase + '@2x.png" srcset="' +
+      logoSrcset(org.logoBase) + '" alt="' + esc(alt) + '" width="107" height="40">';
+    if (!useSymbolOnNarrow) { return img; }
+    return '<picture><source media="(max-width: 599px)" srcset="' + logoSrcset(org.symbolBase) + '">' + img + '</picture>';
+  }
+
   function header(isAdmin) {
     var links = isAdmin ? [
       ['/admin', 'Painel'],
@@ -581,7 +594,8 @@
     }
     return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
       '<header class="site-header"><div class="container bar">' +
-      '<a class="brand" href="#/home"><img class="logo-img" src="assets/proame-logo.png" alt="PROAME" width="120" height="40"><small class="brand-sub">Projeto Amor<br>e Esperança</small></a>' +
+      '<a class="brand" href="#/home">' + logoPicture('logo-img', SEED.org.name, true) +
+      '<small class="brand-sub">' + esc(SEED.org.fullName.split(' e ')[0]) + '<br>e ' + esc(SEED.org.fullName.split(' e ')[1]) + '</small></a>' +
       '<button type="button" class="burger" data-action="toggle-nav" aria-expanded="' + navOpen + '" aria-controls="site-nav">' +
       '<span class="sr-only">' + (navOpen ? 'Fechar menu' : 'Abrir menu') + '</span><span class="bars" aria-hidden="true"></span></button>' +
       '<nav id="site-nav" class="site-nav' + (navOpen ? ' open' : '') + '" aria-label="' + (isAdmin ? 'Área do admin' : 'Principal') + '">' +
@@ -591,7 +605,8 @@
   function footer() {
     var c = state.contact;
     return '<footer class="footer"><div class="container grid cols-2">' +
-      '<div><h2>PROAME</h2><p>Projeto Amor e Esperança · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
+      '<div><p class="footer-logo">' + logoPicture('footer-logo-img', SEED.org.name, false) + '</p>' +
+      '<p>' + esc(SEED.org.fullName) + ' · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
       '<div><h2>Contato</h2>' + contactList() +
       '<p><a href="#/admin/login">Área do admin</a></p>' +
       '<p class="note">Protótipo navegável: os dados ficam salvos apenas neste navegador.</p></div>' +

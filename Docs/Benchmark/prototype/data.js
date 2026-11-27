@@ -39,6 +39,14 @@
       }
     },
 
+    org: {
+      name: 'PROAME',
+      fullName: 'Projeto Amor e Esperança',
+      domain: 'proame.org',
+      logoBase: 'assets/logo/logo-full',
+      symbolBase: 'assets/logo/logo-symbol'
+    },
+
     contact: {
       address: 'EQ. 21/24, Área Especial Comercial, Setor Oeste, Gama (DF)',
       phone: '+55 (61) 99161-6494',

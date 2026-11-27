@@ -156,7 +156,7 @@ p { margin: 0 0 .9em; }
 }
 .bar { display: flex; align-items: center; justify-content: space-between; min-height: 68px; position: relative; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--on-surface); text-decoration: none; }
-.logo-img { height: 36px; width: auto; }
+.logo-img { height: 40px; width: auto; }
 .brand-sub {
   font-size: .7rem; line-height: 1.15; color: var(--on-surface-variant);
   border-left: 1px solid var(--outline-variant); padding-left: 12px; font-weight: 500;
@@ -403,6 +403,9 @@ td select { min-height: 40px; }
 .footer a { color: var(--brand); }
 .footer h2 { color: var(--on-deep); font-size: 1.05rem; }
 .footer .note { color: color-mix(in srgb, var(--on-deep) 70%, transparent); }
+/* Light plate: the colour wordmark keeps its contrast on a light surface inside the dark footer (--deep). */
+.footer-logo { display: inline-block; margin: 0 0 10px; padding: 8px 12px; border-radius: var(--r-m); background: var(--on-deep); }
+.footer-logo-img { height: 40px; width: auto; display: block; }
 
 /* ---------- Contact list (footer + contact card): one channel per line, icon + link + copy ---------- */
 .contact-list { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 4px; }
