@@ -21,6 +21,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prototype", "prototype", "{
 		Docs\Benchmark\prototype\data.js = Docs\Benchmark\prototype\data.js
 		Docs\Benchmark\prototype\index.html = Docs\Benchmark\prototype\index.html
 		Docs\Benchmark\prototype\styles.css = Docs\Benchmark\prototype\styles.css
+		Docs\Benchmark\prototype\themes.css = Docs\Benchmark\prototype\themes.css
+		Docs\Benchmark\prototype\tools\package.json = Docs\Benchmark\prototype\tools\package.json
+		Docs\Benchmark\prototype\tools\package-lock.json = Docs\Benchmark\prototype\tools\package-lock.json
+		Docs\Benchmark\prototype\tools\palette-gen.mjs = Docs\Benchmark\prototype\tools\palette-gen.mjs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{ECFC2D4C-0849-5128-AE24-D07FB00148A6}"

@@ -1,0 +1,15 @@
+{
+  "name": "proame-prototype-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Build helpers for the PROAME prototype: palette themes and logo asset set.",
+  "type": "module",
+  "scripts": {
+    "palette": "node palette-gen.mjs",
+    "logos": "node logo-gen.mjs"
+  },
+  "devDependencies": {
+    "@material/material-color-utilities": "0.3.0",
+    "sharp": "0.33.5"
+  }
+}

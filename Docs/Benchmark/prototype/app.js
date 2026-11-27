@@ -150,6 +150,18 @@
     toast.timer = setTimeout(function () { el.classList.remove('show'); }, 2800);
   }
 
+  /* Palette switcher: A = original brand, B = logo-derived (default), C = alternative. */
+  function applyPalette(key) {
+    if (['a', 'b', 'c'].indexOf(key) < 0) { return; }
+    document.documentElement.setAttribute('data-palette', key);
+    try { window.localStorage.setItem('proame-palette', key); } catch (err) {
+      // Blocked storage: the choice still applies for this page view.
+    }
+    document.querySelectorAll('[data-action="palette"]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-value') === key));
+    });
+  }
+
   function setHash(path) {
     if (window.location.hash === '#' + path) {
       route();
@@ -597,6 +609,9 @@
       '<p>' + esc(p.heroText) + '</p>' +
       '<div class="actions"><a class="btn btn-accent" href="#/projetos">Ver projetos</a>' +
       '<a class="btn btn-ghost" href="#/colaborar">Quero colaborar</a></div></div></section>' +
+      '<section class="container section"><p class="palette-note" role="note"><strong>Escolha de paleta:</strong> ' +
+      'use os botões A, B e C no canto inferior para comparar as três cores. A paleta B é gerada a partir do novo logotipo; ' +
+      'a A é a cor original da marca; a C é uma alternativa extraída do logotipo.</p></section>' +
       '<section class="section container"><h2>Nossa missão</h2><p>' + esc(p.missionText) + '</p></section>' +
       '<section class="section container"><h2>O que realizamos</h2>' + serviceGrid(activeServices().slice(0, 3)) +
       '<p><a href="#/servicos">Ver todos os serviços</a></p></section>' +
@@ -1278,6 +1293,9 @@
         document.body.classList.toggle('phone-mode');
         el.setAttribute('aria-pressed', String(document.body.classList.contains('phone-mode')));
         break;
+      case 'palette':
+        applyPalette(el.getAttribute('data-value'));
+        break;
       case 'filter':
         filters[el.getAttribute('data-group')] = el.getAttribute('data-value');
         route();
@@ -1413,5 +1431,6 @@
   });
 
   window.addEventListener('hashchange', route);
+  applyPalette(document.documentElement.getAttribute('data-palette'));
   route();
 })();

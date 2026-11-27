@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR" data-theme="light">
+<html lang="pt-BR" data-theme="light" data-palette="b">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,13 +10,20 @@
   <!-- Roboto = MudBlazor default typeface. Falls back to system fonts offline. -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap">
+  <link rel="stylesheet" href="themes.css">
   <link rel="stylesheet" href="styles.css">
   <script>
-    // Apply the saved/OS colour scheme before first paint (MD3 light + dark schemes).
+    // Apply the saved/OS colour scheme and palette (A/B/C) before first paint.
+    // Palette precedence: ?tema=a|b|c URL param, then the saved choice, then B (logo-derived default).
     (function () {
+      var palettes = ['a', 'b', 'c'];
       var t = localStorage.getItem('proame-theme') ||
         (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       document.documentElement.setAttribute('data-theme', t);
+      var fromUrl = new URLSearchParams(location.search).get('tema');
+      var p = palettes.indexOf(fromUrl) >= 0 ? fromUrl : localStorage.getItem('proame-palette');
+      if (palettes.indexOf(p) < 0) { p = 'b'; }
+      document.documentElement.setAttribute('data-palette', p);
     })();
   </script>
 </head>
@@ -28,6 +35,11 @@
   <div class="fab-dock">
     <button type="button" class="device-toggle theme-toggle" aria-label="Alternar tema claro/escuro"
       onclick="var r=document.documentElement,n=r.getAttribute('data-theme')==='dark'?'light':'dark';r.setAttribute('data-theme',n);localStorage.setItem('proame-theme',n);">◐ Tema</button>
+    <div class="palette-switch" role="group" aria-label="Paleta de cores">
+      <button type="button" class="device-toggle" data-action="palette" data-value="a" aria-pressed="false" aria-label="Paleta A — cor original da marca">A</button>
+      <button type="button" class="device-toggle" data-action="palette" data-value="b" aria-pressed="false" aria-label="Paleta B — extraída do novo logotipo">B</button>
+      <button type="button" class="device-toggle" data-action="palette" data-value="c" aria-pressed="false" aria-label="Paleta C — alternativa do logotipo">C</button>
+    </div>
     <button type="button" class="device-toggle" data-action="toggle-phone" aria-pressed="false">Celular / Desktop</button>
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
