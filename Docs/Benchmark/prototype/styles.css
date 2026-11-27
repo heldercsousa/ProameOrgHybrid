@@ -162,6 +162,11 @@ p { margin: 0 0 .9em; }
   border-left: 1px solid var(--outline-variant); padding-left: 12px; font-weight: 500;
 }
 [data-theme="dark"] .logo-img { filter: drop-shadow(0 0 1px rgba(168, 207, 69, .3)); }
+/* Header wordmark: the header surface is dark in data-theme="dark", so the white-letter variant is shown there. */
+.logo-pic { display: block; }
+.logo-pic-dark { display: none; }
+[data-theme="dark"] .logo-pic-std { display: none; }
+[data-theme="dark"] .logo-pic-dark { display: block; }
 
 .burger { background: none; border: 0; color: var(--on-surface); width: 48px; height: 48px; cursor: pointer; position: relative; border-radius: 50%; }
 .burger:hover { background: var(--surface-c-high); }
@@ -403,8 +408,8 @@ td select { min-height: 40px; }
 .footer a { color: var(--brand); }
 .footer h2 { color: var(--on-deep); font-size: 1.05rem; }
 .footer .note { color: color-mix(in srgb, var(--on-deep) 70%, transparent); }
-/* Light plate: the colour wordmark keeps its contrast on a light surface inside the dark footer (--deep). */
-.footer-logo { display: inline-block; margin: 0 0 10px; padding: 8px 12px; border-radius: var(--r-m); background: var(--on-deep); }
+/* Footer uses the light wordmark (logo-light, white letters + coloured figure) directly on --deep: no plate. */
+.footer-logo { margin: 0 0 10px; }
 .footer-logo-img { height: 40px; width: auto; display: block; }
 
 /* ---------- Contact list (footer + contact card): one channel per line, icon + link + copy ---------- */

@@ -32,6 +32,67 @@ for (const [scale, h] of [[1, 40], [2, 80], [3, 120]]) {
   await write(`logo-symbol@${scale}x.png`, symbol().resize({ height: h }));
 }
 
+// Light wordmark for dark surfaces (footer, dark header): the wordmark becomes white, the figure keeps its colours.
+// The wordmark is saturated green like the figure, so colour cannot separate them. Instead the opaque
+// pixels are traced into 8-connected islands and an island whose top edge lies below WORDMARK_TOP
+// (letter tops start near y=318; the figure starts near y=60) is wordmark. Anti-aliased pixels take
+// the colour of a neighbouring wordmark island, so no green/dark fringe is left on the letters.
+const WORDMARK_TOP = 300; // source px
+const ALPHA_MIN = 16;     // islands are traced above this alpha, so faint halos do not bridge islands
+
+async function lightWordmark() {
+  const { data, info } = await sharp(src).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { width: w, height: h } = info;
+  const px = Buffer.from(data);
+  const label = new Int32Array(w * h).fill(-1);
+  const queue = new Int32Array(w * h);
+  const islands = [];
+  for (let start = 0; start < w * h; start++) {
+    if (label[start] !== -1 || px[start * 4 + 3] < ALPHA_MIN) continue;
+    const id = islands.length;
+    const box = { top: Infinity, bottom: -1, count: 0 };
+    let head = 0, tail = 0;
+    queue[tail++] = start; label[start] = id;
+    while (head < tail) {
+      const p = queue[head++];
+      const x = p % w, y = (p - x) / w;
+      box.count++; box.top = Math.min(box.top, y); box.bottom = Math.max(box.bottom, y);
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const q = ny * w + nx;
+        if (label[q] !== -1 || px[q * 4 + 3] < ALPHA_MIN) continue;
+        label[q] = id; queue[tail++] = q;
+      }
+    }
+    islands.push(box);
+  }
+  const isWordmark = (id) => islands[id].top >= WORDMARK_TOP;
+  const wordmarkIslands = islands.filter((b) => b.top >= WORDMARK_TOP).length;
+  console.log(`light wordmark: ${wordmarkIslands} wordmark islands, ${islands.length - wordmarkIslands} figure islands`);
+  for (let p = 0; p < w * h; p++) {
+    if (px[p * 4 + 3] === 0) continue;
+    let wordmark = label[p] !== -1 && isWordmark(label[p]);
+    if (label[p] === -1) { // faint edge pixel: follow the nearest traced island
+      const x = p % w, y = (p - x) / w;
+      for (let dy = -1; dy <= 1 && !wordmark; dy++) for (let dx = -1; dx <= 1 && !wordmark; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+        const l = label[ny * w + nx];
+        wordmark = l !== -1 && isWordmark(l);
+      }
+    }
+    if (wordmark) { px[p * 4] = 255; px[p * 4 + 1] = 255; px[p * 4 + 2] = 255; }
+  }
+  return sharp(px, { raw: { width: w, height: h, channels: 4 } });
+}
+
+// Light wordmark (white letters, coloured figure): height 40 / 80 / 120 CSS px (1x / 2x / 3x).
+const light = await lightWordmark();
+for (const [scale, h] of [[1, 40], [2, 80], [3, 120]]) {
+  await write(`logo-light@${scale}x.png`, light.clone().resize({ height: h }));
+}
+
 // Square marks: symbol centred on an opaque white square of `size`, `fill` = share of the side.
 async function squareMark(size, fill, opaque = true) {
   const inner = Math.round(size * fill);

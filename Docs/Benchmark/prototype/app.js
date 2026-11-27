@@ -643,12 +643,12 @@
     return [1, 2, 3].map(function (n) { return base + '@' + n + 'x.png ' + n + 'x'; }).join(', ');
   }
 
-  function logoPicture(imgClass, alt, useSymbolOnNarrow) {
-    var org = SEED.org;
-    var img = '<img class="' + imgClass + '" src="' + org.logoBase + '@2x.png" srcset="' +
-      logoSrcset(org.logoBase) + '" alt="' + esc(alt) + '" width="107" height="40">';
-    if (!useSymbolOnNarrow) { return img; }
-    return '<picture><source media="(max-width: 599px)" srcset="' + logoSrcset(org.symbolBase) + '">' + img + '</picture>';
+  /* base = logoBase (coloured wordmark, light surfaces) or logoLightBase (white wordmark, dark surfaces). */
+  function logoPicture(imgClass, alt, useSymbolOnNarrow, base, wrapClass) {
+    var img = '<img class="' + imgClass + '" src="' + base + '@2x.png" srcset="' +
+      logoSrcset(base) + '" alt="' + esc(alt) + '" width="107" height="40">';
+    var source = useSymbolOnNarrow ? '<source media="(max-width: 599px)" srcset="' + logoSrcset(SEED.org.symbolBase) + '">' : '';
+    return '<picture class="logo-pic ' + wrapClass + '">' + source + img + '</picture>';
   }
 
   function header(isAdmin) {
@@ -678,7 +678,10 @@
     }
     return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
       '<header class="site-header"><div class="container bar">' +
-      '<a class="brand" href="#/home">' + logoPicture('logo-img', SEED.org.name, true) +
+      /* Both wordmarks are rendered; CSS shows the light one in data-theme="dark" (the header surface is dark there). */
+      '<a class="brand" href="#/home">' +
+      logoPicture('logo-img', SEED.org.name, true, SEED.org.logoBase, 'logo-pic-std') +
+      logoPicture('logo-img', SEED.org.name, true, SEED.org.logoLightBase, 'logo-pic-dark') +
       '<small class="brand-sub">' + esc(SEED.org.fullName.split(' e ')[0]) + '<br>e ' + esc(SEED.org.fullName.split(' e ')[1]) + '</small></a>' +
       '<button type="button" class="burger" data-action="toggle-nav" aria-expanded="' + navOpen + '" aria-controls="site-nav">' +
       '<span class="sr-only">' + (navOpen ? 'Fechar menu' : 'Abrir menu') + '</span><span class="bars" aria-hidden="true"></span></button>' +
@@ -689,7 +692,7 @@
   function footer() {
     var c = state.contact;
     return '<footer class="footer"><div class="container grid cols-2">' +
-      '<div><p class="footer-logo">' + logoPicture('footer-logo-img', SEED.org.name, false) + '</p>' +
+      '<div><p class="footer-logo">' + logoPicture('footer-logo-img', SEED.org.name, false, SEED.org.logoLightBase, '') + '</p>' +
       '<p>' + esc(SEED.org.fullName) + ' · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
       '<div><h2>Contato</h2>' + contactList() +
       '<p><a href="#/admin/login">Área do admin</a></p>' +

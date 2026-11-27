@@ -108,6 +108,7 @@
       fullName: 'Projeto Amor e Esperança',
       domain: 'proame.org',
       logoBase: 'assets/logo/logo-full',
+      logoLightBase: 'assets/logo/logo-light',
       symbolBase: 'assets/logo/logo-symbol'
     },
 

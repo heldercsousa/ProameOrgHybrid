@@ -22,11 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "prototype", "prototype", "{
 		Docs\Benchmark\prototype\index.html = Docs\Benchmark\prototype\index.html
 		Docs\Benchmark\prototype\styles.css = Docs\Benchmark\prototype\styles.css
 		Docs\Benchmark\prototype\manifest.webmanifest = Docs\Benchmark\prototype\manifest.webmanifest
-		Docs\Benchmark\prototype\tools\logo-gen.mjs = Docs\Benchmark\prototype\tools\logo-gen.mjs
 		Docs\Benchmark\prototype\themes.css = Docs\Benchmark\prototype\themes.css
-		Docs\Benchmark\prototype\tools\package.json = Docs\Benchmark\prototype\tools\package.json
-		Docs\Benchmark\prototype\tools\package-lock.json = Docs\Benchmark\prototype\tools\package-lock.json
-		Docs\Benchmark\prototype\tools\palette-gen.mjs = Docs\Benchmark\prototype\tools\palette-gen.mjs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{ECFC2D4C-0849-5128-AE24-D07FB00148A6}"
@@ -34,21 +30,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{ECFC2D
 		Docs\Benchmark\prototype\assets\proame-logo.png = Docs\Benchmark\prototype\assets\proame-logo.png
 		Docs\Benchmark\prototype\assets\Logo-PROAME-2.png = Docs\Benchmark\prototype\assets\Logo-PROAME-2.png
 		Docs\Benchmark\prototype\assets\Logo-PROAME-2-original.png = Docs\Benchmark\prototype\assets\Logo-PROAME-2-original.png
-		Docs\Benchmark\prototype\assets\logo\apple-touch-icon.png = Docs\Benchmark\prototype\assets\logo\apple-touch-icon.png
-		Docs\Benchmark\prototype\assets\logo\favicon-32.png = Docs\Benchmark\prototype\assets\logo\favicon-32.png
-		Docs\Benchmark\prototype\assets\logo\favicon-48.png = Docs\Benchmark\prototype\assets\logo\favicon-48.png
-		Docs\Benchmark\prototype\assets\logo\icon-192.png = Docs\Benchmark\prototype\assets\logo\icon-192.png
-		Docs\Benchmark\prototype\assets\logo\icon-512.png = Docs\Benchmark\prototype\assets\logo\icon-512.png
-		Docs\Benchmark\prototype\assets\logo\icon-maskable-512.png = Docs\Benchmark\prototype\assets\logo\icon-maskable-512.png
-		Docs\Benchmark\prototype\assets\logo\logo-full@1x.png = Docs\Benchmark\prototype\assets\logo\logo-full@1x.png
-		Docs\Benchmark\prototype\assets\logo\logo-full@2x.png = Docs\Benchmark\prototype\assets\logo\logo-full@2x.png
-		Docs\Benchmark\prototype\assets\logo\logo-full@3x.png = Docs\Benchmark\prototype\assets\logo\logo-full@3x.png
-		Docs\Benchmark\prototype\assets\logo\logo-symbol@1x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@1x.png
-		Docs\Benchmark\prototype\assets\logo\logo-symbol@2x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@2x.png
-		Docs\Benchmark\prototype\assets\logo\logo-symbol@3x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@3x.png
-		Docs\Benchmark\prototype\assets\logo\og-image.png = Docs\Benchmark\prototype\assets\logo\og-image.png
-		Docs\Benchmark\prototype\assets\logo\store-1024.png = Docs\Benchmark\prototype\assets\logo\store-1024.png
-		Docs\Benchmark\prototype\assets\logo\store-512.png = Docs\Benchmark\prototype\assets\logo\store-512.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Chats", "Chats", "{C908356F-784D-543D-AB64-1A7AB34FFE76}"
@@ -214,6 +195,36 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "branding-settings-theme-logo-undo", "branding-settings-theme-logo-undo", "{5E3FAC1F-DEE2-51E6-866C-785385A9B437}"
 	ProjectSection(SolutionItems) = preProject
 		Docs\Management\BusinessFeatures\branding-settings-theme-logo-undo\README.md = Docs\Management\BusinessFeatures\branding-settings-theme-logo-undo\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logo", "logo", "{4951BB21-5F10-53C5-8C6F-EC6D6996FCF6}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Benchmark\prototype\assets\logo\apple-touch-icon.png = Docs\Benchmark\prototype\assets\logo\apple-touch-icon.png
+		Docs\Benchmark\prototype\assets\logo\favicon-32.png = Docs\Benchmark\prototype\assets\logo\favicon-32.png
+		Docs\Benchmark\prototype\assets\logo\favicon-48.png = Docs\Benchmark\prototype\assets\logo\favicon-48.png
+		Docs\Benchmark\prototype\assets\logo\icon-192.png = Docs\Benchmark\prototype\assets\logo\icon-192.png
+		Docs\Benchmark\prototype\assets\logo\icon-512.png = Docs\Benchmark\prototype\assets\logo\icon-512.png
+		Docs\Benchmark\prototype\assets\logo\icon-maskable-512.png = Docs\Benchmark\prototype\assets\logo\icon-maskable-512.png
+		Docs\Benchmark\prototype\assets\logo\logo-full@1x.png = Docs\Benchmark\prototype\assets\logo\logo-full@1x.png
+		Docs\Benchmark\prototype\assets\logo\logo-full@2x.png = Docs\Benchmark\prototype\assets\logo\logo-full@2x.png
+		Docs\Benchmark\prototype\assets\logo\logo-full@3x.png = Docs\Benchmark\prototype\assets\logo\logo-full@3x.png
+		Docs\Benchmark\prototype\assets\logo\logo-light@1x.png = Docs\Benchmark\prototype\assets\logo\logo-light@1x.png
+		Docs\Benchmark\prototype\assets\logo\logo-light@2x.png = Docs\Benchmark\prototype\assets\logo\logo-light@2x.png
+		Docs\Benchmark\prototype\assets\logo\logo-light@3x.png = Docs\Benchmark\prototype\assets\logo\logo-light@3x.png
+		Docs\Benchmark\prototype\assets\logo\logo-symbol@1x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@1x.png
+		Docs\Benchmark\prototype\assets\logo\logo-symbol@2x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@2x.png
+		Docs\Benchmark\prototype\assets\logo\logo-symbol@3x.png = Docs\Benchmark\prototype\assets\logo\logo-symbol@3x.png
+		Docs\Benchmark\prototype\assets\logo\og-image.png = Docs\Benchmark\prototype\assets\logo\og-image.png
+		Docs\Benchmark\prototype\assets\logo\store-1024.png = Docs\Benchmark\prototype\assets\logo\store-1024.png
+		Docs\Benchmark\prototype\assets\logo\store-512.png = Docs\Benchmark\prototype\assets\logo\store-512.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{32124A96-D0D2-5181-ADBC-7400B3DB450B}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Benchmark\prototype\tools\logo-gen.mjs = Docs\Benchmark\prototype\tools\logo-gen.mjs
+		Docs\Benchmark\prototype\tools\package-lock.json = Docs\Benchmark\prototype\tools\package-lock.json
+		Docs\Benchmark\prototype\tools\package.json = Docs\Benchmark\prototype\tools\package.json
+		Docs\Benchmark\prototype\tools\palette-gen.mjs = Docs\Benchmark\prototype\tools\palette-gen.mjs
 	EndProjectSection
 EndProject
 Global
@@ -392,5 +403,7 @@ Global
 		{2252E630-D6AE-575C-84E4-4756428AFDB7} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{0A275DED-1C2B-5055-8334-49A71EF35BAF} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
 		{5E3FAC1F-DEE2-51E6-866C-785385A9B437} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
+		{4951BB21-5F10-53C5-8C6F-EC6D6996FCF6} = {ECFC2D4C-0849-5128-AE24-D07FB00148A6}
+		{32124A96-D0D2-5181-ADBC-7400B3DB450B} = {0089C472-6B5D-5EDE-85A4-60CD2B643050}
 	EndGlobalSection
 EndGlobal
