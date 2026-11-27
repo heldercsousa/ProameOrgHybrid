@@ -711,7 +711,7 @@
       '<a class="btn btn-ghost" href="#/colaborar">Quero colaborar</a></div></div></section>' +
       '<section class="container section"><p class="palette-note" role="note"><strong>Escolha de paleta:</strong> ' +
       'use os botões A, B e C no canto inferior para comparar as três cores. A paleta B é gerada a partir do novo logotipo; ' +
-      'a A é a cor original da marca; a C é uma alternativa extraída do logotipo.</p></section>' +
+      'a A é a cor original da marca; a C usa o mesmo verde do logotipo com cores mais vivas.</p></section>' +
       '<section class="section container"><h2>Nossa missão</h2><p>' + esc(p.missionText) + '</p></section>' +
       '<section class="section container"><h2>O que realizamos</h2>' + serviceGrid(activeServices().slice(0, 3)) +
       '<p><a href="#/servicos">Ver todos os serviços</a></p></section>' +

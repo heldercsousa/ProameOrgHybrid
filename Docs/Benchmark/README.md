@@ -19,7 +19,7 @@ Dê um duplo clique em `prototype/index.html`. Ele abre direto do disco (file://
 - Novidades nesta versão (0.2.0): administradores e Roots, configurações (e-mail, termo LGPD, notificações), auditoria, central de ajuda, novidades e ajuda por página ("?").
 
 ## Premissas
-- A paleta foi gerada a partir do novo logotipo (`assets/Logo-PROAME-2.png`), com o método Material Color Utilities (QuantizerCelebi, Score, SchemeTonalSpot). A premissa antiga (azul e laranja, presumida) está obsoleta.
+- A paleta foi gerada a partir do novo logotipo (`assets/Logo-PROAME-2.png`), com o método Material Color Utilities (QuantizerCelebi, Score, SchemeTonalSpot). A paleta C usa a mesma semente (#3e9528) com SchemeVibrant, para ficar visualmente distinta da B. A premissa antiga (azul e laranja, presumida) está obsoleta.
 - Aguardando a escolha de paleta (A, B ou C) pelo Helder.
 
 ## Regenerar paletas e logotipos
