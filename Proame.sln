@@ -187,6 +187,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "white-label-product-for-oth
 		Docs\Management\BusinessFeatures\white-label-product-for-other-ngos\README.md = Docs\Management\BusinessFeatures\white-label-product-for-other-ngos\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "branding-settings-theme-logo-undo", "branding-settings-theme-logo-undo", "{5E3FAC1F-DEE2-51E6-866C-785385A9B437}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\BusinessFeatures\branding-settings-theme-logo-undo\README.md = Docs\Management\BusinessFeatures\branding-settings-theme-logo-undo\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -362,5 +367,6 @@ Global
 		{A9FE12A3-2D47-5734-B355-3F47BE07A70B} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
 		{2252E630-D6AE-575C-84E4-4756428AFDB7} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 		{0A275DED-1C2B-5055-8334-49A71EF35BAF} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
+		{5E3FAC1F-DEE2-51E6-866C-785385A9B437} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
 	EndGlobalSection
 EndGlobal
