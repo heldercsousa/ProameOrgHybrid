@@ -156,9 +156,13 @@ p { margin: 0 0 .9em; }
 }
 .bar { display: flex; align-items: center; justify-content: space-between; min-height: 68px; position: relative; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--on-surface); text-decoration: none; }
-.logo-img { height: 40px; width: auto; }
+.brand picture { flex: none; }
+.logo-img { height: 48px; width: auto; flex-shrink: 0; object-fit: contain; }
+/* Tagline hidden when logo + tagline + burger no longer fit. Narrow (<600px viewport) brand uses the symbol: 89 + 12 + 96 = 197px brand,
+   + 16px gap + 48px burger = 261px bar, + 40px container gutter = 301px container (measured 2026-11-27). Full logo needs 340px (not reached in burger mode). */
+@container app (max-width: 300px) { .brand-sub { display: none; } }
 .brand-sub {
-  font-size: .7rem; line-height: 1.15; color: var(--on-surface-variant);
+  font-size: .875rem; line-height: 1.15; color: var(--on-surface-variant); white-space: nowrap;
   border-left: 1px solid var(--outline-variant); padding-left: 12px; font-weight: 500;
 }
 [data-theme="dark"] .logo-img { filter: drop-shadow(0 0 1px rgba(168, 207, 69, .3)); }
@@ -185,7 +189,7 @@ p { margin: 0 0 .9em; }
 .site-nav a, .link-btn {
   color: var(--on-surface-variant); text-decoration: none; padding: 10px 16px; border-radius: 999px;
   font: inherit; font-weight: 500; font-size: .95rem; text-align: left; background: none; border: 0; cursor: pointer;
-  min-height: 44px; display: flex; align-items: center; transition: background-color .15s;
+  min-height: 44px; display: flex; align-items: center; white-space: nowrap; transition: background-color .15s;
 }
 .site-nav a:hover, .link-btn:hover { background: var(--surface-c-high); color: var(--on-surface); }
 .site-nav a[aria-current="page"] { background: var(--secondary-container); color: var(--on-secondary-container); font-weight: 700; }
@@ -445,13 +449,25 @@ body.phone-mode #app {
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 /* ---------- Wider layouts ---------- */
-@container app (min-width: 760px) {
-  .burger { display: none; }
-  .site-nav {
-    display: flex; position: static; flex-direction: row; flex-wrap: wrap;
+/* Header: one-line nav from the measured widths (measured 2026-11-27, palette B, Playwright). Below them the burger opens the same list.
+   Public nav needs ~982px bar + 40px container gutter; admin nav (11 links) needs ~1229px bar + 40px gutter. */
+@container app (min-width: 1022px) {
+  .site-header:not(.site-header-admin) .burger { display: none; }
+  .site-header:not(.site-header-admin) .site-nav {
+    display: flex; position: static; flex-direction: row; flex-wrap: nowrap;
     background: none; padding: 0; gap: 2px; box-shadow: none; border: 0; justify-content: flex-end;
   }
-  .site-nav a, .link-btn { padding: 8px 14px; font-size: .9rem; min-height: 40px; }
+  .site-header:not(.site-header-admin) .site-nav a, .site-header:not(.site-header-admin) .link-btn { padding: 8px 14px; font-size: .9rem; min-height: 40px; }
+}
+@container app (min-width: 1397px) {
+  .site-header-admin .burger { display: none; }
+  .site-header-admin .site-nav {
+    display: flex; position: static; flex-direction: row; flex-wrap: nowrap;
+    background: none; padding: 0; gap: 2px; box-shadow: none; border: 0; justify-content: flex-end;
+  }
+  .site-header-admin .site-nav a, .site-header-admin .link-btn { padding: 8px 14px; font-size: .9rem; min-height: 40px; }
+}
+@container app (min-width: 760px) {
   .hero { padding: 88px 0 96px; }
   .hero h1 { font-size: 3.2rem; }
   .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }

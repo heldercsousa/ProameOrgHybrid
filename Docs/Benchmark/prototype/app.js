@@ -677,7 +677,7 @@
       items += '<a href="#/home">Ver site</a><button type="button" class="link-btn" data-action="logout">Sair</button>';
     }
     return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
-      '<header class="site-header"><div class="container bar">' +
+      '<header class="site-header' + (isAdmin ? ' site-header-admin' : '') + '"><div class="container bar">' +
       /* Both wordmarks are rendered; CSS shows the light one in data-theme="dark" (the header surface is dark there). */
       '<a class="brand" href="#/home">' +
       logoPicture('logo-img', SEED.org.name, true, SEED.org.logoBase, 'logo-pic-std') +
