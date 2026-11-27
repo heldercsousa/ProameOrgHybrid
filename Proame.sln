@@ -78,6 +78,71 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backlog-archive", "backlog-
 		Docs\Management\backlog-archive\BACKLOG-ARCHIVE-2026-11.md = Docs\Management\backlog-archive\BACKLOG-ARCHIVE-2026-11.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "api-foundation", "api-foundation", "{31741BA4-A845-5857-A1E1-B261B228A106}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\api-foundation\README.md = Docs\Management\cross-cutting\api-foundation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-test-foundation", "integration-test-foundation", "{21B02ABB-DA6D-5171-83AF-71A0C152C801}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\integration-test-foundation\README.md = Docs\Management\cross-cutting\integration-test-foundation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "web-interactive-render", "web-interactive-render", "{96431A39-48D9-5DFC-8D9D-8C37E612D7AC}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\web-interactive-render\README.md = Docs\Management\cross-cutting\web-interactive-render\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "logging-observability", "logging-observability", "{0666D9C3-003E-522B-BACA-025AF2490889}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\logging-observability\README.md = Docs\Management\cross-cutting\logging-observability\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "file-storage-foundation", "file-storage-foundation", "{0E79646F-D956-57D5-A279-0744B747D76B}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\file-storage-foundation\README.md = Docs\Management\cross-cutting\file-storage-foundation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ci-build-test", "ci-build-test", "{44E59201-BC12-5063-B961-F6DE7FED31BE}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\ci-build-test\README.md = Docs\Management\cross-cutting\ci-build-test\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "admin-auth", "admin-auth", "{61C76421-AF42-5F4A-A827-5B5B63C35DC2}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\admin-auth\README.md = Docs\Management\cross-cutting\admin-auth\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lgpd-consent-foundation", "lgpd-consent-foundation", "{D4E1FDE0-AB5A-5D2B-BEE3-3668B8905385}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\lgpd-consent-foundation\README.md = Docs\Management\cross-cutting\lgpd-consent-foundation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "notifications-foundation", "notifications-foundation", "{8552964D-B496-5A9A-B07A-B7604195A343}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\notifications-foundation\README.md = Docs\Management\cross-cutting\notifications-foundation\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "azure-environment", "azure-environment", "{BB00576F-7CA8-5A4F-B855-CE9BD9B0CF35}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\azure-environment\README.md = Docs\Management\cross-cutting\azure-environment\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content-domain-model", "content-domain-model", "{C0DDA329-26CA-5EBE-9FEF-ECC887D85CAB}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\content-domain-model\README.md = Docs\Management\cross-cutting\content-domain-model\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ui-shell-components", "ui-shell-components", "{7672936E-D3A1-5DA7-9088-7BF989067EBF}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\ui-shell-components\README.md = Docs\Management\cross-cutting\ui-shell-components\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "app-branding", "app-branding", "{C53D89A7-5D87-5287-89D6-7EB0BF0B43B1}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Management\cross-cutting\app-branding\README.md = Docs\Management\cross-cutting\app-branding\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -231,5 +296,18 @@ Global
 		{18FB4AFF-57A6-4F47-AA7D-74BFDCF531EF} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{7DE14061-2462-458F-9DEE-3949D4238EAF} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{92064A96-E690-5A3F-AEB1-1DD409DF4E4B} = {A95E1B2B-E267-52AA-9C49-628C692360C0}
+		{31741BA4-A845-5857-A1E1-B261B228A106} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{21B02ABB-DA6D-5171-83AF-71A0C152C801} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{96431A39-48D9-5DFC-8D9D-8C37E612D7AC} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{0666D9C3-003E-522B-BACA-025AF2490889} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{0E79646F-D956-57D5-A279-0744B747D76B} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{44E59201-BC12-5063-B961-F6DE7FED31BE} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{61C76421-AF42-5F4A-A827-5B5B63C35DC2} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{D4E1FDE0-AB5A-5D2B-BEE3-3668B8905385} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{8552964D-B496-5A9A-B07A-B7604195A343} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{BB00576F-7CA8-5A4F-B855-CE9BD9B0CF35} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{C0DDA329-26CA-5EBE-9FEF-ECC887D85CAB} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{7672936E-D3A1-5DA7-9088-7BF989067EBF} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
+		{C53D89A7-5D87-5287-89D6-7EB0BF0B43B1} = {5EEFAD58-9E3E-5678-91B1-5FEEA160E12D}
 	EndGlobalSection
 EndGlobal
