@@ -462,3 +462,51 @@ body.phone-mode #app {
   .info { grid-template-columns: max-content 1fr; }
   .footer .grid { gap: 32px; }
 }
+
+/* ---------- Planning mocks (2026-11-27): page help, tooltips, dialogs, tables, FAQ ---------- */
+.page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.page-head h1 { margin-bottom: .25em; }
+.help-btn { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--outline); background: var(--surface-c-lowest); color: var(--on-surface); font: inherit; font-weight: 700; cursor: pointer; }
+
+.term-line { margin: 6px 0 0; }
+.info-btn {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; margin-left: 6px; vertical-align: middle;
+  border-radius: 50%; border: 1px solid var(--primary); background: var(--primary-container); color: var(--on-primary-container);
+  font: inherit; font-size: .8rem; font-weight: 700; cursor: pointer; padding: 0;
+}
+.info-btn:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.tip {
+  display: block; margin-top: 6px; padding: 8px 12px; border-radius: var(--r-s); font-size: .85rem;
+  background: var(--inverse-surface); color: var(--inverse-on-surface); box-shadow: var(--shadow-2);
+}
+.tip[hidden] { display: none; }
+
+.turnstile {
+  display: flex; align-items: center; gap: 10px; margin: 8px 0 16px; padding: 12px 14px; border-radius: var(--r-m);
+  border: 1px dashed var(--outline); background: var(--surface-c-low); color: var(--on-surface-variant); font-size: .9rem;
+}
+.turnstile-mark { width: 18px; height: 18px; border-radius: 4px; border: 2px solid var(--primary); flex: none; }
+
+.dialog-root { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; }
+.dialog-root[hidden] { display: none; }
+.dlg-overlay { position: fixed; inset: 0; background: color-mix(in srgb, var(--deep) 55%, transparent); }
+.dlg {
+  position: relative; width: min(92vw, 520px); max-height: 85vh; overflow: auto; padding: 24px;
+  border-radius: var(--r-xl); background: var(--surface-c-high); color: var(--on-surface); box-shadow: var(--shadow-3);
+}
+.dlg h2 { font-size: 1.2rem; }
+.dlg-body p { margin: 0 0 12px; }
+.dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+.table-wrap { overflow-x: auto; margin: 12px 0; }
+.data-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.data-table th, .data-table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--outline-variant); vertical-align: top; }
+.data-table thead th { color: var(--on-surface-variant); font-weight: 500; }
+
+.faq-list details { border-bottom: 1px solid var(--outline-variant); padding: 12px 0; }
+.faq-list details:last-child { border-bottom: 0; }
+.faq-list summary { cursor: pointer; font-weight: 500; }
+.faq-list p { margin: 8px 0 0; }
+
+/* Coming-soon card: no opacity (keeps text at full AA contrast); the badge says it is not available yet. */
+.disabled-card { background: var(--surface-c-low); color: var(--on-surface-variant); }

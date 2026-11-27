@@ -59,7 +59,13 @@
       var raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         var parsed = JSON.parse(raw);
-        if (parsed && parsed.pages) { return parsed; }
+        if (parsed && parsed.pages) {
+          // Saves made before a seed key existed get that key from the seed (no data loss).
+          Object.keys(SEED).forEach(function (key) {
+            if (parsed[key] === undefined) { parsed[key] = clone(SEED[key]); }
+          });
+          return parsed;
+        }
       }
     } catch (err) {
       // Corrupted or blocked storage: fall back to the seed data.
@@ -328,6 +334,58 @@
     };
   }
 
+  /* ---------- planning mocks: audit, roles, dialogs, help ---------- */
+
+  function appendAudit(event) {
+    state.auditLog.unshift({ at: new Date().toISOString(), actor: currentActor().name, event: event });
+    state.auditLog = state.auditLog.slice(0, 200);
+  }
+
+  // Prototype: the signed-in admin is the first Root in the seed.
+  function currentActor() {
+    return findById(state.admins, 'adm-1') || state.admins[0];
+  }
+
+  function isActiveRoot(a, today) {
+    if (!a.active || a.role !== 'Root') { return false; }
+    return !a.rootUntil || a.rootUntil >= today;
+  }
+
+  function activeRootCount() {
+    var today = new Date().toISOString().slice(0, 10);
+    return state.admins.filter(function (a) { return isActiveRoot(a, today); }).length;
+  }
+
+  var dialogReturnFocus = null;
+
+  /* MD3 dialog with an overlay. Native alert/confirm are not used anywhere in the prototype. */
+  function openDialog(title, bodyHtml) {
+    closeDialog(true);
+    dialogReturnFocus = document.activeElement;
+    var root = document.getElementById('dialog-root');
+    root.innerHTML = '<div class="dlg-overlay" data-action="dlg-close"></div>' +
+      '<div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">' +
+      '<h2 id="dlg-title">' + esc(title) + '</h2><div class="dlg-body">' + bodyHtml + '</div>' +
+      '<div class="dlg-actions"><button type="button" class="btn btn-ghost" data-action="dlg-close">Fechar</button></div></div>';
+    root.hidden = false;
+    var first = root.querySelector('.dlg button, .dlg input, .dlg a');
+    if (first) { first.focus(); }
+  }
+
+  function closeDialog(silent) {
+    var root = document.getElementById('dialog-root');
+    if (!root || root.hidden) { return; }
+    root.hidden = true;
+    root.innerHTML = '';
+    if (!silent && dialogReturnFocus && dialogReturnFocus.focus) { dialogReturnFocus.focus(); }
+    dialogReturnFocus = null;
+  }
+
+  function helpButton(label) {
+    return '<button type="button" class="icon-btn help-btn" data-action="page-help" title="Ajuda desta página">?<span class="sr-only"> ' +
+      esc(label) + '</span></button>';
+  }
+
   /* ---------- shared UI pieces ---------- */
 
   function alertBox(kind, message) {
@@ -378,7 +436,8 @@
   }
 
   function adminPage(title, body) {
-    return '<section class="section container"><h1>' + esc(title) + '</h1>' + body + '</section>';
+    return '<section class="section container"><div class="page-head"><h1>' + esc(title) + '</h1>' + helpButton(title) +
+      '</div>' + body + '</section>';
   }
 
   function notFound() {
@@ -408,7 +467,10 @@
         '</div>' + help + err + '</fieldset>';
     }
 
-    var label = '<label for="' + id + '">' + esc(f.label) + star + '</label>';
+    var tip = f.help ? '<button type="button" class="info-btn" data-action="field-help" aria-expanded="false" aria-controls="' + id +
+      '-tip" aria-label="Mais sobre ' + esc(f.label) + '">i</button><span class="tip" id="' + id + '-tip" role="tooltip" hidden>' +
+      esc(f.help) + '</span>' : '';
+    var label = '<label for="' + id + '">' + esc(f.label) + star + '</label>' + tip;
     var control;
     if (f.type === 'textarea') {
       control = '<textarea id="' + id + '" name="' + name + '" rows="4"' + req + describe + '></textarea>';
@@ -432,7 +494,19 @@
     return '<div class="field"><label class="check" for="' + id + '"><input type="checkbox" id="' + id +
       '" name="consent" required aria-describedby="' + id + '-error"><span>' + esc(state.consentText) +
       ' <span aria-hidden="true">*</span></span></label>' +
+      '<p class="term-line"><button type="button" class="link-btn" data-action="read-term">ler termo (versão ' +
+      consentVersion() + ')</button></p>' +
       '<p class="field-error" id="' + id + '-error" hidden></p></div>';
+  }
+
+  function consentVersion() {
+    return state.consentVersion || SEED.consentVersion;
+  }
+
+  /* Placeholder only: the real Cloudflare Turnstile widget is wired in the back end. */
+  function turnstileHtml() {
+    return '<div class="turnstile" role="group" aria-label="Verificação anti-robô"><span class="turnstile-mark" aria-hidden="true"></span>' +
+      '<span>Verificação anti-robô — Cloudflare Turnstile</span></div>';
   }
 
   /* Reads and validates a rendered form. Returns {ok, answers, firstBad}. */
@@ -551,6 +625,11 @@
       case 'inscricoes': return pageSignups();
       case 'ofertas': return pageOffers();
       case 'editais': return pageAdminEditais();
+      case 'administradores': return pageAdministradores();
+      case 'configuracoes': return pageConfiguracoes();
+      case 'auditoria': return pageAuditoria();
+      case 'ajuda': return pageAjuda();
+      case 'novidades': return pageNovidades();
       default: return notFound();
     }
   }
@@ -579,7 +658,12 @@
       ['/admin/projetos', 'Projetos'],
       ['/admin/inscricoes', 'Inscrições'],
       ['/admin/ofertas', 'Ofertas'],
-      ['/admin/editais', 'Editais']
+      ['/admin/editais', 'Editais'],
+      ['/admin/administradores', 'Administradores'],
+      ['/admin/configuracoes', 'Configurações'],
+      ['/admin/auditoria', 'Auditoria'],
+      ['/admin/ajuda', 'Ajuda'],
+      ['/admin/novidades', 'Novidades']
     ] : [
       ['/home', 'Início'],
       ['/quem-somos', 'Quem somos'],
@@ -609,6 +693,7 @@
       '<p>' + esc(SEED.org.fullName) + ' · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
       '<div><h2>Contato</h2>' + contactList() +
       '<p><a href="#/admin/login">Área do admin</a></p>' +
+      '<p class="note">versão ' + esc(SEED.releases[0].version) + ' · <a href="#/admin/novidades">Novidades</a></p>' +
       '<p class="note">Protótipo navegável: os dados ficam salvos apenas neste navegador.</p></div>' +
       '</div></footer>';
   }
@@ -698,7 +783,7 @@
       signup = '<section class="card" aria-labelledby="insc-titulo"><h2 id="insc-titulo">Inscreva-se</h2>' +
         '<p class="meta">Campos marcados com * são obrigatórios.</p>' +
         '<form data-form="signup" data-project="' + esc(p.id) + '" novalidate>' +
-        fieldsHtml(ensureBase(p.fields), 'pub') + consentHtml('pub') +
+        fieldsHtml(ensureBase(p.fields), 'pub') + consentHtml('pub') + turnstileHtml() +
         '<div class="form-actions"><button class="btn" type="submit">Enviar inscrição</button></div></form></section>';
     } else {
       signup = '<p class="alert info">As inscrições para este projeto estão encerradas.</p>';
@@ -715,7 +800,7 @@
 
     return '<section class="section container"><p><a href="#/projetos">← Todos os projetos</a></p>' +
       '<span class="tag" style="background:' + esc(t.color) + '">' + esc(t.name) + '</span>' +
-      '<h1>' + esc(p.title) + '</h1>' + gallery +
+      '<div class="page-head"><h1>' + esc(p.title) + '</h1>' + helpButton(p.title) + '</div>' + gallery +
       '<div class="detail"><div>' + paragraphs(p.description) + '</div><aside class="card">' + info + '</aside></div>' +
       signup + '</section>';
   }
@@ -726,9 +811,9 @@
     var body = showOk
       ? alertBox('ok', 'Obrigado por querer colaborar! Recebemos sua oferta e entraremos em contato.') +
         '<p><a href="#/home">Voltar ao início</a></p>'
-      : '<form data-form="collab" novalidate>' + fieldsHtml(COLLAB_FIELDS, 'col') + consentHtml('col') +
+      : '<form data-form="collab" novalidate>' + fieldsHtml(COLLAB_FIELDS, 'col') + consentHtml('col') + turnstileHtml() +
         '<div class="form-actions"><button class="btn" type="submit">Enviar</button></div></form>';
-    return '<section class="section container"><h1>Como posso colaborar</h1>' +
+    return '<section class="section container"><div class="page-head"><h1>Como posso colaborar</h1>' + helpButton('Como posso colaborar') + '</div>' +
       '<p>Empresas, professores, monitores e seguranças podem apoiar nossos projetos. Preencha o formulário e nossa equipe entrará em contato.</p>' +
       '<div class="card">' + body + '</div></section>';
   }
@@ -763,7 +848,24 @@
 
   /* ---------- admin: login & dashboard ---------- */
 
+  // Login is two steps: password, then a verification code (2FA). Prototype: any code works.
+  var loginStep = 'password';
+  var loginRecovery = false;
+
   function pageLogin() {
+    if (loginStep === 'code') {
+      var codeInput = loginRecovery
+        ? '<div class="field"><label for="login-recovery">Código de recuperação</label><input id="login-recovery" name="codigo" autocomplete="one-time-code" required></div>'
+        : '<div class="field"><label for="login-code">Código de verificação (6 dígitos)</label><input id="login-code" name="codigo" inputmode="numeric" autocomplete="one-time-code" required></div>';
+      return '<section class="section container"><div class="card login-box"><h1>Verificação em duas etapas</h1>' +
+        '<div class="alert warn"><strong>Protótipo:</strong> qualquer código é aceito.</div>' +
+        '<form data-form="login-code" novalidate>' + codeInput +
+        '<p class="field-error" id="login-code-error" hidden></p>' +
+        '<div class="form-actions"><button class="btn" type="submit">Verificar</button>' +
+        '<button type="button" class="btn btn-ghost" data-action="login-recovery-toggle">' +
+        (loginRecovery ? 'usar código do aplicativo' : 'usar código de recuperação') + '</button>' +
+        '<button type="button" class="btn btn-ghost" data-action="login-back">Voltar</button></div></form></div></section>';
+    }
     return '<section class="section container"><div class="card login-box"><h1>Área do admin</h1>' +
       '<div class="alert warn"><strong>Protótipo:</strong> qualquer e-mail e senha são aceitos.</div>' +
       '<form data-form="login" novalidate>' +
@@ -782,7 +884,23 @@
       err.hidden = false;
       return;
     }
+    loginStep = 'code';
+    loginRecovery = false;
+    route();
+  }
+
+  function doLoginCode(form) {
+    var codigo = form.elements.namedItem('codigo').value.trim();
+    var err = document.getElementById('login-code-error');
+    if (!codigo) {
+      err.textContent = 'Informe o código.';
+      err.hidden = false;
+      return;
+    }
     state.session = true;
+    appendAudit(loginRecovery ? 'Login com código de recuperação' : 'Login com verificação em duas etapas');
+    loginStep = 'password';
+    loginRecovery = false;
     saveState();
     setHash('/admin');
   }
@@ -810,17 +928,218 @@
           '<p class="meta">' + esc(fmtStamp(o.createdAt)) + ' · ' + esc(o.status) + '</p></li>';
       }).join('') + '</ul>' : '<p>Nenhuma oferta.</p>') +
       '<div class="card"><h2>Dados de exemplo</h2><p class="note">Restaura projetos, páginas, editais, inscrições e ofertas de exemplo. Os dados atuais serão apagados.</p>' +
-      '<button type="button" class="btn btn-ghost" data-action="restore">Restaurar dados de exemplo</button></div>');
+      '<button type="button" class="btn btn-ghost" data-action="restore">Restaurar dados de exemplo</button></div>' +
+      '<h2>Segurança e ajuda</h2><ul class="list">' +
+      '<li><a href="#/admin/administradores">Administradores e Roots</a></li>' +
+      '<li><a href="#/admin/auditoria">Auditoria</a></li>' +
+      '<li><a href="#/admin/ajuda">Central de ajuda</a></li></ul>');
+  }
+
+  function openRestore() {
+    openDialog('Restaurar dados de exemplo?', '<p>As alterações atuais serão perdidas.</p>' +
+      '<div class="dlg-actions"><button type="button" class="btn btn-ghost" data-action="dlg-close">Cancelar</button>' +
+      '<button type="button" class="btn btn-danger" data-action="restore-confirm">Restaurar</button></div>');
   }
 
   function restoreSeed() {
-    if (!window.confirm('Restaurar os dados de exemplo? As alterações atuais serão perdidas.')) { return; }
+    closeDialog(true);
     state = clone(SEED);
     state.session = true;
     draft = null;
+    appendAudit('Restaurou os dados de exemplo');
     saveState();
     toast('Dados de exemplo restaurados.');
     route();
+  }
+
+  /* ---------- admin: administrators (Root / Admin) ---------- */
+
+  function pageAdministradores() {
+    var me = currentActor();
+    var rows = state.admins.map(function (a) {
+      var role = a.role === 'Root'
+        ? (a.rootUntil ? 'Root temporário até ' + fmtDate(a.rootUntil) : 'Root')
+        : 'Admin';
+      var actions = a.id === me.id
+        ? '<span class="note">Sua conta</span>'
+        : '<button type="button" class="btn btn-small btn-ghost" data-action="admin-toggle" data-id="' + esc(a.id) + '">' +
+          (a.active ? 'Desativar' : 'Reativar') + '</button>' +
+          (a.role !== 'Root' && a.active
+            ? ' <button type="button" class="btn btn-small btn-ghost" data-action="admin-promote-open" data-id="' + esc(a.id) + '">Tornar Root temporário</button>'
+            : '');
+      return '<tr><th scope="row">' + esc(a.name) + '</th><td>' + esc(role) + '</td>' +
+        '<td>' + (a.twoFactor ? 'Ativa' : 'Desativada') + '</td>' +
+        '<td>' + esc(fmtStamp(a.lastAccess)) + '</td>' +
+        '<td>' + (a.active ? 'Ativo' : 'Desativado') + '</td><td>' + actions + '</td></tr>';
+    }).join('');
+    var warn = activeRootCount() < 2
+      ? alertBox('warn', 'Atenção: há menos de 2 Roots ativos. Promova outro administrador antes de sair.')
+      : '';
+    return adminPage('Administradores', warn +
+      '<p class="note">Administradores são desativados, nunca apagados, para preservar o histórico.</p>' +
+      '<div class="table-wrap"><table class="data-table"><caption class="sr-only">Administradores da área admin</caption>' +
+      '<thead><tr><th scope="col">Nome</th><th scope="col">Papel</th><th scope="col">Verificação em duas etapas</th>' +
+      '<th scope="col">Último acesso</th><th scope="col">Situação</th><th scope="col">Ações</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>');
+  }
+
+  function toggleAdmin(id) {
+    var a = findById(state.admins, id);
+    if (!a) { return; }
+    if (a.active && isActiveRoot(a, new Date().toISOString().slice(0, 10)) && activeRootCount() <= 1) {
+      toast('Não é possível desativar o último Root ativo.');
+      return;
+    }
+    a.active = !a.active;
+    appendAudit((a.active ? 'Reativou' : 'Desativou') + ' o administrador ' + a.name);
+    saveState();
+    toast(a.active ? 'Administrador reativado.' : 'Administrador desativado.');
+    route();
+  }
+
+  function openPromote(id) {
+    var a = findById(state.admins, id);
+    if (!a) { return; }
+    openDialog('Tornar Root temporário', '<form data-form="promote" data-id="' + esc(a.id) + '" novalidate>' +
+      '<p>' + esc(a.name) + ' terá as permissões de Root até a data abaixo. Depois disso, volta a Admin.</p>' +
+      '<div class="field"><label for="promote-until">Válido até</label>' +
+      '<input type="date" id="promote-until" name="rootUntil" required></div>' +
+      '<div class="dlg-actions"><button type="button" class="btn btn-ghost" data-action="dlg-close">Cancelar</button>' +
+      '<button type="submit" class="btn">Promover</button></div></form>');
+  }
+
+  function promote(form) {
+    var a = findById(state.admins, form.getAttribute('data-id'));
+    var until = form.elements.namedItem('rootUntil').value;
+    if (!a || !until) { toast('Informe a data de término.'); return; }
+    a.role = 'Root';
+    a.rootUntil = until;
+    appendAudit('Promoveu ' + a.name + ' a Root temporário até ' + fmtDate(until));
+    saveState();
+    closeDialog(true);
+    toast('Root temporário definido.');
+    route();
+  }
+
+  /* ---------- admin: configurações (Root only) ---------- */
+
+  function pageConfiguracoes() {
+    if (currentActor().role !== 'Root') {
+      return adminPage('Configurações', alertBox('warn', 'Apenas Root pode alterar as configurações.'));
+    }
+    var s = state.smtp;
+    var n = state.notifications;
+    var history = state.termHistory.slice().reverse().map(function (t) {
+      var current = t.version === consentVersion() ? ' <strong>(atual)</strong>' : '';
+      return '<li>Versão ' + esc(t.version) + current + ' · ' + esc(fmtDate(t.date)) + ' · ' + esc(t.note) + '</li>';
+    }).join('');
+    return adminPage('Configurações',
+      '<form data-form="smtp" class="card" novalidate><h2>E-mail (SMTP)</h2>' +
+      '<div class="form-grid">' +
+      '<div class="field"><label for="smtp-host">Servidor</label><input id="smtp-host" name="host" value="' + esc(s.host) + '"></div>' +
+      '<div class="field"><label for="smtp-port">Porta</label><input id="smtp-port" name="port" type="number" min="1" value="' + esc(s.port) + '"></div>' +
+      '<div class="field"><label for="smtp-user">Usuário</label><input id="smtp-user" name="user" value="' + esc(s.user) + '"></div>' +
+      '<div class="field"><label for="smtp-from">Remetente</label><input id="smtp-from" name="from" value="' + esc(s.from) + '"></div>' +
+      '<div class="field span-2"><label for="smtp-pass">Senha</label>' +
+      '<input id="smtp-pass" name="password" type="password" autocomplete="new-password" placeholder="' + (s.passwordSet ? '••• definida' : 'Não definida') + '">' +
+      '<p class="help">Gravada no servidor e nunca exibida. Deixe em branco para manter a senha atual.</p></div></div>' +
+      '<div class="form-actions"><button class="btn" type="submit">Salvar e-mail</button>' +
+      '<button type="button" class="btn btn-ghost" data-action="smtp-test">Enviar e-mail de teste</button></div></form>' +
+      '<form data-form="term" class="card" novalidate><h2>Termo de consentimento LGPD</h2>' +
+      '<div class="field"><label for="term-text">Texto do termo</label>' +
+      '<textarea id="term-text" name="term" rows="5">' + esc(state.consentText) + '</textarea></div>' +
+      '<p class="note">Cada edição cria uma nova versão. Inscrições antigas continuam ligadas à versão em que foram aceitas.</p>' +
+      '<details><summary>Histórico de versões</summary><ul class="list">' + history + '</ul></details>' +
+      '<div class="form-actions"><button class="btn" type="submit">Salvar nova versão</button></div></form>' +
+      '<form data-form="notif" class="card" novalidate><h2>Notificações por e-mail</h2>' +
+      '<div class="field check-field"><label class="check" for="nt-signup"><input type="checkbox" id="nt-signup" name="newSignup"' + (n.newSignup ? ' checked' : '') + '><span>Nova inscrição</span></label></div>' +
+      '<div class="field check-field"><label class="check" for="nt-offer"><input type="checkbox" id="nt-offer" name="newOffer"' + (n.newOffer ? ' checked' : '') + '><span>Nova oferta de colaboração</span></label></div>' +
+      '<div class="field check-field"><label class="check" for="nt-edital"><input type="checkbox" id="nt-edital" name="newEdital"' + (n.newEdital ? ' checked' : '') + '><span>Novo edital publicado</span></label></div>' +
+      '<div class="field check-field"><label class="check" for="nt-security"><input type="checkbox" id="nt-security" checked disabled><span>Alertas de segurança (sempre enviados)</span></label></div>' +
+      '<div class="form-actions"><button class="btn" type="submit">Salvar preferências</button></div></form>' +
+      '<section class="card disabled-card" aria-disabled="true"><h2>Identidade visual — Em breve</h2>' +
+      '<p class="note">Paleta e logotipo serão editáveis aqui na versão final.</p></section>');
+  }
+
+  function saveSmtp(form) {
+    var g = function (name) { return form.elements.namedItem(name).value.trim(); };
+    state.smtp.host = g('host');
+    state.smtp.port = Number(g('port')) || state.smtp.port;
+    state.smtp.user = g('user');
+    state.smtp.from = g('from');
+    if (g('password')) { state.smtp.passwordSet = true; }
+    appendAudit('Alterou as configurações de e-mail (SMTP)');
+    saveState();
+    toast('Configurações de e-mail salvas.');
+    route();
+  }
+
+  function saveTerm(form) {
+    var text = form.elements.namedItem('term').value.trim();
+    if (!text) { toast('O termo não pode ficar vazio.'); return; }
+    if (text === state.consentText) { toast('Nenhuma alteração no termo.'); return; }
+    var version = consentVersion() + 1;
+    state.consentVersion = version;
+    state.consentText = text;
+    state.termHistory.push({ version: version, date: new Date().toISOString().slice(0, 10), note: 'Edição pelo administrador.' });
+    appendAudit('Editou o termo LGPD (versão ' + version + ')');
+    saveState();
+    toast('Nova versão do termo salva (v' + version + ').');
+    route();
+  }
+
+  function saveNotif(form) {
+    state.notifications = {
+      newSignup: form.elements.namedItem('newSignup').checked,
+      newOffer: form.elements.namedItem('newOffer').checked,
+      newEdital: form.elements.namedItem('newEdital').checked
+    };
+    saveState();
+    toast('Preferências salvas.');
+  }
+
+  /* ---------- admin: auditoria, ajuda, novidades ---------- */
+
+  function pageAuditoria() {
+    var rows = state.auditLog.map(function (e) {
+      return '<tr><td>' + esc(fmtStamp(e.at)) + '</td><td>' + esc(e.actor) + '</td><td>' + esc(e.event) + '</td></tr>';
+    }).join('');
+    return adminPage('Auditoria', '<p class="note">Registro das ações sensíveis. Os eventos não podem ser editados nem apagados.</p>' +
+      '<div class="table-wrap"><table class="data-table"><caption class="sr-only">Eventos registrados</caption>' +
+      '<thead><tr><th scope="col">Quando</th><th scope="col">Quem</th><th scope="col">O que aconteceu</th></tr></thead>' +
+      '<tbody>' + rows + '</tbody></table></div>');
+  }
+
+  function pageAjuda() {
+    var faq = state.helpTopics.map(function (t) {
+      return '<details class="faq"><summary>' + esc(t.q) + '</summary><p>' + esc(t.a) + '</p></details>';
+    }).join('');
+    return adminPage('Central de ajuda', '<p class="note">Respostas para as situações mais comuns. O conteúdo é atualizado a cada versão.</p>' +
+      '<div class="card faq-list">' + faq + '</div>');
+  }
+
+  function pageNovidades() {
+    return adminPage('Novidades', state.releases.map(function (r) {
+      return '<article class="card"><h2>Versão ' + esc(r.version) + '</h2><p class="meta">' + esc(fmtDate(r.date)) + '</p>' +
+        '<ul class="list">' + r.items.map(function (i) { return '<li>' + esc(i) + '</li>'; }).join('') + '</ul></article>';
+    }).join(''));
+  }
+
+  /* ---------- help dialogs ---------- */
+
+  function helpKey() {
+    var path = currentPath;
+    if (/^\/projeto\//.test(path)) { return '/projeto'; }
+    if (/^\/admin\/projeto\//.test(path)) { return '/admin/projeto'; }
+    return path;
+  }
+
+  function openPageHelp() {
+    openDialog('Ajuda desta página', '<p>' + esc(state.pageHelp[helpKey()] || state.pageHelp['/' + helpKey().split('/')[1]] || 'Sem ajuda para esta página.') + '</p>');
+  }
+
+  function openTerm() {
+    openDialog('Termo de consentimento (versão ' + consentVersion() + ')', '<p>' + esc(state.consentText) + '</p>');
   }
 
   /* ---------- admin: pages & contact ---------- */
@@ -860,8 +1179,7 @@
       textField('contact.email', 'E-mail', c.email, 'email', 'email') +
       textField('contact.instagram', 'Instagram (@perfil ou link)', c.instagram, 'text', 'instagram') +
       textField('contact.youtube', 'YouTube (@canal ou link)', c.youtube, 'text', 'youtube') + '</fieldset>' +
-      '<fieldset><legend>Consentimento LGPD</legend>' +
-      areaField('consentText', 'Texto do consentimento exibido nos formulários', state.consentText, 3) + '</fieldset>' +
+      '<p class="note">O termo de consentimento LGPD é editado em Configurações (Root).</p>' +
       '<div class="form-actions"><button class="btn" type="submit">Salvar alterações</button></div></form>');
   }
 
@@ -877,7 +1195,6 @@
     state.contact.email = g('contact.email');
     state.contact.instagram = g('contact.instagram');
     state.contact.youtube = g('contact.youtube');
-    state.consentText = g('consentText');
     saveState();
     toast('Páginas salvas.');
     route();
@@ -1161,6 +1478,8 @@
     var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     triggerDownload(url, 'inscricoes-proame.csv');
     setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    appendAudit('Exportou CSV de inscrições');
+    saveState();
     toast('CSV exportado.');
   }
 
@@ -1237,6 +1556,15 @@
     reader.readAsDataURL(file);
   }
 
+  /* Field help tooltip: opens on tap/click, closes on a second tap or Escape. */
+  function toggleTip(button) {
+    var tip = document.getElementById(button.getAttribute('aria-controls'));
+    if (!tip) { return; }
+    var open = tip.hidden;
+    tip.hidden = !open;
+    button.setAttribute('aria-expanded', String(open));
+  }
+
   /* ---------- form submission ---------- */
 
   function doSignup(form) {
@@ -1255,6 +1583,8 @@
       createdAt: new Date().toISOString(),
       consent: true,
       consentText: state.consentText,
+      consentVersion: consentVersion(),
+      consentAt: new Date().toISOString(),
       answers: res.answers
     });
     saveState();
@@ -1332,7 +1662,40 @@
         setHash('/home');
         break;
       case 'restore':
+        openRestore();
+        break;
+      case 'restore-confirm':
         restoreSeed();
+        break;
+      case 'dlg-close':
+        closeDialog(false);
+        break;
+      case 'page-help':
+        openPageHelp();
+        break;
+      case 'read-term':
+        openTerm();
+        break;
+      case 'field-help':
+        toggleTip(el);
+        break;
+      case 'login-recovery-toggle':
+        loginRecovery = !loginRecovery;
+        route();
+        break;
+      case 'login-back':
+        loginStep = 'password';
+        loginRecovery = false;
+        route();
+        break;
+      case 'admin-toggle':
+        toggleAdmin(id);
+        break;
+      case 'admin-promote-open':
+        openPromote(id);
+        break;
+      case 'smtp-test':
+        toast('E-mail de teste enviado (simulado) para o administrador.');
         break;
       case 'export-csv':
         exportCsv();
@@ -1347,12 +1710,16 @@
         }
         break;
       case 'delete-edital':
-        if (window.confirm('Excluir este edital?')) {
-          state.editais = state.editais.filter(function (x) { return x.id !== id; });
-          saveState();
-          toast('Edital excluído.');
-          route();
-        }
+        openDialog('Excluir este edital?', '<p>Esta ação não pode ser desfeita.</p>' +
+          '<div class="dlg-actions"><button type="button" class="btn btn-ghost" data-action="dlg-close">Cancelar</button>' +
+          '<button type="button" class="btn btn-danger" data-action="delete-edital-confirm" data-id="' + esc(id) + '">Excluir</button></div>');
+        break;
+      case 'delete-edital-confirm':
+        closeDialog(true);
+        state.editais = state.editais.filter(function (x) { return x.id !== id; });
+        saveState();
+        toast('Edital excluído.');
+        route();
         break;
       case 'add-field':
         captureMeta();
@@ -1372,7 +1739,13 @@
         route();
         break;
       case 'remove-field':
-        if (!window.confirm('Remover este campo do formulário?')) { break; }
+        openDialog('Remover este campo do formulário?', '<p>As respostas já recebidas não são apagadas.</p>' +
+          '<div class="dlg-actions"><button type="button" class="btn btn-ghost" data-action="dlg-close">Cancelar</button>' +
+          '<button type="button" class="btn btn-danger" data-action="remove-field-confirm" data-idx="' +
+          esc(el.getAttribute('data-idx')) + '">Remover</button></div>');
+        break;
+      case 'remove-field-confirm':
+        closeDialog(true);
         captureMeta();
         draft.fields.splice(parseInt(el.getAttribute('data-idx'), 10), 1);
         route();
@@ -1435,6 +1808,11 @@
     e.preventDefault();
     var handlers = {
       login: doLogin,
+      'login-code': doLoginCode,
+      promote: promote,
+      smtp: saveSmtp,
+      term: saveTerm,
+      notif: saveNotif,
       signup: doSignup,
       collab: doCollab,
       pages: savePages,
@@ -1443,6 +1821,16 @@
       edital: addEdital
     };
     if (handlers[kind]) { handlers[kind](form); }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') { return; }
+    closeDialog(false);
+    document.querySelectorAll('.tip:not([hidden])').forEach(function (tip) {
+      tip.hidden = true;
+      var btn = document.querySelector('[aria-controls="' + tip.id + '"]');
+      if (btn) { btn.setAttribute('aria-expanded', 'false'); }
+    });
   });
 
   window.addEventListener('hashchange', route);

@@ -39,6 +39,70 @@
       }
     },
 
+    consentVersion: 2,
+    termHistory: [
+      { version: 1, date: '2026-10-02', note: 'Versão inicial do termo.' },
+      { version: 2, date: '2026-11-20', note: 'Inclusão da finalidade de contato por WhatsApp.' }
+    ],
+
+    admins: [
+      { id: 'adm-1', name: 'Ana Ribeiro', role: 'Root', active: true, twoFactor: true, lastAccess: '2026-11-27T11:40:00.000Z', rootUntil: '' },
+      { id: 'adm-2', name: 'Pedro Lima', role: 'Admin', active: true, twoFactor: true, lastAccess: '2026-11-25T14:05:00.000Z', rootUntil: '' },
+      { id: 'adm-3', name: 'Lúcia Souza', role: 'Admin', active: false, twoFactor: false, lastAccess: '2026-09-30T09:12:00.000Z', rootUntil: '' }
+    ],
+
+    smtp: { host: 'smtp.exemplo.org', port: 587, user: 'noreply@exemplo.org', from: 'PROAME <noreply@exemplo.org>', passwordSet: true },
+    notifications: { newSignup: true, newOffer: true, newEdital: false },
+
+    auditLog: [
+      { at: '2026-11-27T11:40:00.000Z', actor: 'Ana Ribeiro', event: 'Login com verificação em duas etapas' },
+      { at: '2026-11-26T16:02:00.000Z', actor: 'Ana Ribeiro', event: 'Exportou CSV de inscrições' },
+      { at: '2026-11-22T10:15:00.000Z', actor: 'Ana Ribeiro', event: 'Editou o termo LGPD (versão 2)' },
+      { at: '2026-11-21T08:30:00.000Z', actor: 'Ana Ribeiro', event: 'Desativou o administrador Lúcia Souza' },
+      { at: '2026-11-10T09:00:00.000Z', actor: 'Pedro Lima', event: 'Ativou a verificação em duas etapas' }
+    ],
+
+    releases: [
+      { version: '0.2.0', date: '2026-11-27', items: [
+        'Logotipo novo e três paletas de cores (A, B e C) para escolha.',
+        'Planejamento de segurança: login com código, Roots e auditoria.',
+        'Central de ajuda, configurações (e-mail, termo LGPD e notificações) e novidades.'
+      ] },
+      { version: '0.1.0', date: '2026-11-18', items: [
+        'Protótipo inicial: site público, projetos, inscrições, ofertas, editais e páginas.'
+      ] }
+    ],
+
+    helpTopics: [
+      { q: 'Esqueci minha senha ou perdi o celular do código de verificação', a: 'Use o código de recuperação guardado no envelope lacrado ou peça a outro Root para redefinir sua conta. Sem nenhum dos dois, o acesso é recuperado pela equipe de suporte.' },
+      { q: 'Como ativar a verificação em duas etapas', a: 'Entre em Administradores, escolha seu nome e ative a verificação. Leia o código no aplicativo autenticador e guarde os códigos de recuperação.' },
+      { q: 'Como criar, editar e desativar administradores', a: 'Administradores podem ser desativados, mas não apagados, para preservar o histórico. Root pode tornar um administrador Root por tempo determinado.' },
+      { q: 'Root temporário (vou sair de férias)', a: 'Promova um administrador a Root informando a data de fim. Ao vencer, a função volta a Admin automaticamente. Mantenha sempre pelo menos dois Roots ativos.' },
+      { q: 'O Root faleceu ou ficou indisponível', a: 'Se restar um Root, ele promove um substituto. Se todos os Roots forem perdidos, use o procedimento de emergência com o envelope de códigos de recuperação.' },
+      { q: 'Configurar o e-mail (SMTP) e testar o envio', a: 'Em Configurações, preencha servidor, porta, usuário e senha e clique em “Enviar e-mail de teste”. E-mails de segurança são sempre enviados.' },
+      { q: 'Editar o termo de consentimento LGPD', a: 'Cada edição gera uma nova versão. Inscrições antigas continuam válidas com a versão em que foram aceitas.' },
+      { q: 'Perdi o notebook ou suspeito de acesso indevido', a: 'Troque a senha, revise a Auditoria, desative o administrador afetado e avise a equipe. Os eventos ficam registrados na Auditoria.' },
+      { q: 'Onde ver o que mudou na nova versão', a: 'Em Novidades, no menu do administrador, e no rodapé do site (número da versão).' }
+    ],
+
+    pageHelp: {
+      '/home': 'Página inicial do site. O texto do banner e a missão são editados em Páginas.',
+      '/projeto': 'Detalhes do projeto e formulário de inscrição. Campos com * são obrigatórios. Antes de enviar, leia o termo de consentimento.',
+      '/colaborar': 'Formulário para empresas, professores, monitores e seguranças que querem apoiar o PROAME. Os dados são usados apenas para contato.',
+      '/admin': 'Resumo das inscrições, ofertas e editais. Use os atalhos para ir direto às áreas que precisam de atenção.',
+      '/admin/paginas': 'Textos do site e dados de contato. Use “Testar” para conferir cada link antes de salvar.',
+      '/admin/projetos': 'Projetos agendados. Publique um projeto para que ele apareça no site.',
+      '/admin/projeto': 'Dados do projeto e formulário de inscrição. O campo “Texto de ajuda” aparece como dica para o beneficiário.',
+      '/admin/inscricoes': 'Inscrições recebidas. CadÚnico aparece mascarado na lista; o CSV traz os dados completos.',
+      '/admin/ofertas': 'Ofertas de colaboração recebidas do formulário “Como posso colaborar”.',
+      '/admin/editais': 'Editais em PDF para a Transparência. Arquivos acima do limite são recusados.',
+      '/admin/administradores': 'Quem acessa a área admin. Mantenha pelo menos dois Roots ativos. Administradores são desativados, nunca apagados.',
+      '/admin/configuracoes': 'Configurações restritas ao Root: e-mail, termo LGPD e notificações.',
+      '/admin/auditoria': 'Registro das ações sensíveis. Os eventos não podem ser editados.',
+      '/admin/ajuda': 'Perguntas frequentes sobre acesso, administradores, e-mail e LGPD.',
+      '/admin/novidades': 'O que mudou em cada versão do aplicativo.'
+    },
+
     org: {
       name: 'PROAME',
       fullName: 'Projeto Amor e Esperança',
