@@ -229,6 +229,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{32124A96
 		Docs\Benchmark\prototype\tools\palette-gen.mjs = Docs\Benchmark\prototype\tools\palette-gen.mjs
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{2A282A6D-8E5B-58C0-8676-1898AA9F6F0C}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Benchmark\prototype\v2\DESIGN.md = Docs\Benchmark\prototype\v2\DESIGN.md
+		Docs\Benchmark\prototype\v2\app.js = Docs\Benchmark\prototype\v2\app.js
+		Docs\Benchmark\prototype\v2\data.js = Docs\Benchmark\prototype\v2\data.js
+		Docs\Benchmark\prototype\v2\index.html = Docs\Benchmark\prototype\v2\index.html
+		Docs\Benchmark\prototype\v2\styles.css = Docs\Benchmark\prototype\v2\styles.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "screens", "screens", "{EBE165A8-696C-597B-B009-99C3A7549321}"
+	ProjectSection(SolutionItems) = preProject
+		Docs\Benchmark\prototype\v2\screens\v1-home-1280-light.png = Docs\Benchmark\prototype\v2\screens\v1-home-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\v2-admin-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-admin-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\v2-admin-390-dark.png = Docs\Benchmark\prototype\v2\screens\v2-admin-390-dark.png
+		Docs\Benchmark\prototype\v2\screens\v2-form-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-form-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\v2-home-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-home-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\v2-home-390-dark.png = Docs\Benchmark\prototype\v2\screens\v2-home-390-dark.png
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -407,5 +426,7 @@ Global
 		{5E3FAC1F-DEE2-51E6-866C-785385A9B437} = {9101AE0E-6FE9-5E94-93A5-0A8B46B48861}
 		{4951BB21-5F10-53C5-8C6F-EC6D6996FCF6} = {ECFC2D4C-0849-5128-AE24-D07FB00148A6}
 		{32124A96-D0D2-5181-ADBC-7400B3DB450B} = {0089C472-6B5D-5EDE-85A4-60CD2B643050}
+		{2A282A6D-8E5B-58C0-8676-1898AA9F6F0C} = {0089C472-6B5D-5EDE-85A4-60CD2B643050}
+		{EBE165A8-696C-597B-B009-99C3A7549321} = {2A282A6D-8E5B-58C0-8676-1898AA9F6F0C}
 	EndGlobalSection
 EndGlobal

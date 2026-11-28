@@ -695,7 +695,7 @@
       '<div><p class="footer-logo">' + logoPicture('footer-logo-img', SEED.org.name, false, SEED.org.logoLightBase, '') + '</p>' +
       '<p>' + esc(SEED.org.fullName) + ' · Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
       '<div><h2>Contato</h2>' + contactList() +
-      '<p><a href="#/admin/login">Área do admin</a></p>' +
+      '<p><a href="#/admin/login">Área do admin</a> · <a href="v2/index.html">Ver alternativa v2</a></p>' +
       '<p class="note">versão ' + esc(SEED.releases[0].version) + ' · <a href="#/admin/novidades">Novidades</a></p>' +
       '<p class="note">Protótipo navegável: os dados ficam salvos apenas neste navegador.</p></div>' +
       '</div></footer>';

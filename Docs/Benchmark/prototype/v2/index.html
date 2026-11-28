@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Alternativa de design v2 do protótipo do PROAME – Projeto Amor e Esperança, Gama (DF). Amostra de três páginas.">
+  <meta name="theme-color" content="#a8cf45">
+  <title>PROAME – Alternativa v2</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/logo/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wdth,wght@75..100,200..800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    // Apply the saved or OS colour scheme before first paint (light by default).
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem('proame-v2-theme'); } catch (e) { t = null; }
+      if (!t) { t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+</head>
+<body class="mode-persuade">
+  <div id="app">
+    <noscript><p class="wrap">Esta amostra precisa de JavaScript habilitado.</p></noscript>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
