@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arquitetura de MCPs & Skills UI/UX | .NET MAUI 10 + Blazor Hybrid</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#0B132B',
+                            slate: '#1C2541',
+                            blue: '#2563EB',
+                            cyan: '#06B6D4',
+                            amber: '#F59E0B',
+                            rose: '#F43F5E',
+                            emerald: '#10B981',
+                            surface: '#F8FAFC'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .glass-card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 4px 20px -2px rgba(11, 19, 43, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white">
+
+    <header class="bg-[#0B132B] text-white border-b-4 border-cyan-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+            <div class="flex flex-wrap items-center gap-3 mb-4">
+                <span class="px-3 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-blue-600/30 text-cyan-300 border border-cyan-500/40 rounded-full">
+                    .NET MAUI 10 + Blazor Hybrid
+                </span>
+                <span class="px-3 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-full">
+                    Android • iOS • Web
+                </span>
+                <span class="px-3 py-1 text-xs font-mono font-semibold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full">
+                    Zero MD3 Lock-in
+                </span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight mb-4">
+                Arquitetura de <span class="text-cyan-400">MCPs</span> e <span class="text-blue-400">Skills</span> de UI/UX para Claude Code
+            </h1>
+            <p class="text-lg md:text-xl text-slate-300 max-w-4xl leading-relaxed">
+                Como superar o padrão genérico de interfaces geradas por IA (<span class="font-mono text-amber-300 text-base">AI Slop</span>) e capacitar o Claude Code a projetar sistemas visuais modernos, consistentes e auditáveis em código Razor/CSS compartilhado.
+            </p>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+
+        <section>
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-[#0B132B] flex items-center gap-2">
+                    <span class="text-blue-600">■</span> Panorama e KPIs do Ecossistema (Final de 2026)
+                </h2>
+                <p class="text-slate-600 mt-1 max-w-4xl">
+                    A avaliação técnica do ecossistema revela alta maturidade em ferramentas de direção estética e inspeção multiplataforma, mas exige filtragem rigorosa para evitar servidores acoplados exclusivamente a React/Next.js.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="glass-card rounded-xl p-6 border-t-4 border-blue-600">
+                    <div class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">Core Stack Recomendada</div>
+                    <div class="text-4xl font-extrabold text-[#0B132B] mt-2">4 Camadas</div>
+                    <p class="text-sm text-slate-600 mt-2">Direção estética, grounding em produtos reais, inspeção dual (Web + WebView) e docs .NET 10.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-t-4 border-cyan-500">
+                    <div class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">Base de Referência UX</div>
+                    <div class="text-4xl font-extrabold text-cyan-600 mt-2">621.500+</div>
+                    <p class="text-sm text-slate-600 mt-2">Telas reais em produção (iOS, Android e Web) acessíveis via <strong>Mobbin MCP</strong>.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-t-4 border-amber-500">
+                    <div class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">Inspeção Nativa MAUI 10</div>
+                    <div class="text-4xl font-extrabold text-amber-600 mt-2">50+ Tools</div>
+                    <p class="text-sm text-slate-600 mt-2">Via <strong>.NET MAUI DevFlow MCP</strong> com suporte CDP dedicado a BlazorWebViews.</p>
+                </div>
+
+                <div class="glass-card rounded-xl p-6 border-t-4 border-rose-500">
+                    <div class="text-xs font-mono uppercase tracking-wider text-slate-500 font-semibold">Risco de Estouro de Contexto</div>
+                    <div class="text-4xl font-extrabold text-rose-600 mt-2">25.967 tk</div>
+                    <p class="text-sm text-slate-600 mt-2">Snapshot denso no Playwright MCP vs. <strong>1.333 tk</strong> por captura de tela 1280×720.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-card rounded-2xl p-6 md:p-8">
+            <div class="mb-8">
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">Arquitetura de Decisão</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-[#0B132B] mt-1">As 4 Camadas para UI/UX de Alto Nível em Blazor Hybrid</h2>
+                <p class="text-slate-600 mt-2 max-w-4xl">
+                    Em vez de depender de um único prompt mágico ou acumular skills conflitantes, esta arquitetura organiza o comportamento do Claude Code desde a pesquisa de UX até a auditoria técnica nas três plataformas finais.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col justify-between relative">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center text-sm">01</span>
+                            <span class="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-semibold">Direção & Crítica</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-[#0B132B]">Impeccable + Interface Design</h3>
+                        <p class="text-sm text-slate-600 mt-2">
+                            Impõe 62 regras anti-slop, crítica pelas 10 heurísticas de Nielsen (0–40 pts) e grava tokens persistentes em <code class="text-xs bg-slate-200 px-1 rounded">.interface-design/system.md</code>.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs font-mono text-slate-500">
+                        + Web Design Guidelines (Vercel)
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-cyan-600 text-white font-bold flex items-center justify-center text-sm">02</span>
+                            <span class="text-xs font-mono bg-cyan-100 text-cyan-800 px-2 py-0.5 rounded font-semibold">Grounding Real</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-[#0B132B]">Mobbin MCP & Figma MCP</h3>
+                        <p class="text-sm text-slate-600 mt-2">
+                            Substitui o achismo estatístico por <em>Flows</em> e <em>Screens</em> reais de iOS, Android e Web antes de escrever uma linha de código Razor.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs font-mono text-slate-500">
+                        Traduz tokens para Razor/CSS
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-amber-500 text-white font-bold flex items-center justify-center text-sm">03</span>
+                            <span class="text-xs font-mono bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold">Inspeção Dual</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-[#0B132B]">MAUI DevFlow + Playwright</h3>
+                        <p class="text-sm text-slate-600 mt-2">
+                            Valida a versão Web (desktop e <code class="text-xs bg-slate-200 px-1 rounded">--device</code>) via Playwright e inspeciona as <em>BlazorWebViews</em> nativas via CDP do DevFlow.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs font-mono text-slate-500">
+                        Android • iOS • Browsers
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="w-8 h-8 rounded-lg bg-emerald-600 text-white font-bold flex items-center justify-center text-sm">04</span>
+                            <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold">Docs Atualizadas</span>
+                        </div>
+                        <h3 class="font-bold text-lg text-[#0B132B]">Context7 & MS Learn MCP</h3>
+                        <p class="text-sm text-slate-600 mt-2">
+                            Injeta documentação versionada do .NET 10, Blazor Hybrid, Tailwind CSS e Fluent UI Blazor v5, eliminando APIs obsoletas.
+                        </p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-slate-200 text-xs font-mono text-slate-500">
+                        Zero alucinação de API
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-blue-600">Tração na Comunidade</span>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-1">Popularidade das Principais Skills de Design (GitHub Stars)</h3>
+                    <p class="text-sm text-slate-600 mt-2 mb-4">
+                        Embora <strong>UI/UX Pro Max</strong> lidere em estrelas absolutas, testes independentes apontaram falhas de scroll horizontal mobile e regressões sobre UIs existentes. A <strong>Impeccable</strong> (~118k★) destaca-se pela disciplina metodológica e suporte a apps móveis e web.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="skillsStarsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-cyan-600">Avaliação Técnica Sem Viés</span>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-1">Adequação Real ao Stack .NET MAUI 10 + Blazor Hybrid</h3>
+                    <p class="text-sm text-slate-600 mt-2 mb-4">
+                        Comparativo multidimensional (escala 0–10) baseado na aderência a HTML/CSS/Razor agnóstico, memória de design system, crítica de UX e ausência de acoplamento a React.
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="suitabilityRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="glass-card rounded-2xl p-6 lg:col-span-2 flex flex-col justify-between">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-rose-600">Gestão de Janela de Contexto</span>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-1">Custo de Tokens por Inspeção: Snapshot DOM vs. Screenshot</h3>
+                    <p class="text-sm text-slate-600 mt-2 mb-4">
+                        Medições com <code class="text-xs bg-slate-100 px-1.5 py-0.5 rounded">@playwright/mcp 0.0.84</code> demonstram que snapshots completos de páginas densas ultrapassam o teto de <strong>25.000 tokens</strong> por resposta única do Claude Code. Alterne entre snapshots parciais e capturas de tela (1.333 tokens em 1280×720).
+                    </p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tokenCostChart"></canvas>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 flex flex-col justify-between bg-gradient-to-b from-white to-slate-50">
+                <div>
+                    <span class="text-xs font-mono font-bold uppercase tracking-wider text-amber-600">Alerta de Viés do Ecossistema</span>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-1">O Que Evitar no Blazor Hybrid</h3>
+                    <p class="text-sm text-slate-600 mt-2">
+                        A maioria dos servidores MCP populares de UI foi desenhada para React e Next.js, gerando retrabalho constante de conversão para componentes <code class="text-xs bg-slate-200 px-1 rounded">.razor</code>.
+                    </p>
+
+                    <div class="mt-5 space-y-3">
+                        <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200">
+                            <div class="font-bold text-sm text-rose-900 flex items-center justify-between">
+                                <span>21st MCP (ex-Magic MCP)</span>
+                                <span class="text-xs font-mono bg-rose-200/70 px-2 py-0.5 rounded">Baixo Retorno</span>
+                            </div>
+                            <p class="text-xs text-rose-800 mt-1">
+                                Gera JSX/TSX + Tailwind com limite gratuito de 2 cópias/dia. Útil apenas para buscar logótipos SVG via SVGL.
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-rose-50 border border-rose-200">
+                            <div class="font-bold text-sm text-rose-900 flex items-center justify-between">
+                                <span>shadcn/ui MCP</span>
+                                <span class="text-xs font-mono bg-rose-200/70 px-2 py-0.5 rounded">Acoplado a React</span>
+                            </div>
+                            <p class="text-xs text-rose-800 mt-1">
+                                Depende de Radix UI e primitivos React incompatíveis diretamente com o ciclo de vida Blazor.
+                            </p>
+                        </div>
+
+                        <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200">
+                            <div class="font-bold text-sm text-amber-900 flex items-center justify-between">
+                                <span>Acúmulo de Skills de Estilo</span>
+                                <span class="text-xs font-mono bg-amber-200/70 px-2 py-0.5 rounded">Conflito de Regras</span>
+                            </div>
+                            <p class="text-xs text-amber-800 mt-1">
+                                Misturar Impeccable + UI/UX Pro Max + Taste Skill cria diretrizes contraditórias e infla o contexto inicial.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-slate-200 text-xs text-slate-500">
+                    <strong>Regra de Ouro:</strong> Use 1 motor principal de direção + 1 memória de sistema + auditoria técnica.
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-card rounded-2xl p-6 md:p-8">
+            <div class="mb-6">
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-emerald-600">Liberdade Estética Sem MD3</span>
+                <h2 class="text-2xl font-bold text-[#0B132B] mt-1">Estratégias de UI Compartilhada (Android, iOS e Web)</h2>
+                <p class="text-slate-600 mt-1 max-w-4xl">
+                    Como o Blazor Hybrid renderiza HTML e CSS padrão nas três plataformas e o Material Design 3 não é obrigatório, você pode adotar uma identidade de produto contemporânea sem aparência genérica de app Android antigo.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="rounded-xl border-2 border-blue-600 bg-blue-50/40 p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="px-2.5 py-1 text-xs font-mono font-bold bg-blue-600 text-white rounded">VIA 01 • MÁXIMA LIBERDADE</span>
+                        <span class="text-xs font-semibold text-blue-700">Recomendada para Produto Próprio</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-2">CSS Moderno Proprietário ou Tailwind CSS</h3>
+                    <p class="text-sm text-slate-700 mt-2">
+                        Extrai 100% do potencial da <strong>Impeccable</strong> e da <strong>Interface Design</strong>. Utiliza espaço de cor perceptualmente uniforme <code class="text-xs bg-white px-1.5 py-0.5 rounded border">oklch()</code>, misturas dinâmicas com <code class="text-xs bg-white px-1.5 py-0.5 rounded border">color-mix()</code> e tipografia fluida via <code class="text-xs bg-white px-1.5 py-0.5 rounded border">clamp()</code>.
+                    </p>
+                    <ul class="mt-4 space-y-1.5 text-sm text-slate-700">
+                        <li>✓ Zero herança visual rígida de Material Design</li>
+                        <li>✓ Adaptação nativa de densidade (bottom bar no mobile, sidebar no desktop)</li>
+                        <li>✓ Totalmente inspecionável por seletores CSS no Playwright e DevFlow</li>
+                    </ul>
+                </div>
+
+                <div class="rounded-xl border border-slate-300 bg-white p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="px-2.5 py-1 text-xs font-mono font-bold bg-slate-800 text-white rounded">VIA 02 • PRODUTIVIDADE ENTERPRISE</span>
+                        <span class="text-xs font-semibold text-slate-600">Apps Densos em Dados</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-[#0B132B] mt-2">Microsoft Fluent UI Blazor (Série v5)</h3>
+                    <p class="text-sm text-slate-700 mt-2">
+                        Biblioteca oficial baseada em Web Components com estética limpa e moderna (não-MD3), ideal quando o projeto exige dezenas de data grids, seletores complexos e controles acessíveis prontos.
+                    </p>
+                    <ul class="mt-4 space-y-1.5 text-sm text-slate-700">
+                        <li>✓ Integração nativa com .NET 10 e Blazor Hybrid</li>
+                        <li>✓ Estética contemporânea alinhada ao ecossistema Microsoft</li>
+                        <li>⚠ <strong>Atenção:</strong> Shadow DOM exige screenshots ou <code class="text-xs bg-slate-100 px-1 rounded">--caps=vision</code> no Playwright MCP</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-[#0B132B] text-white rounded-2xl p-6 md:p-8 shadow-xl">
+            <div class="mb-6">
+                <span class="text-xs font-mono font-bold uppercase tracking-wider text-cyan-400">Guia de Implantação Rápida</span>
+                <h2 class="text-2xl md:text-3xl font-bold mt-1">Workflow Operacional no Claude Code</h2>
+                <p class="text-slate-300 mt-1 max-w-4xl">
+                    Siga este fluxo enxuto para instalar apenas as ferramentas de alto impacto e padronizar o ciclo de design e validação no <code class="text-cyan-300 font-mono text-sm">CLAUDE.md</code>.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-[#1C2541] rounded-xl p-5 border border-slate-700">
+                    <div class="text-xs font-mono text-cyan-400 uppercase font-bold mb-2">1. Instalação das Skills (Terminal)</div>
+                    <pre class="text-xs sm:text-sm font-mono text-slate-200 overflow-x-auto leading-relaxed"><code>npx impeccable install
+npx skills add https://github.com/dammyjay93/interface-design --skill interface-design --agent claude-code -g
+npx skills add https://github.com/vercel-labs/agent-skills --skill web-design-guidelines</code></pre>
+                </div>
+
+                <div class="bg-[#1C2541] rounded-xl p-5 border border-slate-700">
+                    <div class="text-xs font-mono text-amber-400 uppercase font-bold mb-2">2. Configuração dos MCPs (.mcp.json + CLI)</div>
+                    <pre class="text-xs sm:text-sm font-mono text-slate-200 overflow-x-auto leading-relaxed"><code>claude mcp add playwright npx @playwright/mcp@latest
+npx ctx7 setup --claude
+
+# Adicionar em .mcp.json:
+# "maui-devflow": { "command": "maui", "args": ["devflow", "mcp"] }</code></pre>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div class="text-cyan-400 font-mono text-xs font-bold">ETAPA 01</div>
+                    <div class="font-bold text-base mt-1">Pesquisa Mobbin</div>
+                    <p class="text-xs text-slate-300 mt-1">Consultar Flows e Screens reais (Android, iOS, Web) antes de codificar.</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div class="text-blue-400 font-mono text-xs font-bold">ETAPA 02</div>
+                    <div class="font-bold text-base mt-1">/impeccable init</div>
+                    <p class="text-xs text-slate-300 mt-1">Definir PRODUCT.md, DESIGN.md (modo Operate) e tokens em system.md.</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div class="text-emerald-400 font-mono text-xs font-bold">ETAPA 03</div>
+                    <div class="font-bold text-base mt-1">Código Razor/CSS</div>
+                    <p class="text-xs text-slate-300 mt-1">Implementar UI compartilhada responsiva sem MD3 e sem clichés de IA.</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div class="text-amber-400 font-mono text-xs font-bold">ETAPA 04</div>
+                    <div class="font-bold text-base mt-1">Inspeção Dual</div>
+                    <p class="text-xs text-slate-300 mt-1">Validar Web via Playwright MCP e WebViews via MAUI DevFlow CDP.</p>
+                </div>
+                <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div class="text-rose-400 font-mono text-xs font-bold">ETAPA 05</div>
+                    <div class="font-bold text-base mt-1">Critique & Polish</div>
+                    <p class="text-xs text-slate-300 mt-1">Auditar heurísticas de Nielsen + WCAG/ARIA e polir antes do commit.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-slate-200 bg-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div>
+                Síntese técnica baseada em métricas públicas do GitHub, benchmarks do AgentSkillsHub (out/nov 2026) e documentação oficial Microsoft .NET 10.
+            </div>
+            <div class="font-mono text-slate-400">
+                Claude Code UI/UX Architecture • Blazor Hybrid
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function wrapLabel(str, maxChars = 16) {
+            if (typeof str !== 'string' || str.length <= maxChars) return str;
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = '';
+
+            for (const word of words) {
+                if ((currentLine + (currentLine ? ' ' : '') + word).length <= maxChars) {
+                    currentLine += (currentLine ? ' ' : '') + word;
+                } else {
+                    if (currentLine) lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            if (currentLine) lines.push(currentLine);
+            return lines;
+        }
+
+        const sharedTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        const rawSkillLabels = [
+            'UI/UX Pro Max (nextlevelbuilder)',
+            'Taste Skill (Leonxlnx)',
+            'Impeccable (pbakaus)',
+            'Hallmark (nutlope)',
+            'Huashu Design (alchaincyf)'
+        ];
+
+        new Chart(document.getElementById('skillsStarsChart'), {
+            type: 'bar',
+            data: {
+                labels: rawSkillLabels.map(l => wrapLabel(l, 16)),
+                datasets: [{
+                    label: 'Estrelas no GitHub (em milhares)',
+                    data: [153.8, 121.5, 118.0, 61.2, 31.0],
+                    backgroundColor: [
+                        '#94A3B8',
+                        '#94A3B8',
+                        '#2563EB',
+                        '#06B6D4',
+                        '#10B981'
+                    ],
+                    borderRadius: 6,
+                    barThickness: 28
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: sharedTooltipConfig
+                },
+                scales: {
+                    x: {
+                        grid: { color: '#F1F5F9' },
+                        ticks: {
+                            callback: value => value + 'k ★',
+                            font: { family: 'JetBrains Mono', size: 11 }
+                        }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
+                    }
+                }
+            }
+        });
+
+        const radarLabels = [
+            'Agnosticismo Blazor/CSS',
+            'Crítica Heurística UX',
+            'Memória Design System',
+            'Estabilidade Responsiva',
+            'Prevenção AI Slop'
+        ];
+
+        new Chart(document.getElementById('suitabilityRadarChart'), {
+            type: 'radar',
+            data: {
+                labels: radarLabels.map(l => wrapLabel(l, 16)),
+                datasets: [
+                    {
+                        label: 'Impeccable + Interface Design',
+                        data: [9.2, 9.5, 9.5, 9.0, 9.6],
+                        borderColor: '#2563EB',
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        pointBackgroundColor: '#2563EB',
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'UI/UX Pro Max',
+                        data: [8.0, 6.5, 6.0, 6.5, 7.5],
+                        borderColor: '#F59E0B',
+                        backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                        pointBackgroundColor: '#F59E0B',
+                        borderWidth: 2
+                    },
+                    {
+                        label: '21st / shadcn MCP (React)',
+                        data: [2.5, 5.0, 6.5, 7.5, 7.0],
+                        borderColor: '#F43F5E',
+                        backgroundColor: 'rgba(244, 63, 94, 0.12)',
+                        pointBackgroundColor: '#F43F5E',
+                        borderWidth: 2
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Inter', size: 11 }, boxWidth: 12 }
+                    },
+                    tooltip: sharedTooltipConfig
+                },
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 10,
+                        ticks: { stepSize: 2, display: false },
+                        pointLabels: { font: { family: 'Inter', size: 11, weight: '600' } },
+                        grid: { color: '#E2E8F0' }
+                    }
+                }
+            }
+        });
+
+        const tokenLabels = [
+            'Screenshot 1280×720 (Playwright)',
+            'Limite Máximo Saída Claude Code',
+            'Snapshot Página Densa (Playwright 0.0.84)'
+        ];
+
+        new Chart(document.getElementById('tokenCostChart'), {
+            type: 'bar',
+            data: {
+                labels: tokenLabels.map(l => wrapLabel(l, 16)),
+                datasets: [{
+                    label: 'Tokens Consumidos',
+                    data: [1333, 25000, 25967],
+                    backgroundColor: [
+                        '#10B981',
+                        '#F59E0B',
+                        '#F43F5E'
+                    ],
+                    borderRadius: 8,
+                    barThickness: 48
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: sharedTooltipConfig
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#F1F5F9' },
+                        ticks: {
+                            callback: value => value.toLocaleString('pt-BR') + ' tk',
+                            font: { family: 'JetBrains Mono', size: 11 }
+                        }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { family: 'Inter', size: 12, weight: '600' } }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
