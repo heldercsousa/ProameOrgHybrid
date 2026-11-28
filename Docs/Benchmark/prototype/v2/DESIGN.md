@@ -172,3 +172,45 @@ Open items from the critique, not fixed here: the public nav wraps to two lines 
 3. Brand green is a fill with dark ink. Never text on paper.
 4. Old and low-vision readers come first: Atkinson Hyperlegible, 1.6 line height, 44px touch targets on controls, visible focus rings (3px ink).
 5. Pt-BR text only in the UI; copy is plain verbs and sentence case. Buttons say what they do ("Enviar inscrição").
+
+## Design-plugin review 2026-11-28
+
+One review pass with the design plugin skills, run in order: `design:design-critique`, `design:accessibility-review`, `design:ux-copy`. Measured in Playwright (Chromium) at 390 and 1280 px, light and dark, with axe-core 4 (wcag2a, wcag2aa, wcag21aa). Fixes were limited to the reproducible items below. No CSS or JS changed in this pass.
+
+### design:design-critique
+
+| Finding | Severity | Decision |
+|---|---|---|
+| Public nav wraps to three rows at 390 px (Início / Quem somos / O que realizamos / O que temos / Como posso colaborar / Transparência). It takes about a third of the first screen. | Moderate | Deferred. Same open item as the 2026-11-27 critique. The planned fix is the `MudNavMenu` drawer (see mapping table), which is a structural change, not a CSS override. |
+| Hero band, diagonal cut, and date tiles give one clear reading order (headline, then CTA, then the date tile list). | Works | Kept. |
+| Brand fill with dark ink is used for the collaboration CTA band. Text never sits on paper in brand green. | Works | Kept. |
+
+### design:accessibility-review
+
+| Check | Result |
+|---|---|
+| axe wcag2a/aa/21aa, Home light, all impacts | 0 violations |
+| axe, 21 hash routes, light and dark, at 390 and 1280 px (serious and critical) | 0 |
+| axe with the tooltip open on `#/colaborar` | 0 violations |
+| axe with the help dialog open on `#/colaborar` | 0 violations |
+| Focus indicator | `:focus-visible` outline `var(--focus)` with 3 px offset, present in `styles.css` |
+| Inline text links below 24 px tall (about 20 to 27 px) | Inline text links are exempt from WCAG 2.5.8 (AA, 24 px minimum). Not a WCAG failure. |
+| Admin tab controls at 40 px tall | Above the 24 px WCAG 2.5.8 minimum, but below the 44 px target stated in principle 4 of this document. |
+
+Deferred, needs Helder's decision: the 44 px target in principle 4 conflicts with the Operate density rule (`--t-ui`, 8 px row padding). Options: (A) keep 40 px for Operate and restate principle 4 as "44 px for Persuade controls, 40 px minimum for Operate"; (B) raise admin tabs to 44 px at coarse pointers only. Recommendation: A, because it matches the dense admin intent and still passes WCAG 2.5.8 AA.
+
+### design:ux-copy
+
+- Scanned the prototype JS for untranslated UI strings (common English button and status words). No English UI text found.
+- Aria labels are pt-BR (for example `Ajuda sobre …`, `Pular para o conteúdo`).
+- No copy change made in this pass. Copy findings are not reproducible failures, so they are not fixed here.
+
+### Fixes applied
+
+None. Every candidate finding above is either a structural change (nav drawer) or a spec decision (touch target versus Operate density), and both are deferred.
+
+### Verification
+
+- Horizontal overflow: 0 px on every route at 390 and 1280 px, in both themes.
+- Console errors: 0.
+- axe serious or critical: 0 on all routes in both themes at both widths, plus 0 with the tooltip and the dialog open.
