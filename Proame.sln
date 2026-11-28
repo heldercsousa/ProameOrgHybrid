@@ -235,17 +235,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "v2", "v2", "{2A282A6D-8E5B-
 		Docs\Benchmark\prototype\v2\app.js = Docs\Benchmark\prototype\v2\app.js
 		Docs\Benchmark\prototype\v2\data.js = Docs\Benchmark\prototype\v2\data.js
 		Docs\Benchmark\prototype\v2\index.html = Docs\Benchmark\prototype\v2\index.html
+		Docs\Benchmark\prototype\v2\pages-admin.js = Docs\Benchmark\prototype\v2\pages-admin.js
+		Docs\Benchmark\prototype\v2\pages-public.js = Docs\Benchmark\prototype\v2\pages-public.js
 		Docs\Benchmark\prototype\v2\styles.css = Docs\Benchmark\prototype\v2\styles.css
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "screens", "screens", "{EBE165A8-696C-597B-B009-99C3A7549321}"
 	ProjectSection(SolutionItems) = preProject
-		Docs\Benchmark\prototype\v2\screens\v1-home-1280-light.png = Docs\Benchmark\prototype\v2\screens\v1-home-1280-light.png
-		Docs\Benchmark\prototype\v2\screens\v2-admin-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-admin-1280-light.png
-		Docs\Benchmark\prototype\v2\screens\v2-admin-390-dark.png = Docs\Benchmark\prototype\v2\screens\v2-admin-390-dark.png
-		Docs\Benchmark\prototype\v2\screens\v2-form-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-form-1280-light.png
-		Docs\Benchmark\prototype\v2\screens\v2-home-1280-light.png = Docs\Benchmark\prototype\v2\screens\v2-home-1280-light.png
-		Docs\Benchmark\prototype\v2\screens\v2-home-390-dark.png = Docs\Benchmark\prototype\v2\screens\v2-home-390-dark.png
+		Docs\Benchmark\prototype\v2\screens\builder-1280-light.png = Docs\Benchmark\prototype\v2\screens\builder-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\home-1280-light.png = Docs\Benchmark\prototype\v2\screens\home-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\home-390-dark.png = Docs\Benchmark\prototype\v2\screens\home-390-dark.png
+		Docs\Benchmark\prototype\v2\screens\inscricoes-1280-light.png = Docs\Benchmark\prototype\v2\screens\inscricoes-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\inscricoes-390-dark.png = Docs\Benchmark\prototype\v2\screens\inscricoes-390-dark.png
+		Docs\Benchmark\prototype\v2\screens\painel-1280-light.png = Docs\Benchmark\prototype\v2\screens\painel-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\projeto-1280-light.png = Docs\Benchmark\prototype\v2\screens\projeto-1280-light.png
 	EndProjectSection
 EndProject
 Global

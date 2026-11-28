@@ -1,6 +1,6 @@
 # PROAME v2 — alternative design sample
 
-Design trial to compare with the MD3 prototype (v1). Three pages: Home, Projeto + inscrição, Admin › Inscrições.
+Design trial to compare with the MD3 prototype (v1). Covers every v1 route: public Persuade pages and the Operate admin area (see the route map below). Critique of the first three pages: section "Critique 2026-11-27".
 
 ## Aesthetic direction: "Quadro de avisos" (community notice board)
 
@@ -103,6 +103,67 @@ Every visual above maps to a MudTheme token or a MudBlazor component plus a smal
 | Result count | Operate | `MudText` (`Typo.body2`) | Count in pt-BR |
 | Toast feedback | both | `MudSnackbar` | Role status |
 | Footer | both | `MudContainer` + `MudGrid` | Plain text links |
+| Ruled list (services, releases, editais, help) | both | `MudList` (`Dense`) + `MudDivider` per item | Top rule on the list, hairline between items; no card per item |
+| Filter chips (Projetos, type/date/photo) | Persuade | `MudChip` (`Variant.Outlined`, `Selected`) inside a `MudChipSet` (`Filter="true"`) | `aria-pressed` maps to `Selected`; text stays visible |
+| Stacked admin list (< 640 px) | Operate | `MudTable` (`Breakpoint` set to `Breakpoint.Sm`) + `MudTd DataLabel` | Small-device mode shows each cell with its label; wide screens keep the table |
+| Admin stat tiles (Painel) | Operate | `MudPaper` (`Square="true"`, `Elevation="0"`) + `MudText` (`Typo.h3`) | Top border only; no shadow |
+| Project builder field list | Operate | `MudList` + `MudIconButton` (move up, move down, remove) | Base fields show a "Fixo" label instead of actions |
+| Project preview | Operate | `MudForm` disabled, or `MudPaper` with the same field components as Persuade | Dashed border; shows the public signup as it will render |
+| Confirmations (restore, delete edital, make Root, large PDF) | both | `MudMessageBox` for yes/no; `MudDialog` when a field is needed (promote Root) | Never native `alert`/`confirm` |
+| Login two steps | Operate | `MudTextField` (`InputType.Password`) then `MudTextField` for the code; `MudButton` for recovery toggle | Prototype accepts any input |
+| Help button (?) on each page | both | `MudIconButton` (`Icons.Material.Filled.HelpOutline`) → `MudDialog` | Text from the help table per route |
+
+Dialog and tooltip behaviour in the prototype is native `<dialog>` and a button-driven tooltip. Both map to the MudBlazor components above; the prototype does not implement MudBlazor.
+
+## Route map (v1 parity)
+
+| v1 route | v2 route | Mode | Notes |
+|---|---|---|---|
+| `#/home` | `#/home` | Persuade | Hero, missão, serviços (ruled list), próximos projetos (date tiles), CTA band |
+| `#/quem-somos` | `#/quem-somos` | Persuade | Body text + contact facts |
+| `#/servicos` | `#/servicos` | Persuade | Ruled list of active services |
+| `#/projetos` | `#/projetos` | Persuade | Type, date, photo filters (`aria-pressed`, focus kept) |
+| `#/projeto/:id` | `#/projeto/:id` | Persuade | Facts, photo placeholders, signup form (dynamic fields incl. datetime range), consent, help |
+| `#/colaborar` | `#/colaborar` | Persuade | Collaboration form, consent, thank-you panel |
+| `#/transparencia` | `#/transparencia` | Persuade | Published editais; download is a text placeholder |
+| not found | not found | Persuade | Back-to-home link |
+| `#/admin/login` | `#/admin/login` | Operate | Password step, then code step (recovery code toggle) |
+| `#/admin` | `#/admin` | Operate | Painel: counts, recent signups and offers, restore sample data |
+| `#/admin/paginas` | same | Operate | Hero, mission, quem somos, contact; "Testar" per link (simulated) |
+| `#/admin/projetos` | same | Operate | Table: title, type, start, status, signup count |
+| `#/admin/projeto/:id` | same (`novo`) | Operate | Dados, fotos (1 MB cap), builder with move/remove/add, live-style preview |
+| `#/admin/inscricoes` | same | Operate | Search, status, project filter; CadÚnico masked; CSV export (full data) |
+| `#/admin/ofertas` | same | Operate | Status per row |
+| `#/admin/editais` | same | Operate | Upload (PDF), publish/archive, delete with confirm, 2 MB confirm |
+| `#/admin/administradores` | same | Operate | Toggle active (blocks last Root), temporary Root with end date |
+| `#/admin/configuracoes` | same | Operate | Root only: SMTP, LGPD term versions, notification toggles |
+| `#/admin/auditoria` | same | Operate | Read-only log |
+| `#/admin/ajuda` | same | Operate | FAQ details |
+| `#/admin/novidades` | same | Operate | Release notes |
+
+Not ported (deliberate): the A/B/C palette switch and the phone/desktop frame toggle from v1. The v2 direction fixes one palette (oklch tokens seeded from the logo), and viewports are checked at 390, 768, and 1280 px instead of a frame.
+
+Prototype limits: no real authentication (any login is accepted); editais store name and size only (SHA-256 is part of the real build, not this sample); photos are colour placeholders.
+
+## Principles (summary)
+
+## Critique 2026-11-27
+
+Review of the three v2 pages (Home, Projeto + inscrição, Admin › Inscrições) against Nielsen's 10 heuristics and this document. Measured in Playwright at 390 px before the fixes.
+
+| Heuristic | Finding | Fix |
+|---|---|---|
+| 6 Recognition over recall, 7 Flexibility | At 390 px the signups table is 784 px wide inside a 341 px wrapper. The phone column sits off-screen and is only reachable by sideways scroll. | Below 640 px each row becomes a stacked card. Every cell carries `data-label`, and the header row is visually hidden. No sideways scroll remains. MudTable maps this to `Breakpoint` + `MudTd DataLabel`. |
+| 1 Visibility of system status | The admin opens straight into the signups table with no overview of what needs attention. | Painel added: four counts (published projects, new signups, new offers, published editais), each linking to its list. |
+| 5 Error prevention | Restore sample data and delete edital were one-click actions. | Destructive actions open a confirmation dialog (`MudMessageBox`). Restore, delete edital, and "make Root" all confirm first. A PDF over 2 MB asks before saving. |
+| 9 Help with errors | The signup and collaboration forms list errors, but the admin project builder had no inline error. | Form-level error text with focus moved to it; field-level errors stay in place. |
+| 10 Help and documentation | Help existed only on the signup form. | `?` button on every page, with help text from the v1 `pageHelp` table. |
+| 8 Aesthetic and minimalist design | Left accent bars on the help cards are a generic card-kit tell. | Replaced by ruled lists (top rule, hairline between items). The date tile stays the only memorable element. |
+| 4 Consistency | Public nav used scroll buttons for "Projetos" and "Como ajudar" while the other items were real routes. | All nav items are real routes. Scroll buttons removed. |
+
+Verified after the fixes: no document overflow at 390, 768, or 1280 px; axe-core wcag2a/aa/21aa reports 0 serious or critical violations on all 23 routes in both themes.
+
+Open items from the critique, not fixed here: the public nav wraps to two lines at 390 px (a `MudNavMenu` drawer is the planned replacement); the brand green on the hero band is a fill with dark ink (checked by axe, not by a colour-picker measurement).
 
 ## Principles (summary)
 

@@ -1,18 +1,53 @@
-/* PROAME v2 prototype - hash router, three pages. Plain script, works from file://. */
+/* PROAME v2 prototype - shared core: state, helpers, chrome, dialogs, router, delegated events.
+   Page modules register into window.PROAME_V2.pub (public, Persuade) and .admin (Operate).
+   Plain script, no build step, works from file://. */
 (function () {
   'use strict';
 
   var S = window.PROAME_V2_SEED;
   var MONTHS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-  var STATUS_CLASS = { 'Nova': 'chip-nova', 'Confirmada': 'chip-confirmada', 'Lista de espera': 'chip-espera', 'Recusada': 'chip-recusada' };
+  var PROJECT_STATUS = { draft: 'Rascunho', published: 'Publicado', closed: 'Encerrado' };
+  var EDITAL_STATUS = { draft: 'Rascunho', published: 'Publicado', archived: 'Arquivado' };
+  var SIGNUP_STATUS = ['Nova', 'Confirmada', 'Lista de espera', 'Recusada'];
+  var OFFER_STATUS = ['Nova', 'Em contato', 'Concluída'];
+  var STATUS_CLASS = {
+    'Nova': 'chip-nova', 'Confirmada': 'chip-confirmada', 'Lista de espera': 'chip-espera', 'Recusada': 'chip-recusada',
+    'Em contato': 'chip-espera', 'Concluída': 'chip-confirmada'
+  };
+  var MAX_PDF_BYTES = 2 * 1024 * 1024;
+  var MAX_PHOTO_BYTES = 1024 * 1024;
+  var CURRENT_ADMIN_ID = 'adm-1';
+  var ADMIN_LINKS = [
+    ['painel', 'Painel'], ['paginas', 'Páginas'], ['projetos', 'Projetos'], ['inscricoes', 'Inscrições'],
+    ['ofertas', 'Ofertas'], ['editais', 'Editais'], ['administradores', 'Administradores'],
+    ['configuracoes', 'Configurações'], ['auditoria', 'Auditoria'], ['ajuda', 'Ajuda'], ['novidades', 'Novidades']
+  ];
+  var PUBLIC_LINKS = [
+    ['home', 'Início'], ['quem-somos', 'Quem somos'], ['servicos', 'O que realizamos'],
+    ['projetos', 'O que temos'], ['colaborar', 'Como posso colaborar'], ['transparencia', 'Transparência']
+  ];
+
   var app = document.getElementById('app');
   var toastEl = document.getElementById('toast');
-  var pendingScroll = null;
   var toastTimer = null;
+  var currentPath = null;
 
-  var st = {
-    signups: S.signups.map(function (s) { return Object.assign({}, s); }),
-    filters: { q: '', status: '', project: '' }
+  function clone(v) { return JSON.parse(JSON.stringify(v)); }
+
+  /* The single mutable state object. Restoring seed data replaces its keys in place. */
+  var st = clone(S);
+  st.filters = { type: 'all', date: 'all', cover: 'all', signupProject: 'all', q: '', status: '', project: '' };
+  st.draft = null;
+  st.session = false;
+  st.loginStep = 'password';
+  st.loginRecovery = false;
+  st.flash = null;
+
+  var V = window.PROAME_V2 = {
+    S: S, st: st, pub: {}, admin: {}, forms: {}, actions: {}, changes: {},
+    MONTHS: MONTHS, PROJECT_STATUS: PROJECT_STATUS, EDITAL_STATUS: EDITAL_STATUS,
+    SIGNUP_STATUS: SIGNUP_STATUS, OFFER_STATUS: OFFER_STATUS, MAX_PDF_BYTES: MAX_PDF_BYTES,
+    MAX_PHOTO_BYTES: MAX_PHOTO_BYTES, ADMIN_LINKS: ADMIN_LINKS, PUBLIC_LINKS: PUBLIC_LINKS
   };
 
   /* ---------- helpers ---------- */
@@ -21,415 +56,295 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  function proj(id) {
-    for (var i = 0; i < S.projects.length; i++) { if (S.projects[i].id === id) { return S.projects[i]; } }
-    return null;
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function fmtDate(value) {
+    var s = String(value || '').slice(0, 10).split('-');
+    return s.length === 3 && s[0] ? s[2] + '/' + s[1] + '/' + s[0] : '';
   }
-  function fmt(iso) {
-    var p = String(iso).slice(0, 10).split('-');
-    return p[2] + '/' + p[1] + '/' + p[0];
+  function fmtDT(value) {
+    var s = String(value || '');
+    return s ? fmtDate(s) + ' às ' + s.slice(11, 16) : '';
+  }
+  function fmtStamp(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) { return ''; }
+    return pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
   }
   function dayMonth(iso) {
     return { d: String(iso).slice(8, 10), m: MONTHS[Number(String(iso).slice(5, 7)) - 1] };
   }
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function daysFromNow(iso) {
+    var a = new Date(String(iso).slice(0, 10) + 'T00:00:00');
+    var b = new Date(today() + 'T00:00:00');
+    return Math.round((a - b) / 86400000);
+  }
+  function findById(list, id) {
+    for (var i = 0; i < list.length; i++) { if (list[i].id === id) { return list[i]; } }
+    return null;
+  }
+  function projectTitle(id) { var p = findById(st.projects, id); return p ? p.title : ''; }
+  function typeName(id) { var t = findById(st.projectTypes, id); return t ? t.name : ''; }
+  function publishedProjects() {
+    return st.projects.filter(function (p) { return p.status === 'published'; })
+      .sort(function (a, b) { return a.startsAt > b.startsAt ? 1 : -1; });
+  }
+  function activeServices() {
+    return st.services.filter(function (s) { return s.active; }).sort(function (a, b) { return a.sort - b.sort; });
+  }
+  function countSignups(projectId) {
+    return st.signups.filter(function (s) { return s.projectId === projectId; }).length;
+  }
+  function answerOf(signup, key) {
+    for (var i = 0; i < signup.answers.length; i++) { if (signup.answers[i].key === key) { return signup.answers[i].value; } }
+    return '';
+  }
+  function maskCad(value) {
+    value = String(value || '');
+    return value ? '•••' + value.slice(-3) : '—';
+  }
+  function opts(list, selected, placeholder) {
+    var head = placeholder ? '<option value="">' + esc(placeholder) + '</option>' : '';
+    return head + list.map(function (o) {
+      var value = typeof o === 'object' ? o.value : o;
+      var label = typeof o === 'object' ? o.label : o;
+      return '<option value="' + esc(value) + '"' + (String(value) === String(selected) ? ' selected' : '') + '>' + esc(label) + '</option>';
+    }).join('');
+  }
   function isDark() { return document.documentElement.getAttribute('data-theme') === 'dark'; }
-  function brandImg(extraClass) {
-    var cls = extraClass || '';
-    return '<img class="' + cls + ' logo-std" src="' + S.org.logo + '@2x.png" srcset="' + S.org.logo + '@1x.png 1x, ' +
-      S.org.logo + '@2x.png 2x" width="107" height="40" alt="PROAME">' +
-      '<img class="' + cls + ' logo-dark" src="' + S.org.logoLight + '@2x.png" srcset="' + S.org.logoLight + '@1x.png 1x, ' +
-      S.org.logoLight + '@2x.png 2x" width="107" height="40" alt="">';
+  function brandImg() {
+    var o = S.org;
+    return '<img class="logo-std" src="' + o.logoBase + '@2x.png" srcset="' + o.logoBase + '@1x.png 1x, ' +
+      o.logoBase + '@2x.png 2x" width="107" height="40" alt="PROAME">' +
+      '<img class="logo-dark" src="' + o.logoLightBase + '@2x.png" srcset="' + o.logoLightBase + '@1x.png 1x, ' +
+      o.logoLightBase + '@2x.png 2x" width="107" height="40" alt="">';
   }
   function toast(msg) {
     toastEl.textContent = msg;
     toastEl.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3000);
+    toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3200);
+  }
+  function audit(event) {
+    st.auditLog.unshift({ at: new Date().toISOString(), actor: ACTOR_NAME(), event: event });
+  }
+  function ACTOR_NAME() {
+    var a = findById(st.admins, CURRENT_ADMIN_ID);
+    return a ? a.name : 'Administrador';
+  }
+  function currentAdmin() { return findById(st.admins, CURRENT_ADMIN_ID); }
+  function activeRootCount() {
+    return st.admins.filter(function (a) { return a.active && a.role === 'Root'; }).length;
+  }
+
+  /* ---------- dialogs (native <dialog>, built per use and removed on close) ---------- */
+  function closeDialog() {
+    var d = document.getElementById('dlg');
+    if (d) { if (d.open) { d.close(); } d.remove(); }
+  }
+  function openDialog(title, bodyHtml, focusSel) {
+    closeDialog();
+    var d = document.createElement('dialog');
+    d.id = 'dlg';
+    d.className = 'dlg';
+    d.setAttribute('aria-labelledby', 'dlg-title');
+    d.innerHTML = '<h2 id="dlg-title">' + esc(title) + '</h2>' + bodyHtml;
+    document.body.appendChild(d);
+    d.showModal();
+    var target = focusSel ? d.querySelector(focusSel) : d.querySelector('input,select,textarea,button');
+    if (target) { target.focus(); }
+  }
+  function helpButton(key, title) {
+    return '<button type="button" class="btn btn-quiet help-btn" data-action="help" data-key="' + esc(key) +
+      '" data-title="' + esc(title) + '" aria-haspopup="dialog" aria-label="Ajuda sobre ' + esc(title) + '">?</button>';
+  }
+  function helpFor(key) {
+    return S.pageHelp[key] || '';
   }
 
   /* ---------- chrome ---------- */
-  function utility() {
-    return '<div class="utility"><div class="wrap">' +
+  function header(admin, path) {
+    var links = admin ? ADMIN_LINKS.map(function (l) {
+      return ['/admin' + (l[0] === 'painel' ? '' : '/' + l[0]), l[1]];
+    }) : PUBLIC_LINKS.map(function (l) { return ['/' + l[0], l[1]]; });
+    var nav = links.map(function (l) {
+      var current = path === l[0] || (admin && l[0] === '/admin' && path === '/admin/');
+      return '<a href="#' + l[0] + '"' + (current ? ' aria-current="page"' : '') + '>' + esc(l[1]) + '</a>';
+    }).join('');
+    var extra = admin
+      ? '<a href="#/home">Ver site</a><button type="button" class="nav-btn" data-action="logout">Sair</button>'
+      : '';
+    return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
+      '<div class="utility"><div class="wrap">' +
       '<a href="../index.html">Voltar ao protótipo v1</a>' +
       '<button type="button" class="btn-ghost-sm" data-action="theme" aria-pressed="' + isDark() + '">Tema escuro</button>' +
-      '</div></div>';
-  }
-
-  function header(admin) {
-    var nav = admin
-      ? '<a href="#/admin/inscricoes" aria-current="page">Inscrições</a><a href="#/home">Ver site</a>'
-      : '<a href="#/home"' + (currentRoute() === 'home' ? ' aria-current="page"' : '') + '>Início</a>' +
-        '<button type="button" data-scroll="projetos">Projetos</button>' +
-        '<button type="button" data-scroll="ajude">Como ajudar</button>';
-    return '<a class="skip" href="#main">Pular para o conteúdo</a>' +
-      utility() +
+      '</div></div>' +
       '<header class="site-header"><div class="wrap">' +
-      '<a class="brand" href="' + (admin ? '#/admin/inscricoes' : '#/home') + '" aria-label="PROAME, página inicial">' + brandImg('') + '</a>' +
-      '<nav class="nav" aria-label="' + (admin ? 'Área do admin' : 'Principal') + '">' + nav + '</nav>' +
+      '<a class="brand" href="' + (admin ? '#/admin' : '#/home') + '" aria-label="PROAME, ' + (admin ? 'painel do admin' : 'página inicial') + '">' + brandImg() + '</a>' +
+      '<nav class="nav" aria-label="' + (admin ? 'Área do admin' : 'Principal') + '">' + nav + extra + '</nav>' +
       '</div></header>';
   }
 
-  function footer() {
+  function footer(admin) {
     var o = S.org;
+    var c = S.contact;
     return '<footer class="footer"><div class="wrap">' +
-      '<div><a class="brand" href="#/home" aria-label="PROAME, página inicial">' + brandImg('foot-logo') + '</a>' +
-      '<p>' + esc(o.fullName) + ', Gama (DF)</p><p>' + esc(o.address) + '</p></div>' +
-      '<div><p>Telefone: ' + esc(o.phone) + '<br>E-mail: <a href="mailto:' + esc(o.email) + '">' + esc(o.email) + '</a></p>' +
-      '<div class="footer-links"><a href="#/admin/inscricoes">Área do admin</a><a href="../index.html">Protótipo v1</a></div>' +
-      '<p class="hint">Alternativa de design de amostra. Os dados são fictícios.</p></div>' +
+      '<div><a class="brand" href="#/home" aria-label="PROAME, página inicial">' + brandImg() + '</a>' +
+      '<p>' + esc(o.fullName) + ', Gama (DF)</p><p>' + esc(c.address) + '</p></div>' +
+      '<div><p>Telefone: ' + esc(c.phone) + '<br>E-mail: <a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></p>' +
+      '<div class="footer-links"><a href="#/admin">Área do admin</a><a href="../index.html">Protótipo v1</a></div>' +
+      '<p class="hint">Versão ' + esc(S.releases[0].version) + ' do protótipo v2. Os dados são fictícios.</p></div>' +
       '</div></footer>';
   }
 
-  /* ---------- Persuade: home ---------- */
-  function pageHome() {
-    var projects = S.projects.map(function (p) {
-      var a = dayMonth(p.startsAt);
-      return '<li class="project-row">' +
-        '<div class="date-tile" aria-hidden="true"><span class="d">' + a.d + '</span><span class="m">' + a.m + '</span></div>' +
-        '<p class="sr-only">Início em ' + fmt(p.startsAt) + ', término em ' + fmt(p.endsAt) + '.</p>' +
-        '<div><p class="tag">' + esc(p.type) + '</p>' +
-        '<h3><a href="#/projeto/' + esc(p.id) + '">' + esc(p.title) + '</a></h3>' +
-        '<p>' + esc(p.description) + '</p>' +
-        '<p class="meta">Local: ' + esc(p.location) + '</p>' +
-        '<p class="meta">Vagas: ' + p.capacity + '</p>' +
-        '<a class="btn btn-quiet" href="#/projeto/' + esc(p.id) + '">Ver e inscrever-se em ' + esc(p.title) + '</a></div>' +
-        '</li>';
-    }).join('');
-    var help = S.helpOffers.map(function (h) {
-      return '<li><h3>' + esc(h.title) + '</h3><p>' + esc(h.text) + '</p></li>';
-    }).join('');
-    return '<section class="hero"><div class="wrap">' +
-      '<h1 class="hero-rise">' + esc(S.home.heroTitle) + '</h1>' +
-      '<p>' + esc(S.home.heroText) + '</p>' +
-      '<button type="button" class="btn btn-primary" data-scroll="projetos">Ver os projetos abertos</button>' +
-      '</div></section>' +
-      '<section id="projetos" class="section"><div class="wrap">' +
-      '<div class="section-head"><h2>Projetos abertos</h2></div>' +
-      '<ul class="projects">' + projects + '</ul></div></section>' +
-      '<section id="ajude" class="section"><div class="wrap">' +
-      '<div class="section-head"><h2>Como ajudar</h2></div>' +
-      '<ul class="help-list">' + help + '</ul>' +
-      '<p style="margin-block-start:var(--s-5)">Quer contribuir de outra forma? Escreva para <a href="mailto:' + esc(S.org.email) + '">' + esc(S.org.email) + '</a>.</p>' +
-      '</div></section>';
-  }
-
-  /* ---------- Persuade: project + signup form ---------- */
-  function fieldHtml(f) {
-    var id = 'f-' + f.key;
-    var req = f.required ? '<span class="req" aria-hidden="true"> *</span>' : '';
-    var tipBtn = '<button type="button" class="info-btn" data-action="tip" data-target="tip-' + f.key + '" aria-expanded="false" aria-controls="tip-' + f.key +
-      '" aria-label="Mais informações sobre ' + esc(f.label) + '">i</button>';
-    var tip = '<div class="tooltip" id="tip-' + f.key + '" role="note" hidden>' + esc(f.help) + '</div>';
-    var hint = '<p class="hint" id="h-' + f.key + '">' + esc(f.hint) + '</p>';
-    var err = '<p class="error" id="e-' + f.key + '" aria-live="polite"></p>';
-    var describedBy = 'h-' + f.key + ' e-' + f.key;
-    var control;
-    if (f.type === 'checkbox') {
-      return '<div class="field" data-key="' + f.key + '">' +
-        '<div class="check"><input type="checkbox" id="' + id + '" name="' + f.key + '" aria-describedby="' + describedBy + '">' +
-        '<label class="field-label" for="' + id + '">' + esc(f.label) + '</label>' + tipBtn + '</div>' +
-        hint + err + tip + '</div>';
-    }
-    var attrs = ' id="' + id + '" name="' + f.key + '" aria-describedby="' + describedBy + '"' + (f.required ? ' required aria-required="true"' : '');
-    if (f.type === 'select') {
-      control = '<select' + attrs + '><option value="">Escolha uma opção</option>' +
-        f.options.map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('') + '</select>';
-    } else if (f.type === 'textarea') {
-      control = '<textarea rows="3"' + attrs + '></textarea>';
-    } else {
-      var type = { tel: 'tel', date: 'date', email: 'email', text: 'text' }[f.type] || 'text';
-      control = '<input type="' + type + '"' + attrs + '>';
-    }
-    return '<div class="field" data-key="' + f.key + '">' +
-      '<div class="field-label"><label for="' + id + '">' + esc(f.label) + req + '</label>' + tipBtn + '</div>' +
-      hint + control + err + tip + '</div>';
-  }
-
-  function pageProjeto(id) {
-    var p = proj(id);
-    if (!p) { return notFound(); }
-    var fields = p.fields.map(fieldHtml).join('');
-    return '<section class="project-hero"><div class="wrap project-hero-grid">' +
-      '<div><p class="tag">' + esc(p.type) + '</p><h1>' + esc(p.title) + '</h1>' +
-      '<p class="lede">' + esc(p.description) + '</p></div>' +
-      '<dl class="facts"><dt>Datas</dt><dd>' + fmt(p.startsAt) + ' a ' + fmt(p.endsAt) + '</dd>' +
-      '<dt>Horário</dt><dd>' + esc(p.time) + '</dd>' +
-      '<dt>Local</dt><dd>' + esc(p.location) + '</dd>' +
-      '<dt>Vagas</dt><dd>' + p.capacity + '</dd></dl>' +
-      '</div></section>' +
-      '<section class="wrap form-layout" aria-labelledby="form-title">' +
-      '<div><div class="section-head"><h2 id="form-title">Inscrição</h2>' +
-      '<button type="button" class="btn btn-quiet" data-action="help" aria-haspopup="dialog" aria-label="Ajuda sobre esta inscrição">?</button></div>' +
-      '<p>Preencha os dados abaixo. Os campos com * são obrigatórios. Seus dados são usados só para esta inscrição.</p>' +
-      '<div class="turnstile" role="group" aria-label="Verificação de segurança">' +
-      '<span class="turnstile-box" aria-hidden="true"></span>' +
-      '<p class="hint">Verificação anti-robô: placeholder do Cloudflare Turnstile. O widget aparece aqui em produção.</p></div>' +
-      '</div>' +
-      '<div class="form-panel" id="form-panel">' +
-      '<div id="form-summary" class="summary-error" role="alert" hidden></div>' +
-      '<form id="signup-form" class="form-stack" novalidate data-project="' + esc(p.id) + '">' +
-      fields +
-      '<fieldset class="field" data-key="consent"><legend class="field-label">Consentimento</legend>' +
-      '<div class="check"><input type="checkbox" id="f-consent" name="consent" aria-describedby="e-consent" required aria-required="true">' +
-      '<label for="f-consent">' + esc(S.consentText) + '<span class="req" aria-hidden="true"> *</span></label></div>' +
-      '<p class="error" id="e-consent" aria-live="polite"></p></fieldset>' +
-      '<div><button type="submit" class="btn btn-primary">Enviar inscrição</button></div>' +
-      '</form></div>' +
-      '</section>' +
-      helpDialog();
-  }
-
-  function helpDialog() {
-    return '<dialog id="help" class="help" aria-labelledby="help-title"><h2 id="help-title">Ajuda da inscrição</h2>' +
-      S.helpTopics.map(function (t) {
-        return '<details><summary>' + esc(t.q) + '</summary><p>' + esc(t.a) + '</p></details>';
-      }).join('') +
-      '<form method="dialog" class="dialog-foot"><button type="submit" class="btn btn-primary">Fechar</button></form></dialog>';
-  }
-
-  function validateSignup(form) {
-    var p = proj(form.getAttribute('data-project'));
-    var errors = [];
-    p.fields.forEach(function (f) {
-      var el = form.elements[f.key];
-      var wrap = form.querySelector('.field[data-key="' + f.key + '"]');
-      var msg = '';
-      if (!el) { return; }
-      if (f.type === 'checkbox') { /* optional checkboxes never fail */ }
-      else if (f.required && !String(el.value).trim()) { msg = 'Preencha este campo.'; }
-      else if (f.key === 'telefone' && String(el.value).replace(/\D/g, '').length < 10) { msg = 'Informe o telefone com DDD.'; }
-      setError(wrap, f.key, msg, errors, f.label, el);
-    });
-    var consent = form.elements.consent;
-    var consentWrap = form.querySelector('.field[data-key="consent"]');
-    setError(consentWrap, 'consent', consent.checked ? '' : 'Marque para concordar com o uso dos seus dados.', errors, 'Consentimento', consent);
-    return errors;
-  }
-
-  function setError(wrap, key, msg, errors, label, el) {
-    var errEl = document.getElementById('e-' + key);
-    errEl.textContent = msg;
-    el.setAttribute('aria-invalid', msg ? 'true' : 'false');
-    if (msg) { errors.push({ label: label, id: el.id }); }
-  }
-
-  function handleSignupSubmit(e) {
-    e.preventDefault();
-    var form = e.target;
-    var errors = validateSignup(form);
-    var summary = document.getElementById('form-summary');
-    if (errors.length) {
-      summary.hidden = false;
-      summary.innerHTML = '<strong>Revise os campos destacados:</strong><ul>' +
-        errors.map(function (er) { return '<li><a href="#' + er.id + '">' + esc(er.label) + '</a></li>'; }).join('') + '</ul>';
-      document.getElementById(errors[0].id).focus();
-      return;
-    }
-    var p = proj(form.getAttribute('data-project'));
-    var answers = {};
-    p.fields.forEach(function (f) {
-      var el = form.elements[f.key];
-      if (el && f.type !== 'checkbox') { answers[f.key] = el.value; }
-    });
-    st.signups.unshift({
-      id: 's-' + (st.signups.length + 1), projectId: p.id, status: 'Nova', createdAt: new Date().toISOString().slice(0, 16),
-      name: form.elements.nome.value.trim(), phone: form.elements.telefone.value.trim(),
-      cadUnico: form.elements.cad_unico.value.trim(), answers: answers
-    });
-    document.getElementById('form-panel').innerHTML =
-      '<div class="done"><h2>Inscrição enviada</h2>' +
-      '<p>Recebemos seus dados. A equipe do PROAME entra em contato pelo telefone informado.</p>' +
-      '<p><a href="#/home">Voltar para os projetos</a></p></div>';
-    document.getElementById('form-panel').querySelector('h2').setAttribute('tabindex', '-1');
-    document.getElementById('form-panel').querySelector('h2').focus();
-    toast('Inscrição enviada.');
-  }
-
-  /* ---------- Operate: admin signups ---------- */
-  function pageAdmin() {
-    var projOpts = S.projects.map(function (p) {
-      return '<option value="' + esc(p.id) + '">' + esc(p.title) + '</option>';
-    }).join('');
-    var statusOpts = S.statuses.map(function (s) {
-      return '<option value="' + esc(s) + '">' + esc(s) + '</option>';
-    }).join('');
-    return '<div class="wrap">' +
-      '<div class="admin-title"><h1>Inscrições</h1><p class="count" id="count" aria-live="polite"></p></div>' +
-      '<form class="toolbar" role="search" id="filters" onsubmit="return false">' +
-      '<div class="field"><label for="f-q">Buscar por nome</label><input type="search" id="f-q" autocomplete="off"></div>' +
-      '<div class="field"><label for="f-status">Situação</label><select id="f-status"><option value="">Todas</option>' + statusOpts + '</select></div>' +
-      '<div class="field"><label for="f-project">Projeto</label><select id="f-project"><option value="">Todos os projetos</option>' + projOpts + '</select></div>' +
-      '</form>' +
-      '<div class="table-wrap"><table class="signups">' +
-      '<caption class="sr-only">Inscrições recebidas</caption>' +
-      '<thead><tr><th scope="col">Nome</th><th scope="col">Projeto</th><th scope="col">Recebida em</th>' +
-      '<th scope="col">Telefone</th><th scope="col">Situação</th><th scope="col">Alterar situação</th></tr></thead>' +
-      '<tbody id="rows"></tbody></table></div></div>';
-  }
-
-  function filteredSignups() {
-    var f = st.filters;
-    var q = f.q.trim().toLowerCase();
-    return st.signups.filter(function (s) {
-      if (f.status && s.status !== f.status) { return false; }
-      if (f.project && s.projectId !== f.project) { return false; }
-      if (q && s.name.toLowerCase().indexOf(q) < 0) { return false; }
-      return true;
-    });
-  }
-
-  function renderRows() {
-    var list = filteredSignups();
-    var body = document.getElementById('rows');
-    if (!body) { return; }
-    document.getElementById('count').textContent = list.length + (list.length === 1 ? ' inscrição' : ' inscrições');
-    if (!list.length) {
-      body.innerHTML = '<tr><td colspan="6" class="empty">Nenhuma inscrição com esses filtros.</td></tr>';
-      return;
-    }
-    body.innerHTML = list.map(function (s) {
-      var p = proj(s.projectId);
-      var options = S.statuses.map(function (o) {
-        return '<option value="' + esc(o) + '"' + (o === s.status ? ' selected' : '') + '>' + esc(o) + '</option>';
-      }).join('');
-      return '<tr><th scope="row">' + esc(s.name) + '</th>' +
-        '<td>' + esc(p ? p.title : '') + '</td>' +
-        '<td>' + fmt(s.createdAt) + '</td>' +
-        '<td class="phone">' + esc(s.phone) + '</td>' +
-        '<td><span class="chip ' + (STATUS_CLASS[s.status] || '') + '">' + esc(s.status) + '</span></td>' +
-        '<td><label class="sr-only" for="st-' + esc(s.id) + '">Alterar situação de ' + esc(s.name) + '</label>' +
-        '<select class="row-select" id="st-' + esc(s.id) + '" data-action="status" data-id="' + esc(s.id) + '">' + options + '</select></td>' +
-        '</tr>';
-    }).join('');
-  }
-
-  /* ---------- router ---------- */
-  function parts() {
-    var h = location.hash.replace(/^#\/?/, '');
-    return h.split('/').filter(Boolean);
-  }
-  function currentRoute() {
-    var p = parts();
-    if (!p.length) { return 'home'; }
-    return p[0];
-  }
   function notFound() {
     return '<div class="narrow section"><h1>Página não encontrada</h1>' +
       '<p><a href="#/home">Voltar para o início</a></p></div>';
   }
 
+  /* ---------- router ---------- */
+  function parts() {
+    return location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+  }
+
   function route() {
     var p = parts();
     var admin = p[0] === 'admin';
-    var main;
-    var mode;
+    var handler, args;
     if (admin) {
-      mode = 'mode-operate';
-      main = (!p[1] || p[1] === 'inscricoes') ? pageAdmin() : notFound();
+      var sub = p[1] || 'painel';
+      if (sub === 'login') { handler = V.admin.login; args = []; }
+      else if (sub === 'projeto') { handler = V.admin.projeto; args = [p[2] || 'novo']; }
+      else { handler = V.admin[sub]; args = p.slice(2); }
     } else {
-      mode = 'mode-persuade';
-      if (!p.length || p[0] === 'home') { main = pageHome(); }
-      else if (p[0] === 'projeto' && p[1]) { main = pageProjeto(p[1]); }
-      else { main = notFound(); }
+      handler = V.pub[p[0] || 'home'];
+      args = p.slice(1);
     }
-    document.body.className = mode;
-    app.innerHTML = header(admin) + '<main id="main" tabindex="-1">' + main + '</main>' + footer();
-    if (admin && (!p[1] || p[1] === 'inscricoes')) {
-      document.getElementById('f-q').value = st.filters.q;
-      document.getElementById('f-status').value = st.filters.status;
-      document.getElementById('f-project').value = st.filters.project;
-      renderRows();
-    }
-    if (pendingScroll) {
-      var target = document.getElementById(pendingScroll);
-      pendingScroll = null;
-      if (target) { target.scrollIntoView(); return; }
-    }
-    window.scrollTo(0, 0);
+    var path = '/' + p.join('/');
+    var sameRoute = path === currentPath;
+    currentPath = path;
+    /* The project builder keeps its draft while the admin stays on a projeto route; leaving it discards the draft. */
+    if (!(admin && p[1] === 'projeto')) { st.draft = null; }
+    var main = handler ? handler.apply(null, args) : notFound();
+    document.body.className = admin ? 'mode-operate' : 'mode-persuade';
+    app.innerHTML = header(admin, path) + '<main id="main" tabindex="-1">' + main + '</main>' + footer(admin);
+    if (!sameRoute) { window.scrollTo(0, 0); }
   }
+
+  /* Re-renders the current route and returns focus to a control that still exists. */
+  function rerender(focusSel) {
+    route();
+    if (focusSel) {
+      var el = app.querySelector(focusSel);
+      if (el) { el.focus(); }
+    }
+  }
+  V.route = route;
+  V.rerender = rerender;
+  V.helpFor = helpFor;
+  V.helpButton = helpButton;
+  V.openDialog = openDialog;
+  V.closeDialog = closeDialog;
+  V.toast = toast;
+  V.audit = audit;
+  V.esc = esc;
+  V.fmtDate = fmtDate;
+  V.fmtDT = fmtDT;
+  V.fmtStamp = fmtStamp;
+  V.dayMonth = dayMonth;
+  V.today = today;
+  V.daysFromNow = daysFromNow;
+  V.findById = findById;
+  V.projectTitle = projectTitle;
+  V.typeName = typeName;
+  V.publishedProjects = publishedProjects;
+  V.activeServices = activeServices;
+  V.countSignups = countSignups;
+  V.answerOf = answerOf;
+  V.maskCad = maskCad;
+  V.opts = opts;
+  V.clone = clone;
+  V.isDark = isDark;
+  V.currentAdmin = currentAdmin;
+  V.activeRootCount = activeRootCount;
+  V.notFound = notFound;
+  V.STATUS_CLASS = STATUS_CLASS;
+  V.restoreSeed = function () {
+    var fresh = clone(S);
+    Object.keys(fresh).forEach(function (k) { st[k] = fresh[k]; });
+    st.filters = { type: 'all', date: 'all', cover: 'all', signupProject: 'all', q: '', status: '', project: '' };
+    st.draft = null;
+  };
 
   /* ---------- theme ---------- */
   function setTheme(name) {
     document.documentElement.setAttribute('data-theme', name);
-    try { localStorage.setItem('proame-v2-theme', name); } catch (err) { /* private mode: keep in-memory only */ }
+    try { localStorage.setItem('proame-v2-theme', name); } catch (err) { /* private mode: in-memory only */ }
     var btn = app.querySelector('[data-action="theme"]');
     if (btn) { btn.setAttribute('aria-pressed', String(name === 'dark')); }
   }
   function initTheme() {
     var saved = null;
     try { saved = localStorage.getItem('proame-v2-theme'); } catch (err) { saved = null; }
-    var t = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', t);
+    setTheme(saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   }
 
-  /* ---------- events (delegated) ---------- */
-  document.addEventListener('click', function (e) {
-    var el = e.target.closest('[data-action],[data-scroll]');
-    if (!el) {
-      document.querySelectorAll('.tooltip:not([hidden])').forEach(function (tip) { closeTip(tip); });
-      return;
-    }
-    if (el.hasAttribute('data-scroll')) {
-      e.preventDefault();
-      var id = el.getAttribute('data-scroll');
-      if (currentRoute() === 'home' && parts().length <= 1) {
-        document.getElementById(id).scrollIntoView();
-      } else {
-        pendingScroll = id;
-        location.hash = '#/home';
-      }
-      return;
-    }
-    var action = el.getAttribute('data-action');
-    if (action === 'theme') {
-      setTheme(isDark() ? 'light' : 'dark');
-    } else if (action === 'tip') {
-      var tip = document.getElementById(el.getAttribute('data-target'));
-      var open = tip.hidden;
-      document.querySelectorAll('.tooltip:not([hidden])').forEach(function (t) { if (t !== tip) { closeTip(t); } });
-      tip.hidden = !open;
-      el.setAttribute('aria-expanded', String(open));
-    } else if (action === 'help') {
-      var dlg = document.getElementById('help');
-      if (dlg && dlg.showModal) { dlg.showModal(); }
-    }
-  });
-
+  /* ---------- tooltips (tap-friendly, Escape closes) ---------- */
   function closeTip(tip) {
     tip.hidden = true;
     var btn = document.querySelector('[aria-controls="' + tip.id + '"]');
     if (btn) { btn.setAttribute('aria-expanded', 'false'); }
   }
+  function closeAllTips(except) {
+    document.querySelectorAll('.tooltip:not([hidden])').forEach(function (t) { if (t !== except) { closeTip(t); } });
+  }
+
+  /* ---------- delegated events ---------- */
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-action]');
+    if (!el) { closeAllTips(null); return; }
+    var action = el.getAttribute('data-action');
+    if (action === 'theme') { setTheme(isDark() ? 'light' : 'dark'); return; }
+    if (action === 'tip') {
+      var tip = document.getElementById(el.getAttribute('data-target'));
+      var open = tip.hidden;
+      closeAllTips(tip);
+      tip.hidden = !open;
+      el.setAttribute('aria-expanded', String(open));
+      return;
+    }
+    if (action === 'help') {
+      openDialog(el.getAttribute('data-title'), '<p>' + esc(helpFor(el.getAttribute('data-key'))) + '</p>' +
+        '<div class="dlg-actions"><button type="button" class="btn btn-primary" data-action="dlg-close">Fechar</button></div>');
+      return;
+    }
+    if (action === 'dlg-close') { closeDialog(); return; }
+    if (V.actions[action]) { V.actions[action](el, e); }
+  });
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.tooltip:not([hidden])').forEach(closeTip);
-    }
+    if (e.key === 'Escape') { closeAllTips(null); }
   });
 
   document.addEventListener('submit', function (e) {
-    if (e.target.id === 'signup-form') { handleSignupSubmit(e); }
-  });
-
-  document.addEventListener('input', function (e) {
-    if (e.target.id === 'f-q') { st.filters.q = e.target.value; renderRows(); }
+    var name = e.target.getAttribute('data-form');
+    if (!name) { return; }
+    e.preventDefault();
+    if (V.forms[name]) { V.forms[name](e.target); }
   });
 
   document.addEventListener('change', function (e) {
-    var t = e.target;
-    if (t.id === 'f-status') { st.filters.status = t.value; renderRows(); }
-    else if (t.id === 'f-project') { st.filters.project = t.value; renderRows(); }
-    else if (t.getAttribute('data-action') === 'status') {
-      var id = t.getAttribute('data-id');
-      st.signups.forEach(function (s) { if (s.id === id) { s.status = t.value; } });
-      renderRows();
-      var again = document.getElementById('st-' + id);
-      if (again) { again.focus(); }
-      toast('Situação atualizada para "' + t.value + '".');
-    }
+    var name = e.target.getAttribute('data-change');
+    if (name && V.changes[name]) { V.changes[name](e.target); }
+  });
+
+  document.addEventListener('input', function (e) {
+    var name = e.target.getAttribute('data-input');
+    if (name && V.changes[name]) { V.changes[name](e.target); }
   });
 
   window.addEventListener('hashchange', route);
   initTheme();
-  route();
+  /* Page modules are plain scripts loaded before this one ends; start after DOM is parsed. */
+  document.addEventListener('DOMContentLoaded', route);
 })();
