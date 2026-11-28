@@ -100,18 +100,49 @@ a:hover { text-decoration-thickness: 2px; }
 
 /* ---------- header ---------- */
 .site-header { border-block-end: 2px solid var(--ink); }
-.site-header .wrap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-3) var(--s-5); padding-block: var(--s-4); }
+/* One row, never wrapping: brand | inline links | toggle. app.js switches data-nav between inline and menu by measuring. */
+.site-header .wrap { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--s-3) var(--s-5); padding-block: var(--s-4); }
+.brand { flex: none; }
 .brand img { inline-size: 9.5rem; block-size: auto; }
 .logo-dark { display: none; }
 [data-theme='dark'] .logo-std { display: none; }
 [data-theme='dark'] .logo-dark { display: block; }
-.nav { display: flex; flex-wrap: wrap; gap: var(--s-1) var(--s-3); }
+.nav { display: flex; flex: 1 1 0; min-inline-size: 0; flex-wrap: nowrap; justify-content: flex-end; gap: var(--s-1) var(--s-3); }
+.nav > * { flex: none; white-space: nowrap; }
 .nav a, .nav-btn {
   min-block-size: 44px; display: inline-flex; align-items: center; color: var(--ink); font: inherit; font-weight: 700;
   text-decoration: none; background: none; border: 0; padding-inline: var(--s-2); cursor: pointer;
 }
 .nav a[aria-current='page'] { box-shadow: inset 0 -3px 0 var(--brand); }
 .nav a:hover, .nav-btn:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+/* Toggle keeps its space in inline mode (hidden, not removed) so the measured room does not change between modes. */
+.nav-toggle {
+  flex: none; inline-size: 44px; block-size: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--ink); border-radius: var(--r-2); background: var(--surface); color: var(--ink); cursor: pointer;
+  visibility: hidden;
+}
+[data-nav='menu'] .nav { display: none; }
+[data-nav='menu'] .nav-toggle { visibility: visible; }
+
+/* Menu drawer (MudDrawer, Temporary variant). Modal: scrim, focus trap, Escape closes. */
+.drawer-scrim { position: fixed; inset: 0; z-index: 30; background: color-mix(in oklch, var(--ink) 45%, transparent); }
+.drawer { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 31; inline-size: min(86vw, 20rem); overflow-y: auto; background: var(--surface); color: var(--ink); border-inline-end: 2px solid var(--ink); padding: var(--s-4); animation: drawer-in 200ms var(--ease) both; }
+.drawer[hidden], .drawer-scrim[hidden] { display: none; }
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: none; } }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding-block-end: var(--s-3); border-block-end: 2px solid var(--ink); }
+.drawer-head h2 { font-size: 1.25rem; }
+.drawer-close {
+  flex: none; inline-size: 44px; block-size: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 2px solid var(--ink); border-radius: var(--r-2); background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.drawer-list { list-style: none; margin: 0; padding: 0; }
+.drawer-list > li { border-block-end: 1px solid var(--line); }
+.drawer-list a, .drawer-list .nav-btn {
+  inline-size: 100%; min-block-size: 44px; display: flex; align-items: center; padding-inline: var(--s-2); color: var(--ink); font: inherit; font-weight: 700;
+  text-decoration: none; background: none; border: 0; cursor: pointer; text-align: start;
+}
+.drawer-list a:hover, .drawer-list .nav-btn:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+.drawer-list a[aria-current='page'] { box-shadow: inset 4px 0 0 var(--brand); }
 
 /* ---------- Persuade (public) ---------- */
 .hero {
@@ -266,13 +297,28 @@ dialog.dlg .field { margin-block-end: var(--s-3); }
 .footer p { font-size: 0.98rem; }
 .footer .brand img { inline-size: 8rem; }
 .footer-links { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); }
+/* Global contact list: every channel is a link (44 px) with a copy button (44 px) beside it. */
+.contact-list { list-style: none; margin: 0; padding: 0; border-block-start: 2px solid var(--ink); }
+.contact-item { display: flex; align-items: center; gap: var(--s-2); border-block-end: 1px solid var(--line); }
+.contact-link { flex: 1 1 auto; min-inline-size: 0; min-block-size: 44px; display: flex; align-items: center; gap: var(--s-3); padding-block: var(--s-2); padding-inline-start: var(--s-1); color: var(--brand-text); text-decoration: none; }
+.contact-link:hover .contact-value { text-decoration: underline; text-underline-offset: 0.2em; }
+.contact-link > .icon { flex: none; }
+.contact-text { display: grid; min-inline-size: 0; overflow-wrap: anywhere; line-height: 1.35; }
+.contact-kind { font-size: 0.85rem; font-weight: 700; color: var(--ink-soft); }
+.copy-btn {
+  flex: none; inline-size: 44px; block-size: 44px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--ink-soft); border-radius: var(--r-2); background: var(--surface); color: var(--ink); cursor: pointer;
+}
+.copy-btn:hover { background: var(--ok-tint); }
 
 /* ---------- Operate (admin) ---------- */
 .mode-operate { font-size: var(--t-ui); line-height: 1.45; }
 .mode-operate .site-header { border-block-end-width: 1px; }
 .mode-operate .site-header .wrap { padding-block: var(--s-2); }
-.mode-operate .nav a, .mode-operate .nav-btn { min-block-size: 40px; font-size: var(--t-ui); }
-.admin-page { padding-block: var(--s-5) var(--s-8); }
+.mode-operate .nav a, .mode-operate .nav-btn { min-block-size: 44px; font-size: var(--t-ui); }
+/* Same width and gutters as the public .wrap; .narrow keeps the 50rem form column. */
+.admin-page { inline-size: min(100% - 2 * var(--gutter), 74rem); margin-inline: auto; padding-block: var(--s-5) var(--s-8); }
+.admin-page.narrow { inline-size: min(100% - 2 * var(--gutter), 50rem); }
 .admin-title { padding-block: var(--s-3) var(--s-3); display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-3); }
 .admin-title h1 { font-size: var(--t-h2); }
 .toolbar { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: end; padding-block: var(--s-3); border-block: 1px solid var(--line); margin-block-end: var(--s-4); }

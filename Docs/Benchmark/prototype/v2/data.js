@@ -73,6 +73,12 @@
     ],
 
     releases: [
+      { version: '0.3.0', date: '2026-11-28', items: [
+        'Rodapé com todos os contatos (telefone, WhatsApp, e-mail, Instagram, YouTube e endereço), com links e botão para copiar.',
+        'Quem somos: contatos apenas no rodapé, com link "Como chegar" no endereço.',
+        'Menu adaptável: quando os itens não cabem em uma linha, o menu vira um painel lateral.',
+        'Área do admin com a mesma largura e margens das demais páginas; botões de navegação com 44 px.'
+      ] },
       { version: '0.2.0', date: '2026-11-27', items: [
         'Logotipo novo e três paletas de cores (A, B e C) para escolha.',
         'Planejamento de segurança: login com código, Roots e auditoria.',

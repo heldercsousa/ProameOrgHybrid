@@ -214,3 +214,52 @@ None. Every candidate finding above is either a structural change (nav drawer) o
 - Horizontal overflow: 0 px on every route at 390 and 1280 px, in both themes.
 - Console errors: 0.
 - axe serious or critical: 0 on all routes in both themes at both widths, plus 0 with the tooltip and the dialog open.
+
+## UX fixes 2026-11-28
+
+Reviewer findings from Helder, fixed in version 0.3.0 (footer label in `data.js` releases). Plain HTML/CSS/JS only; no hard-coded hex outside the token blocks.
+
+| # | Finding | Change |
+|---|---|---|
+| 1 | Footer contacts were plain text. | Global footer lists all six channels (telefone, WhatsApp, e-mail, Instagram, YouTube, endereço). Each row is a link (`tel:+55…`, `https://wa.me/55…`, `mailto:`, Instagram and YouTube URLs from `data.js`, endereço to Google Maps) and a 44 px copy button labelled pt-BR ("Copiar telefone" and so on). Copy shows "Copiado: telefone" in the existing `#toast` (`role="status"`, `aria-live="polite"`). Clipboard API with an `execCommand` fallback. |
+| 2 | Quem somos repeated the contact list. | The body keeps the address, a "Como chegar" link to Google Maps (new tab, announced), and one line pointing to the footer ("Ir para os contatos" scrolls to `#contato` and focuses the footer). The footer is the only contact list. The address still appears in the footer, as the brief requires. |
+| 3 | Admin body had no side margins. | `.admin-page` uses the public `.wrap` rule (`min(100% - 2 * gutter, 74rem)`, auto margins). `.admin-page.narrow` keeps the 50rem column. |
+| 4 | Nav wrapped onto several rows (public and admin). | Adaptive nav. Inline links when they fit on one line; a menu button opens a modal drawer otherwise. The switch is measured, not a breakpoint (see mapping below). |
+| 5 | Admin nav items were 40 px. | 44 px, as decided by Helder. This also resolves the open 44 px vs Operate density question in the 2026-11-28 review: the decision is 44 px everywhere. |
+
+### Adaptive nav: behaviour
+
+- `.site-header` carries `data-nav="inline"` or `data-nav="menu"`. A `ResizeObserver` on the header row runs `fitNav()`.
+- Inline → menu when the natural width of the links exceeds the room left beside the logo and the toggle.
+- Menu → inline only when the links fit with 24 px to spare (hysteresis, so the layout does not flicker at the boundary).
+- The toggle keeps its space in inline mode (`visibility: hidden`, not removed), so the measured room does not change between modes.
+- Drawer: `role="dialog"`, `aria-modal="true"`, labelled by its heading. The toggle has `aria-expanded` and `aria-controls="site-drawer"`. The page behind is `inert`. Tab cycles inside the drawer. Escape and the scrim close it. Focus returns to the toggle. A link in the drawer closes it and moves focus to `#main`. The current page has `aria-current="page"`.
+- The drawer lives in `#drawer-root`, outside `#app`, so `#app` can be made inert.
+
+### MudBlazor mapping
+
+| Prototype | Real app (Proame.UI) |
+|---|---|
+| `header.site-header` with the brand and links | `MudAppBar` with `MudText` brand and `MudIconButton` toggle |
+| `nav.nav` inline links | `MudNavMenu` in `MudAppBar` in horizontal layout (`MudNavLink`), visible when the measured mode is inline |
+| `aside#site-drawer` modal drawer | `MudDrawer` with `Variant="DrawerVariant.Temporary"` and `MudNavMenu` inside. Temporary is modal: scrim, focus trap and Escape come from MudBlazor |
+| `fitNav()` / `ResizeObserver` | A small JS-interop measuring helper (not in the prototype). It reports the header row width and the links' natural width to C#, which sets the mode. The real app needs this helper because Blazor has no built-in overflow measurement. |
+| `.contact-list` / `.copy-btn` | `MudList` with `MudListItem` links and `MudIconButton` copy actions. Copy goes through a clipboard helper. The "Copiado" message uses `MudSnackbar`. |
+| `.admin-page` gutters | The shared page container (`MudContainer MaxWidth="Large"`) used by every admin route |
+
+### Verification (Playwright, Chromium, axe-core 4, wcag2a/aa/21aa)
+
+- Widths: 390, 768, 1000 (menu), 1280. Themes: light and dark. Routes: six public, eight admin (including login).
+- Horizontal overflow: 0 px on every route at every width.
+- Nav height: 44 px in every inline state, so the nav never wraps. Public nav is inline at 1280 and menu at 1000 and 768 and 390. Admin nav is menu at 1280.
+- Console errors: 0.
+- Axe serious or critical: 0 on every route at every width in both themes. Drawer open at 390: 0.
+- Keyboard: Tab stays inside the open drawer, Escape closes it and returns focus to the toggle, scrim click closes it.
+- Copy: 44 px button, toast "Copiado: telefone" after click.
+- An early axe run on `#/home` reported `color-contrast` on the hero heading. That was the hero's `rise` entrance animation still running (opacity below 1). After a 1.1 s wait the same route is clean.
+
+### Deferred
+
+- Admin nav at 1280 collapses to the menu (13 items do not fit). This is the expected behaviour of the measured switch, not a bug; it is noted for the reviewer.
+- Address appears in both Quem somos (body) and the footer, as the brief asks for both.
+- The footer and drawer screenshots in `screens/` were taken in dark theme (the theme left set during testing). Light-theme screenshots are not in the set.

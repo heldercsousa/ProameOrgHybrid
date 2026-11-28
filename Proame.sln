@@ -249,6 +249,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "screens", "screens", "{EBE1
 		Docs\Benchmark\prototype\v2\screens\inscricoes-390-dark.png = Docs\Benchmark\prototype\v2\screens\inscricoes-390-dark.png
 		Docs\Benchmark\prototype\v2\screens\painel-1280-light.png = Docs\Benchmark\prototype\v2\screens\painel-1280-light.png
 		Docs\Benchmark\prototype\v2\screens\projeto-1280-light.png = Docs\Benchmark\prototype\v2\screens\projeto-1280-light.png
+		Docs\Benchmark\prototype\v2\screens\admin-1280.png = Docs\Benchmark\prototype\v2\screens\admin-1280.png
+		Docs\Benchmark\prototype\v2\screens\drawer-open-390.png = Docs\Benchmark\prototype\v2\screens\drawer-open-390.png
+		Docs\Benchmark\prototype\v2\screens\footer-1280.png = Docs\Benchmark\prototype\v2\screens\footer-1280.png
+		Docs\Benchmark\prototype\v2\screens\quem-somos-1280.png = Docs\Benchmark\prototype\v2\screens\quem-somos-1280.png
 	EndProjectSection
 EndProject
 Global

@@ -169,13 +169,13 @@
     return '<div class="section-head"><h2>' + esc(title) + '</h2>' + (extra || '') + '</div>';
   }
 
+  /* Body block on Quem somos: address and a maps link only. The full contact list lives in the global footer. */
   function contactBlock() {
     var c = S.contact;
-    return '<dl class="facts"><dt>Endereço</dt><dd>' + esc(c.address) + '</dd>' +
-      '<dt>Telefone</dt><dd>' + esc(c.phone) + '</dd>' +
-      '<dt>E-mail</dt><dd><a href="mailto:' + esc(c.email) + '">' + esc(c.email) + '</a></dd>' +
-      '<dt>Instagram</dt><dd>' + esc(c.instagram) + '</dd>' +
-      '<dt>YouTube</dt><dd>' + esc(c.youtube) + '</dd></dl>';
+    return '<dl class="facts"><dt>Endereço</dt><dd>' + esc(c.address) + '</dd></dl>' +
+      '<p><a href="' + esc(V.mapsLink(c.address)) + '" target="_blank" rel="noopener">Como chegar' +
+      '<span class="sr-only"> (abre o Google Maps em nova aba)</span></a></p>' +
+      '<p>Fale com a gente pelos contatos no rodapé. <a href="#contato" data-action="goto-contact">Ir para os contatos</a></p>';
   }
 
   /* ---------- pages ---------- */
